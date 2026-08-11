@@ -1,0 +1,233 @@
+.page {
+  display: grid;
+  gap: 1.5rem;
+}
+.printHeader {
+  display: none;
+}
+
+.screenOnly {
+  display: block;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+.filters label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 11rem;
+}
+.section {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  min-width: 0;
+}
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+.sectionHeader h2,
+.section h3,
+.account h3 {
+  margin: 0;
+}
+.currencyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+.currencyCard,
+.account {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+.metrics {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+}
+.metrics div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.metrics dd {
+  font-weight: 700;
+  margin: 0;
+}
+.stacks {
+  display: grid;
+  gap: 1.25rem;
+}
+.rows,
+.flowList {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+.calendar,
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.calendar {
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  list-style: none;
+}
+.calendarWeekdays {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+.calendar li {
+  display: grid;
+  min-height: 8rem;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-sm);
+}
+.calendar li strong {
+  color: var(--color-dark);
+}
+.calendar .calendarEmpty {
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.45;
+}
+.rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.categoryName {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.categoryName i {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex: none;
+  border: 1px solid var(--color-border-strong);
+}
+.flowList {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+.flowList li {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+.accountList {
+  display: grid;
+  gap: 0.75rem;
+}
+.account {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 1rem;
+  align-items: center;
+}
+.account p {
+  margin: 0.25rem 0 0;
+}
+@media (max-width: 575px) {
+  .filters {
+    display: grid;
+  }
+  .filters label {
+    min-width: 0;
+  }
+  .section {
+    padding: 1rem;
+  }
+  .rows li,
+  .account {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}
+@media (max-width: 64rem) {
+  .calendar li {
+    min-height: 7rem;
+    padding: var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+}
+@media (max-width: 40rem) {
+  .calendar,
+  .calendarWeekdays {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .calendarWeekdays {
+    display: none;
+  }
+  .calendar .calendarEmpty {
+    display: none;
+  }
+}
+@media print {
+  .screenOnly {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  .printHeader {
+    display: block;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #154b45;
+  }
+  .printHeader h1 {
+    margin: 0.35rem 0 0.75rem;
+  }
+  .printHeader p {
+    margin: 0.2rem 0;
+  }
+  .filters {
+    display: none !important;
+  }
+  .page {
+    display: block;
+    color: #172b28;
+    background: #fff;
+  }
+  .section {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  .calendar li {
+    min-height: auto;
+  }
+}

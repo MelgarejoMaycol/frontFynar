@@ -1,0 +1,155 @@
+.page,
+.form,
+.list {
+  display: grid;
+  gap: 1rem;
+}
+.list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.card {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.cardHeader,
+.actions,
+.progressLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.cardHeader h2 {
+  margin: 0;
+}
+.cardHeader p,
+.card p {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+.amount {
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  overflow-wrap: anywhere;
+}
+.progress {
+  height: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+}
+.progressBlock {
+  display: grid;
+  gap: 0.4rem;
+}
+.totals,
+.detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.totals dt,
+.detail dt {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+.totals dd,
+.detail dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.periodFields {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-muted);
+}
+.rangePreview,
+.helpText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.noAccounts {
+  grid-column: 1 / -1;
+  padding: var(--space-3);
+  color: var(--color-text);
+  border-radius: var(--radius-small);
+  background: var(--color-info-soft);
+}
+.noAccounts p {
+  margin: var(--space-1) 0;
+}
+.noAccounts a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-height: 10rem;
+  overflow: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-muted);
+}
+.options label {
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+.options label,
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.filters label {
+  display: grid;
+  gap: 0.3rem;
+}
+.filters {
+  align-items: end;
+}
+.filters label {
+  flex: 1 1 12rem;
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+@media (max-width: 700px) {
+  .list,
+  .formGrid,
+  .options,
+  .totals,
+  .detail {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,295 @@
+.page,
+.currencySections {
+  display: grid;
+  gap: 1.5rem;
+}
+.periodFilter {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.periodFilter label {
+  display: grid;
+  gap: 0.35rem;
+}
+.periodFilter p {
+  width: 100%;
+  margin: 0;
+  color: var(--color-error);
+}
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+.summaryCard {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.summaryHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.summaryHeading h2 {
+  margin: 0;
+}
+.summaryHeading span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.summaryLink,
+.accountLink,
+.recentLink {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-medium);
+}
+.summaryLink .summaryCard,
+.accountLink .account,
+.recentLink .recentItem {
+  height: 100%;
+  transition:
+    transform var(--duration-fast),
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast);
+}
+.summaryLink:hover .summaryCard,
+.accountLink:hover .account,
+.recentLink:hover .recentItem,
+.summaryLink:focus-visible .summaryCard,
+.accountLink:focus-visible .account,
+.recentLink:focus-visible .recentItem {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-soft);
+}
+.summaryLink:focus-visible,
+.accountLink:focus-visible,
+.recentLink:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.summaryNeutral {
+  border-top: 3px solid var(--color-primary);
+}
+.summaryIncome {
+  border-top: 3px solid var(--color-success);
+  background: var(--color-success-soft);
+}
+.summaryIncome svg,
+.summaryIncome strong {
+  color: var(--color-success);
+}
+.summaryExpense {
+  border-top: 3px solid var(--color-error);
+  background: var(--color-error-soft);
+}
+.summaryExpense svg,
+.summaryExpense strong {
+  color: var(--color-error);
+}
+.summaryFlow {
+  border-top: 3px solid var(--color-info);
+}
+.summaryFlow small {
+  color: var(--color-text-secondary);
+}
+.summaryWorth {
+  border-top: 3px solid var(--color-secondary);
+}
+.summaryCard svg {
+  color: var(--color-primary);
+}
+.summaryCard strong,
+.account strong,
+.recentItem strong {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
+.accountGrid {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-1) 0 var(--space-3);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+.accountLink {
+  width: clamp(15rem, 26vw, 20rem);
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+.account,
+.recentItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.account h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.favorite {
+  color: var(--color-warning);
+  flex: none;
+}
+.account strong {
+  min-width: 7rem;
+  text-align: right;
+  overflow-wrap: normal;
+}
+.account h3,
+.recentItem h3 {
+  margin: 0.35rem 0;
+}
+.account p,
+.recentItem small {
+  color: var(--color-text-muted);
+}
+.sectionHeader,
+.quickActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.quickActions {
+  justify-content: flex-start;
+}
+.quickActions a,
+.sectionHeader a {
+  font-weight: 600;
+}
+.recentList {
+  display: grid;
+  gap: 0.75rem;
+}
+.recentItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding-block: var(--space-3);
+}
+.recentItem > svg {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.4rem;
+  border-radius: 50%;
+}
+.recentItem p {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.recentItem h3 {
+  margin-top: 0;
+}
+.recentItem.income > svg {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.recentItem.expense > svg {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.recentItem.transfer > svg {
+  color: var(--color-info);
+  background: var(--color-info-soft);
+}
+.recentItem.income strong {
+  color: var(--color-success);
+}
+.recentItem.expense strong {
+  color: var(--color-error);
+}
+.skeletonPage {
+  display: grid;
+  gap: var(--space-4);
+}
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.skeletonActions,
+.skeletonCard,
+.skeletonRow {
+  border-radius: var(--radius-medium);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-muted) 25%,
+    var(--color-surface-soft) 50%,
+    var(--color-surface-muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: dashboardShimmer 1.25s linear infinite;
+}
+.skeletonActions {
+  width: 18rem;
+  height: 2.75rem;
+}
+.skeletonCard {
+  height: 8rem;
+}
+.skeletonRow {
+  height: 7rem;
+}
+@keyframes dashboardShimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (max-width: 1024px) {
+  .summaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .skeletonGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .summaryGrid,
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+  .periodFilter,
+  .account,
+  .recentItem,
+  .sectionHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .quickActions {
+    flex-wrap: wrap;
+  }
+  .quickActions button {
+    flex: 1 1 11rem;
+  }
+  .summaryHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .recentItem {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .recentItem strong {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeletonActions,
+  .skeletonCard,
+  .skeletonRow {
+    animation: none;
+  }
+}

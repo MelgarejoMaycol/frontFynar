@@ -1,0 +1,67 @@
+@import './tokens.css';
+@import './reset.css';
+
+:root {
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-family-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 0;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+a {
+  color: var(--color-primary);
+}
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-dark);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+h1 {
+  font-size: clamp(1.75rem, 3vw, var(--font-size-2xl));
+}
+h2 {
+  font-size: var(--font-size-xl);
+}
+h3 {
+  font-size: var(--font-size-lg);
+}
+p {
+  line-height: var(--line-height-normal);
+}
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+::selection {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

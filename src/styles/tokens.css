@@ -1,0 +1,142 @@
+:root {
+  /* Color */
+  --color-primary: #154b45;
+  --color-primary-hover: #0d3935;
+  --color-primary-soft: #e5f1ec;
+  --color-secondary: #5d8c74;
+  --color-dark: #0d2b28;
+  --color-background: #f6f8f7;
+  --color-surface: #ffffff;
+  --color-surface-soft: #eaf3ee;
+  --color-surface-muted: #f0f4f2;
+  --color-text: #172b28;
+  --color-text-secondary: #5d6f6c;
+  --color-text-muted: #62746f;
+  --color-text-disabled: #84938f;
+  --color-text-inverse: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-header: rgb(255 255 255 / 94%);
+  --color-sidebar: #e8f2ee;
+  --color-sidebar-text: #173f38;
+  --color-sidebar-muted: #365f57;
+  --color-sidebar-active: #123f37;
+  --color-sidebar-active-bg: #c8e5dc;
+  --color-border: #d6e1dc;
+  --color-border-strong: #a9bbb5;
+  --color-error: #b42318;
+  --color-danger-bg: #a61b12;
+  --color-error-soft: #fef0ed;
+  --color-success: #217a4b;
+  --color-success-soft: #e8f5ed;
+  --color-warning: #946000;
+  --color-warning-soft: #fff5d9;
+  --color-info: #275f87;
+  --color-info-soft: #eaf4fb;
+  --color-info-border: #9bc3de;
+  --color-focus: #297a70;
+  --color-overlay: rgb(5 26 24 / 56%);
+  --bs-body-bg: var(--color-background);
+  --bs-body-color: var(--color-text);
+  --bs-secondary-color: var(--color-text-secondary);
+  --bs-border-color: var(--color-border);
+  --bs-tertiary-bg: var(--color-surface-muted);
+
+  /* Typography */
+  --font-family-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.55;
+
+  /* Space and shape */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --radius-small: 0.5rem;
+  --radius-medium: 0.75rem;
+  --radius-large: 1.25rem;
+  --radius-pill: 999px;
+  --control-height-sm: 2.25rem;
+  --control-height-md: 2.75rem;
+  --control-height-lg: 3.25rem;
+  --content-max-width: 90rem;
+  --auth-max-width: 30rem;
+  --sidebar-width: 16.5rem;
+  --header-height: 4.25rem;
+
+  /* Elevation, motion and layers */
+  --shadow-soft: 0 0.75rem 2.5rem rgb(13 43 40 / 8%);
+  --shadow-raised: 0 1rem 3rem rgb(13 43 40 / 16%);
+  --duration-fast: 140ms;
+  --duration-normal: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --z-header: 20;
+  --z-drawer: 40;
+  --z-dropdown: 50;
+  --z-modal: 60;
+
+  /* Reference breakpoints (media queries use their literal equivalents). */
+  --breakpoint-sm: 36rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}
+
+[data-bs-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: #73cfb7;
+  --color-primary-hover: #91dfca;
+  --color-primary-soft: #173c35;
+  --color-secondary: #79aa9c;
+  --color-dark: #e6f1ed;
+  --color-background: #0e1917;
+  --color-surface: #172522;
+  --color-surface-soft: #1b302b;
+  --color-surface-muted: #20332f;
+  --color-text: #e1ece8;
+  --color-text-secondary: #b1c4be;
+  --color-text-muted: #9bb0aa;
+  --color-text-disabled: #81958f;
+  --color-text-inverse: #f7fbfa;
+  --color-border: #304640;
+  --color-border-strong: #49645d;
+  --color-on-primary: #09231e;
+  --color-header: rgb(18 31 28 / 96%);
+  --color-sidebar: #12231f;
+  --color-sidebar-text: #d8e9e4;
+  --color-sidebar-muted: #a7beb7;
+  --color-sidebar-active: #dff7ef;
+  --color-sidebar-active-bg: #245247;
+  --color-error: #ff9c93;
+  --color-danger-bg: #b83b32;
+  --color-error-soft: #40231f;
+  --color-success: #7bd8a4;
+  --color-success-soft: #173a29;
+  --color-warning: #f0c875;
+  --color-warning-soft: #3b321d;
+  --color-info: #8bc8ee;
+  --color-info-soft: #183546;
+  --color-info-border: #3b6f8b;
+  --color-focus: #83d9c3;
+  --color-overlay: rgb(2 9 8 / 72%);
+  --bs-body-bg: var(--color-background);
+  --bs-body-color: var(--color-text);
+  --bs-secondary-color: var(--color-text-secondary);
+  --bs-border-color: var(--color-border);
+  --bs-tertiary-bg: var(--color-surface-muted);
+  --shadow-soft: 0 0.75rem 2.5rem rgb(0 0 0 / 24%);
+  --shadow-raised: 0 1rem 3rem rgb(0 0 0 / 38%);
+}

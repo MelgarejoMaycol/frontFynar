@@ -1,0 +1,49 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it } from 'vitest'
+import { Button, FormField, Input, PasswordInput } from '@/components/ui'
+import {
+  formatMoneyInput,
+  normalizeMoneyInput,
+} from '@/components/ui/money-input.utils'
+
+describe('componentes fundamentales', () => {
+  it('separa la presentación monetaria del valor enviado', () => {
+    expect(normalizeMoneyInput('56.000')).toBe('56000')
+    expect(normalizeMoneyInput('56.000,25')).toBe('56000.25')
+    expect(formatMoneyInput('56000.25')).toBe('56.000,25')
+  })
+  it('mantiene el botón estable y accesible mientras carga', () => {
+    render(<Button loading>Guardar cambios</Button>)
+    const button = screen.getByRole('button')
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    expect(button).toHaveTextContent('Guardar cambios')
+  })
+  it('permite mostrar y ocultar una contraseña', async () => {
+    const user = userEvent.setup()
+    render(<PasswordInput aria-label="Contraseña" />)
+    const input = screen.getByLabelText('Contraseña')
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    expect(input).toHaveAttribute('type', 'password')
+    const toggle = screen.getByRole('button', { name: 'Mostrar contraseña' })
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await user.click(toggle)
+    expect(input).toHaveAttribute('type', 'text')
+    expect(toggle).toHaveAccessibleName('Ocultar contraseña')
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    await user.click(toggle)
+    expect(input).toHaveAttribute('type', 'password')
+  })
+  it('asocia un error visible con el campo', () => {
+    render(
+      <FormField label="Correo" htmlFor="email" error="El correo no es válido">
+        <Input id="email" />
+      </FormField>,
+    )
+    expect(screen.getByLabelText('Correo')).toHaveAccessibleDescription(
+      'El correo no es válido',
+    )
+    expect(screen.getByRole('alert')).toBeVisible()
+  })
+})

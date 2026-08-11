@@ -1,0 +1,228 @@
+.page,
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+.filters,
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.searchField {
+  display: grid;
+  gap: var(--space-2);
+}
+.searchField label,
+.filterSelects label {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.filterSelects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-3);
+}
+.filterSelects label {
+  display: grid;
+  gap: var(--space-2);
+}
+.iconPicker {
+  position: relative;
+}
+.iconPicker summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-dark);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+}
+.iconPicker summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-focus) 25%, transparent);
+}
+.iconPicker[open] .iconGrid {
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+.pickerField {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.pickerField legend {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+  gap: var(--space-2);
+  max-height: 14rem;
+  overflow: auto;
+  padding: var(--space-1);
+}
+.iconOption,
+.pickerSelected {
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  min-height: 4.5rem;
+  padding: 0.4rem;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  font-size: var(--font-size-xs);
+}
+.iconOption svg,
+.pickerSelected svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+.pickerSelected {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+.colorGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.colorOption,
+.colorSelected {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--color-border-strong);
+}
+.colorSelected {
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+}
+.card {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 0;
+  padding: var(--space-4);
+  transition:
+    transform var(--duration-fast),
+    box-shadow var(--duration-fast),
+    border-color var(--duration-fast);
+}
+.cardMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.cardCopy {
+  min-width: 0;
+}
+.cardSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.cardBadges {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+.archivedCard {
+  border-style: dashed;
+  background: color-mix(
+    in srgb,
+    var(--color-surface) 88%,
+    var(--color-surface-muted)
+  );
+}
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+.card h2,
+.card p {
+  margin: 0;
+}
+.card h2 {
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-lg);
+}
+.card p {
+  color: var(--color-text-secondary);
+}
+.icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  color: var(--category-contrast);
+  border-radius: 50%;
+  background: var(--category-color);
+}
+.selectedPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.selectedIcon {
+  display: inline-grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  color: var(--category-contrast);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--category-color);
+}
+.actions {
+  justify-content: flex-end;
+}
+.form .actions {
+  justify-content: flex-end;
+}
+@media (max-width: 35.99rem) {
+  .actions button {
+    flex: 1;
+  }
+  .card {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .cardSide {
+    display: block;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+  .cardBadges {
+    justify-content: flex-start;
+  }
+  .cardSide .actions button {
+    width: 100%;
+  }
+}
