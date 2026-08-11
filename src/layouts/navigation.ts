@@ -1,3 +1,4 @@
+import { APP_NAME } from '@/config/brand'
 import {
   ChartNoAxesCombined,
   CircleDollarSign,
@@ -41,5 +42,5 @@ export function getRouteTitle(pathname: string): string {
     .sort((first, second) => second.to.length - first.to.length)
     .find((item) => normalizedPath.startsWith(`${item.to}/`))
 
-  return parentMatch?.label ?? 'Fynar'
+  return parentMatch?.label ?? APP_NAME
 }

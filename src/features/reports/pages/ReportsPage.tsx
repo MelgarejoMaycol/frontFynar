@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Printer } from 'lucide-react'
 import { Button, FilterPanel, PageHeader } from '@/components/ui'
+import { APP_NAME } from '@/config/brand'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
@@ -98,7 +99,7 @@ export function ReportsPage() {
         />
       </div>
       <header className={styles.printHeader}>
-        <strong>Fynar</strong>
+        <strong>{APP_NAME}</strong>
         <h1>Reporte financiero</h1>
         <p>
           Periodo: {income.data?.period.dateFrom.slice(0, 10) ?? '—'} —{' '}

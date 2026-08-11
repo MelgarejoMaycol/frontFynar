@@ -1,5 +1,6 @@
-import { Link } from 'react-router'
+import { APP_NAME } from '@/config/brand'
 import clsx from 'clsx'
+import { Link } from 'react-router'
 import styles from './surfaces.module.css'
 export function BrandLogo({
   compact = false,
@@ -12,17 +13,14 @@ export function BrandLogo({
     <Link
       to="/"
       className={clsx(styles.brand, inverse && styles.brandInverse)}
-      aria-label="Fynar, inicio"
+      aria-label={`${APP_NAME}, inicio`}
     >
       <img
-        className={clsx(
-          styles.brandSymbol,
-          inverse && styles.brandImageInverse,
-        )}
-        src="/fynar-symbol.svg"
+        className={clsx(styles.brandSymbol, inverse && styles.brandImageInverse)}
+        src="/fynar-symbol.png"
         alt=""
       />
-      {!compact && <span>Fynar</span>}
+      {!compact && <span>{APP_NAME}</span>}
     </Link>
   )
 }

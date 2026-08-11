@@ -204,14 +204,14 @@
   gap: var(--space-3);
   color: var(--color-dark);
   text-decoration: none;
-  font-size: var(--font-size-lg);
+  font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
 }
 .brandSymbol {
   display: block;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   object-fit: contain;
 }
 .brandImageInverse {

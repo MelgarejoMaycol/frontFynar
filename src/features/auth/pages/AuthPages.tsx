@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Card, PageHeader } from '@/components/ui'
+import { APP_NAME } from '@/config/brand'
 import { ForgotPasswordForm } from '../components/ForgotPasswordForm'
 import { LoginForm } from '../components/LoginForm'
 import { RegisterForm } from '../components/RegisterForm'
@@ -30,7 +31,10 @@ export const LoginPage = () => (
   </AuthPage>
 )
 export const RegisterPage = () => (
-  <AuthPage title="Crear cuenta" description="Crea tu acceso personal a Fynar.">
+  <AuthPage
+    title="Crear cuenta"
+    description={`Crea tu acceso personal a ${APP_NAME}.`}
+  >
     <RegisterForm />
   </AuthPage>
 )

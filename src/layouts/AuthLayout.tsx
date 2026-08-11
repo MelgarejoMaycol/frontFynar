@@ -1,16 +1,17 @@
-import { NavLink, Outlet } from 'react-router'
 import { BrandLogo } from '@/components/ui'
+import { APP_NAME } from '@/config/brand'
+import { NavLink, Outlet } from 'react-router'
 import styles from './layouts.module.css'
 export function AuthLayout() {
   return (
     <div className={styles.auth}>
-      <aside className={styles.authAside} aria-label="Presentación de Fynar">
+      <aside className={styles.authAside} aria-label={`Presentación de ${APP_NAME}`}>
         <BrandLogo inverse />
         <div>
           <h1>Claridad para tus decisiones financieras.</h1>
           <p>
-            Fynar reunirá tus finanzas en una experiencia sencilla, segura y
-            enfocada.
+            {APP_NAME} reunirá tus finanzas en una experiencia sencilla, segura
+            y enfocada.
           </p>
         </div>
       </aside>
