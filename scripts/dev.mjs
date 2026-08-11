@@ -9,7 +9,7 @@ const frontendDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
 )
-const backendDirectory = path.resolve(frontendDirectory, '..', 'BackVeloryx')
+const backendDirectory = path.resolve(frontendDirectory, '..', 'BackFynar')
 const npmCli = process.env.npm_execpath
 
 if (!npmCli) {

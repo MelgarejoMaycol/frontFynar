@@ -98,7 +98,7 @@ export function ReportsPage() {
         />
       </div>
       <header className={styles.printHeader}>
-        <strong>Veloryx</strong>
+        <strong>Fynar</strong>
         <h1>Reporte financiero</h1>
         <p>
           Periodo: {income.data?.period.dateFrom.slice(0, 10) ?? '—'} —{' '}

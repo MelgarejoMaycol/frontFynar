@@ -1,6 +1,6 @@
 import type { UserPreferences } from './types/workspace.types'
 
-const THEME_CACHE_KEY = 'veloryx-theme'
+const THEME_CACHE_KEY = 'fynar-theme'
 
 export function applyCachedTheme() {
   const cached = localStorage.getItem(THEME_CACHE_KEY)

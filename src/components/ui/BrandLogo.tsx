@@ -12,17 +12,17 @@ export function BrandLogo({
     <Link
       to="/"
       className={clsx(styles.brand, inverse && styles.brandInverse)}
-      aria-label="Veloryx, inicio"
+      aria-label="Fynar, inicio"
     >
       <img
         className={clsx(
           styles.brandSymbol,
           inverse && styles.brandImageInverse,
         )}
-        src="/veloryx-symbol.svg"
+        src="/fynar-symbol.svg"
         alt=""
       />
-      {!compact && <span>Veloryx</span>}
+      {!compact && <span>Fynar</span>}
     </Link>
   )
 }

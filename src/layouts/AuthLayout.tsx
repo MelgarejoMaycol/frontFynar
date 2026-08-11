@@ -4,12 +4,12 @@ import styles from './layouts.module.css'
 export function AuthLayout() {
   return (
     <div className={styles.auth}>
-      <aside className={styles.authAside} aria-label="Presentación de Veloryx">
+      <aside className={styles.authAside} aria-label="Presentación de Fynar">
         <BrandLogo inverse />
         <div>
           <h1>Claridad para tus decisiones financieras.</h1>
           <p>
-            Veloryx reunirá tus finanzas en una experiencia sencilla, segura y
+            Fynar reunirá tus finanzas en una experiencia sencilla, segura y
             enfocada.
           </p>
         </div>

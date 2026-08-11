@@ -30,10 +30,7 @@ export const LoginPage = () => (
   </AuthPage>
 )
 export const RegisterPage = () => (
-  <AuthPage
-    title="Crear cuenta"
-    description="Crea tu acceso personal a Veloryx."
-  >
+  <AuthPage title="Crear cuenta" description="Crea tu acceso personal a Fynar.">
     <RegisterForm />
   </AuthPage>
 )

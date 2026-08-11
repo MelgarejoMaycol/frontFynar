@@ -1,6 +1,6 @@
-# Veloryx Frontend Web
+# Fynar Frontend Web
 
-Frontend web de **Veloryx**, una plataforma de finanzas personales orientada a ayudar al usuario a entender:
+Frontend web de **Fynar**, una plataforma de finanzas personales orientada a ayudar al usuario a entender:
 
 1. **Dónde está su dinero.**
 2. **En qué se está gastando.**
@@ -58,7 +58,7 @@ Codex debe verificar las rutas y contratos reales del backend antes de implement
 
 ## 2. Objetivo del producto
 
-Veloryx es una aplicación web y móvil para administrar finanzas personales desde una misma cuenta.
+Fynar es una aplicación web y móvil para administrar finanzas personales desde una misma cuenta.
 
 El MVP debe permitir:
 
@@ -268,7 +268,7 @@ Bootstrap puede usarse para:
 CSS Modules debe usarse para:
 
 - Estilos específicos de componentes.
-- Variantes visuales propias de Veloryx.
+- Variantes visuales propias de Fynar.
 - Evitar colisiones de nombres.
 - Mantener estilos cercanos a su componente.
 
@@ -1455,7 +1455,7 @@ unicidad y profundidad.
 
 ## 30. Criterio principal del proyecto
 
-Veloryx se construye como un MVP sólido, no como una demostración visual.
+Fynar se construye como un MVP sólido, no como una demostración visual.
 
 Cada decisión debe priorizar:
 

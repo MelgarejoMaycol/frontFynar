@@ -7,8 +7,8 @@ describe('getRouteTitle', () => {
     ['/app/accounts/123', 'Cuentas'],
     ['/app/transactions/123', 'Movimientos'],
     ['/app/settings/profile', 'Configuración'],
-    ['/app/accounting', 'Veloryx'],
-    ['/ruta-desconocida', 'Veloryx'],
+    ['/app/accounting', 'Fynar'],
+    ['/ruta-desconocida', 'Fynar'],
   ])('resuelve %s como %s', (pathname, expected) => {
     expect(getRouteTitle(pathname)).toBe(expected)
   })

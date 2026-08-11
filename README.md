@@ -1,6 +1,6 @@
-# Veloryx — Frontend web
+# Fynar — Frontend web
 
-Cliente web del MVP de finanzas personales Veloryx. Consume los agregados financieros del backend; no recalcula saldos, presupuestos ni reportes en el navegador.
+Cliente web del MVP de finanzas personales Fynar. Consume los agregados financieros del backend; no recalcula saldos, presupuestos ni reportes en el navegador.
 
 ## Stack y requisitos
 
@@ -86,4 +86,4 @@ El CI ejecuta `npm ci` y `npm run check` sin depender de Neon. Las pruebas reale
 
 No forman parte del MVP web: deudas/créditos, metas, calendario, notificaciones, WebSockets, IA, adjuntos avanzados ni aplicación móvil. `startScreen=DEBTS` se conserva por compatibilidad del backend, pero usa Dashboard como fallback y no se ofrece en la UI.
 
-La especificación histórica ampliada está en [README_FRONTEND_VELORYX.md](./README_FRONTEND_VELORYX.md).
+La especificación histórica ampliada está en [README_FRONTEND_FYNAR.md](./README_FRONTEND_FYNAR.md).
