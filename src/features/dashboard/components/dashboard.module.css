@@ -259,7 +259,19 @@
 @media (max-width: 600px) {
   .summaryGrid,
   .skeletonGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .summaryGrid > :last-child:nth-child(odd),
+  .skeletonGrid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .summaryCard {
+    gap: var(--space-1);
+  }
+  .summaryCard svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
   .periodFilter,
   .account,
@@ -275,8 +287,8 @@
     flex: 1 1 11rem;
   }
   .summaryHeading {
-    align-items: flex-start;
-    flex-direction: column;
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
   }
   .recentItem {
     grid-template-columns: auto minmax(0, 1fr);

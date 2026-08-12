@@ -147,9 +147,31 @@
 @media (max-width: 700px) {
   .list,
   .formGrid,
-  .options,
+  .options {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    gap: var(--space-2);
+  }
+  .cardHeader,
+  .progressLabels {
+    gap: var(--space-2);
+  }
+  .cardHeader p,
+  .card p {
+    margin-block: 0;
+  }
+  .amount {
+    font-size: 1.25rem;
+  }
+  .progress {
+    height: 0.625rem;
+  }
   .totals,
   .detail {
-    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+  .actions {
+    gap: var(--space-2);
   }
 }

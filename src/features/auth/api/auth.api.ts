@@ -10,12 +10,16 @@ import type {
   RegisterRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
+  RegisterResult,
+  ResendVerificationRequest,
+  VerifyEmailRequest,
 } from '../types/auth.types'
 import { AUTH_ROUTES } from '../auth.routes'
+import { env } from '@/config/env'
 
 export const authApi = {
   register: (body: RegisterRequest, signal?: AbortSignal) =>
-    httpClient.post<ApiSuccess<AuthResult>, RegisterRequest>(
+    httpClient.post<ApiSuccess<RegisterResult>, RegisterRequest>(
       AUTH_ROUTES.register,
       body,
       signal,
@@ -53,6 +57,20 @@ export const authApi = {
   changePassword: (body: ChangePasswordRequest, signal?: AbortSignal) =>
     httpClient.post<void, ChangePasswordRequest>(
       AUTH_ROUTES.changePassword,
+      body,
+      signal,
+    ),
+  verifyEmail: (body: VerifyEmailRequest, signal?: AbortSignal) =>
+    httpClient.post<void, VerifyEmailRequest>(AUTH_ROUTES.verifyEmail, body, signal),
+  resendVerification: (body: ResendVerificationRequest, signal?: AbortSignal) =>
+    httpClient.post<ApiSuccess<{ message: string }>, ResendVerificationRequest>(AUTH_ROUTES.resendVerification, body, signal),
+  googleUrl: () => `${env.apiBaseUrl}${AUTH_ROUTES.google}`,
+  completeGoogleRegistration: (
+    body: { acceptedTerms: true; acceptedPrivacy: true },
+    signal?: AbortSignal,
+  ) =>
+    httpClient.post<ApiSuccess<AuthResult>, typeof body>(
+      AUTH_ROUTES.googleComplete,
       body,
       signal,
     ),

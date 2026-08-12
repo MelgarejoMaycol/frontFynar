@@ -90,6 +90,7 @@ describe('navegación y layouts', () => {
       await screen.findByRole('heading', { name: 'Iniciar sesión' }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Navegación de acceso')).toBeVisible()
+    expect(screen.getByLabelText('Navegación de acceso').closest('[data-bs-theme]')).toHaveAttribute('data-bs-theme', 'light')
   })
   it('navega entre rutas públicas', async () => {
     const user = userEvent.setup()

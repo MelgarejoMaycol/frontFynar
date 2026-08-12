@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
-import { Button, FormField, Input, PasswordInput } from '@/components/ui'
+import { Button, Checkbox, FormField, Input, PasswordInput } from '@/components/ui'
+import { Link } from 'react-router'
 import { getAuthErrorMessage } from '../auth.errors'
 import { useRegister } from '../hooks/auth.hooks'
 import { registerSchema, type RegisterValues } from '../schemas/auth.schemas'
 import styles from './auth.module.css'
+import { authApi } from '../api/auth.api'
+import { GoogleButton } from './GoogleButton'
 
 export function RegisterForm() {
   const mutation = useRegister()
@@ -22,13 +25,14 @@ export function RegisterForm() {
       email: '',
       password: '',
       confirmPassword: '',
+      acceptedTerms: false,
     },
   })
   const submit = handleSubmit(
-    async ({ firstName, lastName, email, password }) => {
+    async ({ firstName, lastName, email, password, acceptedTerms }) => {
       try {
-        await mutation.mutateAsync({ firstName, lastName, email, password })
-        navigate('/app/dashboard', { replace: true })
+        await mutation.mutateAsync({ firstName, lastName, email, password, acceptedTerms })
+        navigate(`/verify-email/pending?email=${encodeURIComponent(email)}`, { replace: true })
       } catch {
         // La mutación conserva el error seguro que renderiza el formulario.
       }
@@ -109,6 +113,13 @@ export function RegisterForm() {
           {...register('confirmPassword')}
         />
       </FormField>
+      <div>
+        <Checkbox
+          label={<span>Acepto los <Link to="/terms" target="_blank">Términos y Condiciones</Link> y la <Link to="/privacy" target="_blank">Política de Privacidad</Link>.</span>}
+          {...register('acceptedTerms')}
+        />
+        {errors.acceptedTerms && <p className={styles.fieldError}>{errors.acceptedTerms.message}</p>}
+      </div>
       <Button
         className={styles.submit}
         type="submit"
@@ -116,6 +127,13 @@ export function RegisterForm() {
       >
         Crear cuenta
       </Button>
+      <div className={styles.oauthDivider}><span>o continúa con</span></div>
+      <GoogleButton
+        disabled={mutation.isPending}
+        onClick={() => {
+          window.location.assign(authApi.googleUrl())
+        }}
+      />
     </form>
   )
 }

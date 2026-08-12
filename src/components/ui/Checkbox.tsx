@@ -1,7 +1,7 @@
-import type { InputHTMLAttributes } from 'react'
+import type { InputHTMLAttributes, ReactNode } from 'react'
 import styles from './controls.module.css'
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
-  label: string
+  label: ReactNode
 }
 export function Checkbox({ label, ...props }: Props) {
   return (

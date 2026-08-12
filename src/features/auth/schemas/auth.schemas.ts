@@ -28,6 +28,9 @@ export const registerSchema = z
     email,
     password,
     confirmPassword: z.string().min(1, 'Confirma la contraseña'),
+    acceptedTerms: z.boolean().refine(Boolean, {
+      message: 'Debes aceptar los términos y la política de privacidad',
+    }),
   })
   .refine(({ password, confirmPassword }) => password === confirmPassword, {
     path: ['confirmPassword'],

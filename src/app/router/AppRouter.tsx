@@ -27,6 +27,13 @@ const ResetPasswordPage = lazy(() =>
     default: module.ResetPasswordPage,
   })),
 )
+const VerificationPendingPage = lazy(() => import('@/features/auth/pages/VerificationPages').then((module) => ({ default: module.VerificationPendingPage })))
+const VerifyEmailPage = lazy(() => import('@/features/auth/pages/VerificationPages').then((module) => ({ default: module.VerifyEmailPage })))
+const GoogleCallbackPage = lazy(() => import('@/features/auth/pages/VerificationPages').then((module) => ({ default: module.GoogleCallbackPage })))
+const GoogleLegalPage = lazy(() => import('@/features/auth/pages/GoogleLegalPage').then((module) => ({ default: module.GoogleLegalPage })))
+const EmailChangePage = lazy(() => import('@/features/auth/pages/EmailChangePage').then((module) => ({ default: module.EmailChangePage })))
+const TermsPage = lazy(() => import('@/features/auth/pages/LegalPages').then((module) => ({ default: module.TermsPage })))
+const PrivacyPage = lazy(() => import('@/features/auth/pages/LegalPages').then((module) => ({ default: module.PrivacyPage })))
 const SettingsPage = lazy(() =>
   import('@/features/auth/pages/SettingsPage').then((module) => ({
     default: module.SettingsPage,
@@ -70,6 +77,7 @@ const ReportsPage = lazy(() =>
 const pending = (page: ReactNode) => (
   <Suspense fallback={<PageLoader />}>{page}</Suspense>
 )
+const publicLight = (page: ReactNode) => <div data-bs-theme="light">{pending(page)}</div>
 
 export function AppRoutes() {
   return (
@@ -87,8 +95,15 @@ export function AppRoutes() {
             path="/reset-password"
             element={pending(<ResetPasswordPage />)}
           />
+          <Route path="/verify-email/pending" element={pending(<VerificationPendingPage />)} />
+          <Route path="/verify-email" element={pending(<VerifyEmailPage />)} />
+          <Route path="/auth/google/callback" element={pending(<GoogleCallbackPage />)} />
+          <Route path="/auth/google/legal" element={pending(<GoogleLegalPage />)} />
+          <Route path="/verify-email-change" element={pending(<EmailChangePage />)} />
         </Route>
       </Route>
+      <Route path="/terms" element={publicLight(<TermsPage />)} />
+      <Route path="/privacy" element={publicLight(<PrivacyPage />)} />
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<InitialPrivateRedirect />} />

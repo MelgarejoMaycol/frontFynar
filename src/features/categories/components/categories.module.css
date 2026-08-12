@@ -208,21 +208,17 @@
 }
 @media (max-width: 35.99rem) {
   .actions button {
-    flex: 1;
-  }
-  .card {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-  }
-  .cardSide {
-    display: block;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border);
+    flex: 0 1 auto;
   }
   .cardBadges {
     justify-content: flex-start;
   }
-  .cardSide .actions button {
-    width: 100%;
+  .card {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+  .icon {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 }

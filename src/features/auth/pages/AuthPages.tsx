@@ -5,6 +5,7 @@ import { ForgotPasswordForm } from '../components/ForgotPasswordForm'
 import { LoginForm } from '../components/LoginForm'
 import { RegisterForm } from '../components/RegisterForm'
 import { ResetPasswordForm } from '../components/ResetPasswordForm'
+import styles from '../components/auth.module.css'
 
 function AuthPage({
   title,
@@ -16,7 +17,7 @@ function AuthPage({
   children: ReactNode
 }) {
   return (
-    <section style={{ marginTop: '3rem' }}>
+    <section className={styles.page}>
       <PageHeader title={title} description={description} />
       <Card raised>{children}</Card>
     </section>

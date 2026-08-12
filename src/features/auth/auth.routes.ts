@@ -8,6 +8,10 @@ export const AUTH_ROUTES = Object.freeze({
   forgotPassword: '/auth/forgot-password',
   resetPassword: '/auth/reset-password',
   changePassword: '/auth/change-password',
+  verifyEmail: '/auth/verify-email',
+  resendVerification: '/auth/resend-verification',
+  google: '/auth/google',
+  googleComplete: '/auth/google/complete',
 })
 
 const REFRESH_EXCLUDED_ROUTES = new Set<string>([
@@ -16,6 +20,9 @@ const REFRESH_EXCLUDED_ROUTES = new Set<string>([
   AUTH_ROUTES.refresh,
   AUTH_ROUTES.logout,
   AUTH_ROUTES.logoutAll,
+  AUTH_ROUTES.verifyEmail,
+  AUTH_ROUTES.resendVerification,
+  AUTH_ROUTES.googleComplete,
 ])
 
 export const isRefreshExcludedRoute = (url: string): boolean =>

@@ -163,6 +163,20 @@
   }
 }
 @media (max-width: 35.99rem) {
+  .page,
+  .section,
+  .form,
+  .formGrid {
+    gap: var(--space-3);
+  }
+  .dropzone {
+    min-height: 9rem;
+    padding: var(--space-3);
+  }
+  .avatarIdentity > span {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
   .actions {
     align-items: stretch;
     flex-direction: column;

@@ -9,6 +9,7 @@ export function getAuthErrorMessage(
   if (error.code === 'NETWORK_ERROR')
     return 'No fue posible conectar con el servidor.'
   if (error.code === 'VALIDATION_ERROR') return 'Revisa los datos ingresados.'
+  if (error.code === 'EMAIL_NOT_VERIFIED') return 'Tu correo todavía no ha sido verificado.'
   if (error.code === 'CONFLICT' && context === 'register')
     return 'Ya existe una cuenta asociada a ese correo.'
   if (error.code === 'UNAUTHORIZED' && context === 'login')

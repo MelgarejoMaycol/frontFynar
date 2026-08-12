@@ -20,7 +20,15 @@ export interface RegisterRequest {
   password: string
   firstName: string
   lastName: string
+  acceptedTerms?: boolean
 }
+export interface RegisterResult {
+  user: AuthUser
+  verificationRequired?: true
+  tokens?: AuthTokens
+}
+export interface ResendVerificationRequest { email: string }
+export interface VerifyEmailRequest { token: string }
 export interface ForgotPasswordRequest {
   email: string
 }

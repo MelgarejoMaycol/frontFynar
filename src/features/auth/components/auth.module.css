@@ -1,3 +1,8 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
 .form {
   display: grid;
   gap: var(--space-4);
@@ -31,8 +36,61 @@
   margin: 0;
   font-size: var(--font-size-sm);
 }
+.fieldError {
+  margin: var(--space-1) 0 0;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+.oauthDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.oauthDivider::before,
+.oauthDivider::after {
+  min-width: 0;
+  flex: 1;
+  height: 1px;
+  content: '';
+  background: var(--color-border);
+}
+.oauthDivider span {
+  flex: none;
+  white-space: nowrap;
+}
+.statusPage {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 32rem;
+  margin: var(--space-6) auto 0;
+}
+.statusPage > svg { color: var(--color-primary); }
+.statusActions { display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-3); }
+.legalPage { width:min(52rem, calc(100% - 2rem)); margin:var(--space-5) auto; }
+.legalContent { display:grid; gap:var(--space-3); margin-block:var(--space-5); }
+.legalContent h2,.legalContent p { margin:0; }
 @media (min-width: 36rem) {
   .row {
     grid-template-columns: 1fr 1fr;
   }
+}
+@media (max-width: 35.99rem) {
+  .page {
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+}
+.googleLegalForm {
+  display: grid;
+  gap: var(--space-4);
+}
+.googleLegalActions {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.googleLegalActions button {
+  width: 100%;
 }

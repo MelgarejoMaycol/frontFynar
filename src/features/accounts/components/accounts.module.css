@@ -179,16 +179,16 @@
   }
 }
 @media (max-width: 35.99rem) {
-  .cardActions,
   .formActions {
-    flex-direction: column;
+    flex-wrap: wrap;
   }
-  .cardActions > *,
   .formActions button {
-    width: 100%;
-    justify-content: center;
+    flex: 1 1 auto;
   }
-  .cardDetails {
-    grid-template-columns: 1fr;
+  .movement {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .movement > :last-child {
+    grid-column: 2;
   }
 }

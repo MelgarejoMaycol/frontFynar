@@ -28,15 +28,12 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: RegisterRequest) => authApi.register(input),
-    onSuccess: ({ data }) => {
-      useAuthStore.getState().setAccessToken(data.tokens.accessToken)
-      queryClient.setQueryData(authMeKey, data.user)
-    },
   })
 }
+export const useResendVerification = () => useMutation({ mutationFn: (email: string) => authApi.resendVerification({ email }) })
+export const useVerifyEmail = () => useMutation({ mutationFn: (token: string) => authApi.verifyEmail({ token }) })
 
 export function useLogout() {
   const queryClient = useQueryClient()

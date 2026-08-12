@@ -55,6 +55,7 @@ describe('autenticación', () => {
         email: 'ana@example.com',
         password: '1234567890',
         confirmPassword: '1234567891',
+        acceptedTerms: true,
       }).success,
     ).toBe(false)
     expect(
@@ -64,6 +65,7 @@ describe('autenticación', () => {
         email: 'ana@example.com',
         password: '1234567890',
         confirmPassword: '1234567890',
+        acceptedTerms: true,
       }).success,
     ).toBe(true)
   })
@@ -114,10 +116,7 @@ describe('autenticación', () => {
           createdAt: '2026-08-06T00:00:00.000Z',
           updatedAt: '2026-08-06T00:00:00.000Z',
         },
-        tokens: {
-          accessToken: 'access-token',
-          accessTokenExpiresInSeconds: 900,
-        },
+        verificationRequired: true,
       },
     })
     const user = userEvent.setup()
@@ -127,7 +126,10 @@ describe('autenticación', () => {
         <MemoryRouter initialEntries={['/register']}>
           <Routes>
             <Route path="/register" element={<RegisterForm />} />
-            <Route path="/app/dashboard" element={<p>Dashboard</p>} />
+            <Route
+              path="/verify-email/pending"
+              element={<p>Verificacion pendiente</p>}
+            />
           </Routes>
         </MemoryRouter>,
       ),
@@ -137,16 +139,18 @@ describe('autenticación', () => {
     await user.type(screen.getByLabelText(/Correo/), 'ana@example.com')
     await user.type(screen.getByLabelText(/^Contrase/), '1234567890')
     await user.type(screen.getByLabelText(/Confirmar/), '1234567890')
+    await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(await screen.findByText('Dashboard')).toBeVisible()
+    expect(await screen.findByText('Verificacion pendiente')).toBeVisible()
     expect(registerRequest).toHaveBeenCalledWith({
       firstName: 'Ana',
       lastName: 'Vega',
       email: 'ana@example.com',
       password: '1234567890',
+      acceptedTerms: true,
     })
-    expect(useAuthStore.getState().status).toBe('authenticated')
+    expect(useAuthStore.getState().status).not.toBe('authenticated')
   })
   it('protege rutas privadas y conserva el destino', () => {
     render(

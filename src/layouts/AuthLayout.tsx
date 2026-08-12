@@ -4,7 +4,7 @@ import { NavLink, Outlet } from 'react-router'
 import styles from './layouts.module.css'
 export function AuthLayout() {
   return (
-    <div className={styles.auth}>
+    <div className={styles.auth} data-bs-theme="light">
       <aside className={styles.authAside} aria-label={`Presentación de ${APP_NAME}`}>
         <BrandLogo inverse />
         <div>
