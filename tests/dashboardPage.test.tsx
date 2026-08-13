@@ -29,6 +29,9 @@ vi.mock('@/features/categories/hooks/categories.hooks', () => ({
     ],
   }),
 }))
+vi.mock('@/features/liabilities/LiabilitiesDashboardWidget', () => ({
+  LiabilitiesDashboardWidget: () => null,
+}))
 const transaction = {
   id: 't',
   type: 'INCOME',

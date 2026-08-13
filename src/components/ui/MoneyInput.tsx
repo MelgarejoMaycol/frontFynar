@@ -8,8 +8,8 @@ type Props = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange'
 > & {
-  value: string
-  onValueChange: (value: string) => void
+  value?: string
+  onValueChange?: (value: string) => void
 }
 export const MoneyInput = forwardRef<HTMLInputElement, Props>(
   function MoneyInput(
@@ -22,10 +22,10 @@ export const MoneyInput = forwardRef<HTMLInputElement, Props>(
         ref={ref}
         className={clsx(styles.control, className)}
         inputMode="decimal"
-        value={formatMoneyInput(value)}
+        value={value === undefined ? undefined : formatMoneyInput(value)}
         onChange={(event) => {
           const normalized = normalizeMoneyInput(event.target.value)
-          onValueChange(normalized)
+          onValueChange?.(normalized)
         }}
         onBlur={onBlur}
       />

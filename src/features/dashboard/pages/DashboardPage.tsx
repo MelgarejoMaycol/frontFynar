@@ -13,6 +13,7 @@ import { RecentTransactions } from '../components/RecentTransactions'
 import { DashboardSkeleton } from '../components/DashboardSkeleton'
 import { getDashboardErrorMessage } from '../dashboard.errors'
 import { useDashboard } from '../hooks/dashboard.hooks'
+import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDashboardWidget'
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
 const customError = (params: DashboardParams) => {
@@ -28,6 +29,7 @@ export function DashboardPage() {
   const workspace = useActiveWorkspace().activeWorkspace!
   const canRead = usePermission('reports.read')
   const canReadCategories = usePermission('categories.read')
+  const canReadDebts = usePermission('debts.read')
   const [params, setParams] = useState<DashboardParams>({
     period: 'CURRENT_MONTH',
     recentLimit: 5,
@@ -91,12 +93,21 @@ export function DashboardPage() {
               <Button onClick={() => navigate('/app/transactions?new=1')}>
                 <Plus size={18} aria-hidden="true" /> Nuevo movimiento
               </Button>
+              {canReadDebts && (
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/app/debts')}
+                >
+                  Ver créditos y pagos
+                </Button>
+              )}
             </div>
             <div className={styles.currencySections}>
               {dashboard.data.summariesByCurrency.map((summary) => (
                 <FinancialSummary key={summary.currency} summary={summary} />
               ))}
             </div>
+            <LiabilitiesDashboardWidget />
             <AccountsSummary accounts={dashboard.data.accountBalances} />
             {dashboard.data.recentTransactions.length === 0 ? (
               <EmptyState

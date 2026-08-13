@@ -1,0 +1,266 @@
+.page,
+.form,
+.resource,
+.heroCard,
+.installment,
+.estimate {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+}
+.tabs button {
+  white-space: nowrap;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+.tabs button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+.tabs .activeTab {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.metrics,
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.metric {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.metric span,
+.resource span,
+.resource small,
+.row small,
+.heroCard span {
+  color: var(--color-text-secondary);
+}
+.metric strong {
+  font-size: var(--font-size-xl);
+  overflow-wrap: anywhere;
+}
+.list {
+  display: grid;
+  gap: var(--space-2);
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+.row > div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.amount {
+  text-align: right;
+  justify-items: end;
+}
+.resource {
+  padding: var(--space-4);
+}
+.resource h2,
+.resource dl,
+.resource dd,
+.cardHead h2 {
+  margin: 0;
+}
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.hero {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  overflow-wrap: anywhere;
+}
+.resource progress,
+.heroCard progress {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+.resource dl,
+.installment dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.resource dt,
+.installment dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.resource dd,
+.installment dd {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+.formGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.error {
+  padding: var(--space-3);
+  margin: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.estimate,
+.comparison {
+  padding: var(--space-4);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-medium);
+}
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+.comparison > div {
+  display: grid;
+  gap: var(--space-2);
+}
+.heroCard {
+  padding: var(--space-5);
+}
+.heroCard > strong {
+  font-size: clamp(2rem, 6vw, 3rem);
+  overflow-wrap: anywhere;
+}
+.scheduleTable {
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+}
+.scheduleTable table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+.scheduleTable th,
+.scheduleTable td {
+  padding: var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.scheduleTable th {
+  background: var(--color-surface-soft);
+}
+.scheduleCards {
+  display: none;
+  gap: var(--space-3);
+}
+.installment {
+  padding: var(--space-4);
+}
+.dashboardWidget {
+  display: grid;
+  gap: var(--space-3);
+}
+.dashboardWidgetHeader,
+.overdueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.dashboardWidgetHeader h2 {
+  margin: 0;
+}
+.dashboardWidgetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: var(--space-3);
+}
+.dashboardWidgetCard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.dashboardWidgetCard > span,
+.dashboardWidgetCard small {
+  color: var(--color-text-secondary);
+}
+.dashboardWidgetCard > b {
+  font-size: var(--font-size-xl);
+}
+.overdueRow + .overdueRow {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+@media (min-width: 48rem) {
+  .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 47.99rem) {
+  .scheduleTable {
+    display: none;
+  }
+  .scheduleCards {
+    display: grid;
+  }
+  .row {
+    align-items: flex-start;
+  }
+  .amount {
+    min-width: max-content;
+  }
+  .actions button {
+    flex: 1 1 10rem;
+  }
+}
+@media (max-width: 23.5rem) {
+  .row {
+    display: grid;
+  }
+  .amount {
+    text-align: left;
+    justify-items: start;
+  }
+  .resource dl,
+  .installment dl {
+    grid-template-columns: 1fr;
+  }
+  .tabs {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
