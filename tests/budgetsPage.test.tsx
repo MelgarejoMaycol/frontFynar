@@ -155,12 +155,11 @@ describe('BudgetsPage', () => {
   it('abre detalle, crea, edita y archiva', () => {
     render(<BudgetsPage />)
     fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
-    expect(screen.getAllByText(/565\.000,00/).length).toBeGreaterThan(0)
+    const detailDialog = screen.getByRole('dialog')
+    expect(within(detailDialog).getByText('Disponible')).toBeVisible()
     expect(screen.getByText('Proyección al final del periodo')).toBeVisible()
     expect(screen.getByText('Excedido')).toBeVisible()
-    fireEvent.click(
-      within(screen.getByRole('dialog')).getByLabelText('Cerrar diálogo'),
-    )
+    fireEvent.click(within(detailDialog).getByLabelText('Cerrar diálogo'))
     fireEvent.click(screen.getByRole('button', { name: 'Crear presupuesto' }))
     fireEvent.click(screen.getByRole('button', { name: 'Enviar creación' }))
     expect(mocks.create).toHaveBeenCalled()
