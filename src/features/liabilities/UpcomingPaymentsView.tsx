@@ -36,7 +36,7 @@ export function UpcomingPaymentsView({
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
   })
   const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1))
-  const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 11, 31))
+  const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 12, 0))
   const calendar = useCalendarRange(
     workspaceId,
     from.toISOString().slice(0, 10),
