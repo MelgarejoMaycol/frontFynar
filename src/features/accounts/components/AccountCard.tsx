@@ -11,16 +11,20 @@ export function AccountCard({
   canWrite,
   busy,
   onEdit,
+  onAdjust,
   onFavorite,
   onArchive,
+  onDelete,
   onRestore,
 }: {
   account: Account
   canWrite: boolean
   busy: boolean
   onEdit: () => void
+  onAdjust: () => void
   onFavorite: () => void
   onArchive: () => void
+  onDelete: () => void
   onRestore: () => void
 }) {
   return (
@@ -86,8 +90,19 @@ export function AccountCard({
               <Button variant="ghost" disabled={busy} onClick={onEdit}>
                 Editar
               </Button>
+              <Button variant="ghost" disabled={busy} onClick={onAdjust}>
+                Ajustar saldo
+              </Button>
               <Button variant="ghost" disabled={busy} onClick={onArchive}>
                 Archivar
+              </Button>
+              <Button
+                variant="danger"
+                size="small"
+                disabled={busy}
+                onClick={onDelete}
+              >
+                Eliminar
               </Button>
             </Dropdown>
           ) : (

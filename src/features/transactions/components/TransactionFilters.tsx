@@ -24,7 +24,7 @@ export function TransactionFilters({
 }) {
   const [search, setSearch] = useState(value.search ?? '')
   const patch = (next: Partial<Filters>) =>
-    onChange({ ...value, ...next, page: 1 })
+    onChange({ ...value, ...next, page: undefined, cursor: undefined })
   const submit = (event: FormEvent) => {
     event.preventDefault()
     patch({ search: search.trim() || undefined })
@@ -142,7 +142,7 @@ export function TransactionFilters({
           variant="secondary"
           onClick={() => {
             setSearch('')
-            onChange({ page: 1, limit: value.limit })
+            onChange({ limit: value.limit })
           }}
         >
           Limpiar filtros

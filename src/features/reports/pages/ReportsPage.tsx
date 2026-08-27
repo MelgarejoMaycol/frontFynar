@@ -132,20 +132,29 @@ export function ReportsPage() {
         </FilterPanel>
         {rangeError && <p role="alert">{rangeError}</p>}
       </div>
-      <ReportSection title="Ingresos frente a gastos" query={income}>
-        {income.data && <IncomeVsExpensesReport data={income.data} />}
-      </ReportSection>
-      <ReportSection title="Gastos por categoría" query={categories}>
-        {categories.data && <ExpensesByCategoryReport data={categories.data} />}
-      </ReportSection>
-      <ReportSection title="Flujo de caja y evolución" query={cashFlow}>
-        {cashFlow.data && (
-          <CashFlowReport data={cashFlow.data} timezone={workspace.timezone} />
-        )}
-      </ReportSection>
-      <ReportSection title="Saldos por cuenta" query={balances}>
-        {balances.data && <AccountBalancesReport data={balances.data} />}
-      </ReportSection>
+      {validRange && (
+        <>
+          <ReportSection title="Ingresos frente a gastos" query={income}>
+            {income.data && <IncomeVsExpensesReport data={income.data} />}
+          </ReportSection>
+          <ReportSection title="Gastos por categoría" query={categories}>
+            {categories.data && (
+              <ExpensesByCategoryReport data={categories.data} />
+            )}
+          </ReportSection>
+          <ReportSection title="Flujo de caja y evolución" query={cashFlow}>
+            {cashFlow.data && (
+              <CashFlowReport
+                data={cashFlow.data}
+                timezone={workspace.timezone}
+              />
+            )}
+          </ReportSection>
+          <ReportSection title="Saldos por cuenta" query={balances}>
+            {balances.data && <AccountBalancesReport data={balances.data} />}
+          </ReportSection>
+        </>
+      )}
     </div>
   )
 }

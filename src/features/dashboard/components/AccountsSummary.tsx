@@ -17,33 +17,35 @@ export function AccountsSummary({
         <Link to="/app/accounts">Ver todas</Link>
       </div>
       <div className={styles.accountGrid}>
-        {accounts.map((account) => (
-          <Link
-            key={account.id}
-            className={styles.accountLink}
-            to={`/app/accounts/${account.id}`}
-          >
-            <Card className={styles.account}>
-              <div>
-                <h3>
-                  {account.name}
-                  {account.isFavorite && (
-                    <Star
-                      className={styles.favorite}
-                      size={16}
-                      fill="currentColor"
-                      aria-label="Cuenta favorita"
-                    />
-                  )}
-                </h3>
-                <p>{accountTypeLabels[account.type]}</p>
-              </div>
-              <strong>
-                {formatMoney(account.currentBalance, account.currency)}
-              </strong>
-            </Card>
-          </Link>
-        ))}
+        {accounts
+          .filter((account) => account.type !== 'CREDIT_CARD')
+          .map((account) => (
+            <Link
+              key={account.id}
+              className={styles.accountLink}
+              to={`/app/accounts/${account.id}`}
+            >
+              <Card className={styles.account}>
+                <div>
+                  <h3>
+                    {account.name}
+                    {account.isFavorite && (
+                      <Star
+                        className={styles.favorite}
+                        size={16}
+                        fill="currentColor"
+                        aria-label="Cuenta favorita"
+                      />
+                    )}
+                  </h3>
+                  <p>{accountTypeLabels[account.type]}</p>
+                </div>
+                <strong>
+                  {formatMoney(account.currentBalance, account.currency)}
+                </strong>
+              </Card>
+            </Link>
+          ))}
       </div>
     </section>
   )

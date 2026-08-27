@@ -21,16 +21,15 @@ import {
 } from '../types/category.types'
 import styles from './categories.module.css'
 import { getCategoryErrorMessage } from '../categories.errors'
+import { CategoryIdentity } from './CategoryIdentity'
 export function CategoryForm({
   category,
-  categories,
   pending,
   error,
   onSubmit,
   onCancel,
 }: {
   category?: Category
-  categories: Category[]
   pending: boolean
   error: unknown
   onSubmit: (i: CategoryInput) => void
@@ -47,12 +46,12 @@ export function CategoryForm({
     defaultValues: {
       name: category?.name ?? '',
       type: category?.type ?? 'EXPENSE',
-      parentId: category?.parentId ?? '',
       icon: category?.icon ?? '',
       color: category?.color ?? '#64748B',
     },
   })
   const type = useWatch({ control, name: 'type' })
+  const name = useWatch({ control, name: 'name' })
   const icon = useWatch({ control, name: 'icon' })
   const color = useWatch({ control, name: 'color' })
   return (
@@ -63,7 +62,6 @@ export function CategoryForm({
           onSubmit({
             name: v.name,
             type: v.type,
-            parentId: v.parentId || null,
             icon: v.icon || null,
             color: v.color,
           }),
@@ -71,6 +69,15 @@ export function CategoryForm({
       }
     >
       {error != null && <p role="alert">{getCategoryErrorMessage(error)}</p>}
+      <section className={styles.formPreview} aria-label="Vista previa de categoría">
+        <span>Vista previa</span>
+        <CategoryIdentity
+          name={name.trim() || 'Vista previa'}
+          type={type}
+          icon={icon || null}
+          color={color}
+        />
+      </section>
       <FormField
         label="Nombre"
         htmlFor="category-name"
@@ -152,24 +159,6 @@ export function CategoryForm({
             />
           ))}
         </div>
-      </FormField>
-      <FormField label="Categoría (opcional)" htmlFor="category-parent">
-        <Select id="category-parent" {...register('parentId')}>
-          <option value="">Sin categoría</option>
-          {categories
-            .filter(
-              (x) =>
-                x.type === type &&
-                x.isActive &&
-                !x.parentId &&
-                x.id !== category?.id,
-            )
-            .map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.name}
-              </option>
-            ))}
-        </Select>
       </FormField>
       <div className={styles.actions}>
         <Button type="button" variant="secondary" onClick={onCancel}>

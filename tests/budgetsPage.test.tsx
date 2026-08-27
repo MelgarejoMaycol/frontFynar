@@ -167,9 +167,7 @@ describe('BudgetsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar edición' }))
     expect(mocks.update).toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Archivar' }))
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Archivar presupuesto' }),
-    )
+    fireEvent.click(screen.getAllByRole('button', { name: 'Archivar' }).at(-1)!)
     expect(mocks.archive).toHaveBeenCalledWith('b', expect.anything())
   })
 })

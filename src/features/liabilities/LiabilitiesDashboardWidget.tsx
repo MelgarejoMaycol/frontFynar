@@ -1,86 +1,86 @@
 import { Link } from 'react-router'
 import { Card } from '@/components/ui'
+import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
-import { calendarDate, money } from './format'
-import { useSummary, useUpcoming } from './hooks'
+import {
+  calendarDate,
+  money,
+  temporalLabel,
+  upcomingResourcePath,
+  upcomingTypeLabel,
+} from './format'
+import { useUpcoming } from './hooks'
 import styles from './liabilities.module.css'
 
 function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
-  const summary = useSummary(workspaceId)
   const upcoming = useUpcoming(workspaceId)
 
-  if (summary.isPending || upcoming.isPending) {
+  if (upcoming.isPending) {
     return (
       <section className={styles.dashboardWidget} aria-busy="true">
         Cargando créditos y pagos…
       </section>
     )
   }
-  if (summary.isError || upcoming.isError) {
+  if (upcoming.isError) {
     return (
       <ErrorState
         title="No pudimos cargar créditos y pagos"
         message="Puedes seguir usando el dashboard e intentarlo nuevamente."
-        onRetry={() =>
-          void Promise.all([summary.refetch(), upcoming.refetch()])
-        }
+        onRetry={() => void upcoming.refetch()}
       />
     )
   }
 
-  const next = summary.data?.nextPayment ?? null
-  const overdue = (upcoming.data ?? []).filter(
-    (item) => item.status === 'OVERDUE',
-  )
-  const overdueCounts = overdue.reduce<Record<string, number>>(
-    (result, item) => {
-      result[item.currency] = (result[item.currency] ?? 0) + 1
-      return result
-    },
-    {},
-  )
-  const overdueCurrencies = (summary.data?.summariesByCurrency ?? []).filter(
-    (item) => Number(item.overdueAmount) > 0,
-  )
+  if (!upcoming.isSuccess) return null
 
+  const nextItems = [...upcoming.data]
+    .filter(
+      (item) =>
+        Number(item.amount) > 0 && !['PAID', 'CANCELLED'].includes(item.status),
+    )
+    .sort(
+      (a, b) =>
+        a.daysRemaining - b.daysRemaining || a.date.localeCompare(b.date),
+    )
   return (
     <section
       className={styles.dashboardWidget}
       aria-labelledby="liabilities-dashboard-title"
     >
       <div className={styles.dashboardWidgetHeader}>
-        <h2 id="liabilities-dashboard-title">Créditos y pagos</h2>
-        <Link to="/app/debts">Ver créditos y pagos</Link>
+        <h2 id="liabilities-dashboard-title">Por pagar</h2>
+        <Link to="/app/debts#upcoming">Ver todos</Link>
       </div>
-      <div className={styles.dashboardWidgetGrid}>
-        <Card className={styles.dashboardWidgetCard}>
-          <span>Próximo pago</span>
-          {next ? (
-            <>
-              <strong>{next.name}</strong>
-              <b>{money(next.amount, next.currency)}</b>
-              <small>{calendarDate(next.date)}</small>
-            </>
-          ) : (
-            <strong>No tienes pagos próximos</strong>
-          )}
-        </Card>
-        {overdueCurrencies.length > 0 && (
-          <Card className={styles.dashboardWidgetCard}>
-            <span>Vencidos</span>
-            {overdueCurrencies.map((item) => (
-              <div className={styles.overdueRow} key={item.currency}>
-                <strong>
-                  {overdueCounts[item.currency] ?? 0} pagos · {item.currency}
-                </strong>
-                <b>{money(item.overdueAmount, item.currency)}</b>
-              </div>
-            ))}
-            <Link to="/app/debts?tab=upcoming">Ver pagos</Link>
-          </Card>
-        )}
-      </div>
+      {nextItems.length === 0 ? (
+        <EmptyState
+          title="No tienes pagos pendientes."
+          message="Tus próximos vencimientos aparecerán aquí."
+        />
+      ) : (
+        <div className={styles.dashboardWidgetGrid}>
+          {nextItems.slice(0, 6).map((item, index) => (
+            <Link
+              className={styles.dashboardPaymentLink}
+              to={upcomingResourcePath(item)}
+              key={`${item.type}-${item.id ?? index}`}
+              aria-label={`Abrir ${item.name}: ${money(item.amount, item.currency)}, ${temporalLabel(item)}`}
+            >
+              <Card
+                className={`${styles.dashboardWidgetCard} ${item.status === 'OVERDUE' ? styles.dashboardPaymentOverdue : ''}`}
+              >
+                <span>{upcomingTypeLabel(item.type)}</span>
+                <strong>{item.name}</strong>
+                <b>{money(item.amount, item.currency)}</b>
+                <small>
+                  {calendarDate(item.date)} · {temporalLabel(item)}
+                </small>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

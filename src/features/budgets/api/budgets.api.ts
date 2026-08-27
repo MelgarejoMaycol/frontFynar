@@ -16,6 +16,8 @@ const query = (filters: BudgetFilters) => {
   return text ? `?${text}` : ''
 }
 export const budgetsApi = {
+  cycleRange: (w: string, signal?: AbortSignal) =>
+    httpClient.get<ApiSuccess<{ startsOn: string; endsOn: string; financialCycleStartDay: number }>>(`${base(w)}/cycle-range`, signal),
   list: (w: string, filters: BudgetFilters, signal?: AbortSignal) =>
     httpClient.get<ApiSuccess<BudgetList>>(
       `${base(w)}${query(filters)}`,

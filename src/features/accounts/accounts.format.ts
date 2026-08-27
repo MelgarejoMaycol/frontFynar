@@ -8,14 +8,37 @@ export const formatCurrency = (
 ): string => {
   if (!isMoneyString(value) || !/^[A-Z]{3}$/.test(currency))
     return 'Monto no disponible'
-  const number = Number(value)
-  if (!Number.isFinite(number)) return 'Monto no disponible'
   try {
-    return new Intl.NumberFormat(locale, {
+    const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-    }).format(number)
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    const symbol =
+      formatter.formatToParts(0).find((part) => part.type === 'currency')
+        ?.value ?? currency
+    const negative = value.startsWith('-')
+    const [integer = '0', fraction = ''] = (
+      negative ? value.slice(1) : value
+    ).split('.')
+    const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    return `${negative ? '-' : ''}${symbol} ${grouped},${fraction.padEnd(2, '0')}`
   } catch {
     return `${value} ${currency}`
   }
+}
+
+export const accountOptionLabel = (account: {
+  name: string
+  nature: 'ASSET' | 'LIABILITY'
+  currentBalance: string
+  currency: string
+}): string => {
+  const sign = account.nature === 'LIABILITY' ? '-' : '+'
+  const amount = formatCurrency(
+    account.currentBalance.replace(/^-/, ''),
+    account.currency,
+  )
+  return `${account.name} · ${sign} ${amount}`
 }

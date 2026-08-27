@@ -188,6 +188,37 @@ npm run check
 npm run build
 ```
 
+## Arquitectura y autenticación
+
+El código se organiza por features en `src/features`, UI compartida en `src/components`, layouts en `src/layouts` y servicios HTTP en `src/services`.
+
+Todo campo de dinero editable debe seguir el [estándar global de MoneyInput](./docs/MONEY_INPUT_STANDARD.md), incluida su entrada progresiva y el payload decimal canónico.
+
+El access token se mantiene únicamente en memoria. El refresh token viaja en cookie HttpOnly y nunca se guarda en `localStorage` o `sessionStorage`. Las sesiones se restauran mediante refresh single-flight. Logout y logout-all eliminan sesión, workspace y caché privada.
+
+Todas las claves financieras incluyen el workspace activo. Cambiar workspace elimina las cachés dependientes para evitar mezclar información.
+
+## Módulos MVP
+
+- Acceso, registro y recuperación de contraseña.
+- Dashboard.
+- Cuentas.
+- Categorías.
+- Movimientos: ingresos, gastos y transferencias.
+- Presupuestos.
+- Reportes.
+- Perfil, preferencias, tema y seguridad.
+
+Fases 0–11: ✅ completadas.
+
+## Producción y Vercel
+
+```bash
+npm ci
+npm run check
+npm run build
+```
+
 ### Aplicación
 
 **Demo pública:** https://fynar.vercel.app

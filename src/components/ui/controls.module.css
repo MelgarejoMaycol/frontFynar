@@ -51,8 +51,11 @@
 }
 .danger {
   color: var(--color-text-inverse);
+  -webkit-text-fill-color: var(--color-text-inverse);
   background: var(--color-danger-bg);
 }
+.danger span { color: inherit; -webkit-text-fill-color: inherit; }
+.danger:focus-visible { outline-color: var(--color-danger-bg); box-shadow: 0 0 0 2px var(--color-background); }
 .danger:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-danger-bg) 82%, black);
 }
@@ -232,17 +235,4 @@ textarea.control {
   height: 1.125rem;
   margin-top: 0.2rem;
   accent-color: var(--color-primary);
-}
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: rotate 0.7s linear infinite;
-}
-@keyframes rotate {
-  to {
-    transform: rotate(360deg);
-  }
 }

@@ -111,6 +111,29 @@
 .colorSelected {
   box-shadow: 0 0 0 3px var(--color-focus);
 }
+.formPreview {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-soft);
+}
+.formPreview > span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.formPreview h2 {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+.formPreview p,
+.parentName {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
 .grid {
   display: grid;
   gap: var(--space-4);

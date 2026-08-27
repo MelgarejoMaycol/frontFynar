@@ -59,6 +59,12 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
               <Icon aria-hidden="true" />
               <span>{label}</span>
               <strong>{signed(key)}</strong>
+              {(key === 'availableMoney' || key === 'netWorth') && (
+                <small>Saldo actual</small>
+              )}
+              {(key === 'totalIncome' || key === 'totalExpenses') && (
+                <small>Período seleccionado</small>
+              )}
               {key === 'netCashFlow' && (
                 <small>
                   {Number(summary[key]) > 0

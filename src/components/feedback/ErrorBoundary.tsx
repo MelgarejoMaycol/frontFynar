@@ -1,5 +1,6 @@
 import { Component, type PropsWithChildren } from 'react'
 import { ErrorState } from './ErrorState'
+import { captureClientException } from '@/services/observability/sentry'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -15,8 +16,8 @@ export class ErrorBoundary extends Component<
     return { hasError: true }
   }
 
-  componentDidCatch() {
-    // La integración con observabilidad se definirá después del MVP base.
+  componentDidCatch(error: unknown) {
+    captureClientException(error)
   }
 
   render() {

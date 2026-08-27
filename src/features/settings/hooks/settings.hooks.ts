@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authMeKey } from '@/features/auth/hooks/auth.hooks'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useWorkspaceStore } from '@/features/workspace/store/workspace.store'
 import type { AuthUser } from '@/features/auth/types/auth.types'
 import { settingsApi, type UpdateProfileInput } from '../api/settings.api'
 
@@ -38,5 +39,18 @@ export function useUpdateAvatar() {
     mutationFn: (file: File) => settingsApi.updateAvatar(file),
     onSuccess: ({ data }) =>
       queryClient.setQueryData<AuthUser>(authMeKey, data),
+  })
+}
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => settingsApi.deleteAccount('ELIMINAR'),
+    onSuccess: async () => {
+      useAuthStore.getState().clearSession()
+      useWorkspaceStore.getState().clearWorkspace()
+      await queryClient.cancelQueries()
+      queryClient.removeQueries()
+    },
   })
 }

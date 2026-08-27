@@ -46,4 +46,4 @@ export interface AccountInput {
   includeInNetWorth?: boolean
   isFavorite?: boolean
 }
-export type UpdateAccountInput = Partial<AccountInput>
+export type UpdateAccountInput = Partial<Omit<AccountInput, 'openingBalance'>>

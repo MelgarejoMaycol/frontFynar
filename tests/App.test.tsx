@@ -15,6 +15,7 @@ import {
   type UserPreferences,
   type Workspace,
 } from '@/features/workspace'
+import { workspaceApi } from '@/features/workspace/api/workspace.api'
 
 const testUser: AuthUser = {
   id: 'user-1',
@@ -55,7 +56,10 @@ const testPreferences: UserPreferences = {
 
 afterEach(() => vi.restoreAllMocks())
 
-function renderRoute(path: string) {
+function renderRoute(
+  path: string,
+  seed: { profile?: boolean; preferences?: boolean; workspaces?: boolean } = {},
+) {
   const isPrivate = path.startsWith('/app')
   useAuthStore.getState().clearSession()
   useWorkspaceStore.getState().clearWorkspace()
@@ -66,10 +70,15 @@ function renderRoute(path: string) {
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   })
   if (isPrivate) {
-    queryClient.setQueryData(authMeKey, testUser)
-    queryClient.setQueryData(workspaceKeys.all, [testWorkspace])
-    queryClient.setQueryData(workspaceKeys.preferences, testPreferences)
-    queryClient.setQueryData(accountsKeys.all(testWorkspace.id), [])
+    if (seed.profile !== false) queryClient.setQueryData(authMeKey, testUser)
+    if (seed.workspaces !== false)
+      queryClient.setQueryData(workspaceKeys.all, [testWorkspace])
+    if (seed.preferences !== false)
+      queryClient.setQueryData(workspaceKeys.preferences, testPreferences)
+    queryClient.setQueryData(
+      accountsKeys.list(testWorkspace.id, false, 'all', true),
+      [],
+    )
     queryClient.setQueryData(categoriesKeys.all(testWorkspace.id), [])
   }
   return render(
@@ -90,7 +99,9 @@ describe('navegación y layouts', () => {
       await screen.findByRole('heading', { name: 'Iniciar sesión' }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Navegación de acceso')).toBeVisible()
-    expect(screen.getByLabelText('Navegación de acceso').closest('[data-bs-theme]')).toHaveAttribute('data-bs-theme', 'light')
+    expect(
+      screen.getByLabelText('Navegación de acceso').closest('[data-bs-theme]'),
+    ).toHaveAttribute('data-bs-theme', 'light')
   })
   it('navega entre rutas públicas', async () => {
     const user = userEvent.setup()
@@ -190,6 +201,32 @@ describe('navegación y layouts', () => {
     )
     expect(screen.getByText('Espacio de Ana', { selector: 'dd' })).toBeVisible()
     expect(screen.getByText('Propietario')).toBeVisible()
+  })
+  it('mantiene perfil y seguridad si fallan las preferencias', async () => {
+    vi.spyOn(workspaceApi, 'getPreferences').mockRejectedValue(
+      new Error('preferences unavailable'),
+    )
+    renderRoute('/app/settings', { preferences: false })
+    expect(await screen.findByLabelText(/^Nombre/)).toHaveValue('Ana')
+    expect(
+      await screen.findByRole('heading', {
+        name: 'No pudimos consultar las preferencias',
+      }),
+    ).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Seguridad' })).toBeVisible()
+  })
+  it('mantiene perfil y preferencias si falla el workspace', async () => {
+    vi.spyOn(workspaceApi, 'list').mockRejectedValue(
+      new Error('workspace unavailable'),
+    )
+    renderRoute('/app/settings', { workspaces: false })
+    expect(await screen.findByLabelText(/^Nombre/)).toHaveValue('Ana')
+    expect(screen.getByLabelText('Tema')).toHaveValue('SYSTEM')
+    expect(
+      await screen.findByRole('heading', {
+        name: 'No pudimos consultar el espacio financiero',
+      }),
+    ).toBeVisible()
   })
   it('confirma logout all, limpia la sesión y vuelve al login', async () => {
     vi.spyOn(authApi, 'logoutAll').mockResolvedValue(undefined)

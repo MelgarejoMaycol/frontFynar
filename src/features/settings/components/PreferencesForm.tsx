@@ -50,7 +50,11 @@ export function PreferencesForm({
     formState: { errors, isDirty },
   } = useForm<PreferencesValues>({
     resolver: zodResolver(preferencesSchema),
-    defaultValues: { ...preferences, language: 'es-CO' },
+    defaultValues: {
+      ...preferences,
+      language: 'es-CO',
+      financialCycleStartDay: preferences.financialCycleStartDay ?? null,
+    },
   })
   return (
     <form
@@ -106,6 +110,24 @@ export function PreferencesForm({
             </option>
           ))}
         </datalist>
+        <FormField
+          label="Inicio del ciclo financiero"
+          htmlFor="preferences-cycle-start"
+          error={errors.financialCycleStartDay?.message}
+        >
+          <Input
+            id="preferences-cycle-start"
+            type="number"
+            min={1}
+            max={28}
+            {...register('financialCycleStartDay', {
+              setValueAs: (value) => (value === '' ? null : Number(value)),
+            })}
+          />
+          <small className={styles.help}>
+            Déjalo vacío para usar solamente meses calendario. Valores permitidos: 1 a 28.
+          </small>
+        </FormField>
         <FormField
           label="Idioma"
           htmlFor="preferences-language"

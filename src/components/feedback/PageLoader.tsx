@@ -4,7 +4,10 @@ import styles from './feedback.module.css'
 export function PageLoader() {
   return (
     <div className={`${styles.centered} ${styles.fullPage}`}>
-      <LoadingSpinner label="Cargando página" />
+      <div className={styles.loaderContent} aria-live="polite">
+        <LoadingSpinner label="Cargando página" />
+        <span>Cargando…</span>
+      </div>
     </div>
   )
 }

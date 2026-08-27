@@ -21,7 +21,7 @@ export const useCategories = (
     queryFn: async ({ signal }) =>
       (await categoriesApi.list(w, status, signal)).data,
     enabled,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
 const useRefresh = (w: string) => {
   const c = useQueryClient()

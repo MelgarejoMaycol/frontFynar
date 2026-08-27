@@ -1,4 +1,4 @@
-import { Input, Select } from '@/components/ui'
+import { Button, Input, Select } from '@/components/ui'
 import { dashboardPeriodLabels } from '../dashboard.constants'
 import {
   dashboardPeriods,
@@ -10,10 +10,14 @@ export function DashboardPeriodFilter({
   value,
   onChange,
   error,
+  financialCycleConfigured,
+  onConfigureCycle,
 }: {
   value: DashboardParams
   onChange: (value: DashboardParams) => void
   error?: string
+  financialCycleConfigured: boolean
+  onConfigureCycle: () => void
 }) {
   const changePeriod = (period: DashboardPeriod) =>
     onChange(
@@ -36,7 +40,7 @@ export function DashboardPeriodFilter({
             changePeriod(event.target.value as DashboardPeriod)
           }
         >
-          {dashboardPeriods.map((period) => (
+          {dashboardPeriods.filter((period) => period !== 'MY_CYCLE' || financialCycleConfigured).map((period) => (
             <option key={period} value={period}>
               {dashboardPeriodLabels[period]}
             </option>
@@ -66,6 +70,14 @@ export function DashboardPeriodFilter({
             />
           </label>
         </>
+      )}
+      {!financialCycleConfigured && (
+        <div className={styles.cycleSetup}>
+          <span>Define tu ciclo financiero para usarlo como período inicial.</span>
+          <Button type="button" variant="secondary" onClick={onConfigureCycle}>
+            Configurar Mi ciclo
+          </Button>
+        </div>
       )}
       {error && <p role="alert">{error}</p>}
     </div>

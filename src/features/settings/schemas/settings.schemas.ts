@@ -35,6 +35,7 @@ export const preferencesSchema = z.object({
   language: z.literal('es-CO'),
   dateFormat: z.enum(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']),
   startScreen: z.enum(['DASHBOARD', 'TRANSACTIONS', 'BUDGETS', 'DEBTS']),
+  financialCycleStartDay: z.number().int().min(1).max(28).nullable(),
 })
 export type PreferencesValues = z.infer<typeof preferencesSchema>
 

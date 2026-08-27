@@ -61,9 +61,17 @@ export const authApi = {
       signal,
     ),
   verifyEmail: (body: VerifyEmailRequest, signal?: AbortSignal) =>
-    httpClient.post<void, VerifyEmailRequest>(AUTH_ROUTES.verifyEmail, body, signal),
+    httpClient.post<void, VerifyEmailRequest>(
+      AUTH_ROUTES.verifyEmail,
+      body,
+      signal,
+    ),
   resendVerification: (body: ResendVerificationRequest, signal?: AbortSignal) =>
-    httpClient.post<ApiSuccess<{ message: string }>, ResendVerificationRequest>(AUTH_ROUTES.resendVerification, body, signal),
+    httpClient.post<ApiSuccess<{ message: string }>, ResendVerificationRequest>(
+      AUTH_ROUTES.resendVerification,
+      body,
+      signal,
+    ),
   googleUrl: () => `${env.apiBaseUrl}${AUTH_ROUTES.google}`,
   completeGoogleRegistration: (
     body: { acceptedTerms: true; acceptedPrivacy: true },

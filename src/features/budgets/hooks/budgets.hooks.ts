@@ -24,6 +24,13 @@ export const useBudget = (w: string, id: string) =>
     enabled: Boolean(id),
     staleTime: 60_000,
   })
+export const useBudgetCycleRange = (w: string, enabled: boolean) =>
+  useQuery({
+    queryKey: [...budgetKeys.all(w), 'cycle-range'],
+    queryFn: async ({ signal }) => (await budgetsApi.cycleRange(w, signal)).data,
+    enabled,
+    retry: false,
+  })
 const useRefresh = (w: string) => {
   const c = useQueryClient()
   return (id?: string) =>

@@ -43,6 +43,7 @@ const preferences: UserPreferences = {
   dateFormat: 'DD/MM/YYYY',
   theme: 'SYSTEM',
   startScreen: 'DASHBOARD',
+  financialCycleStartDay: null,
   dashboardLayout: {},
   createdAt: 'x',
   updatedAt: 'x',
@@ -151,6 +152,9 @@ describe('settings', () => {
     fireEvent.change(screen.getByLabelText('Formato de fecha'), {
       target: { value: 'YYYY-MM-DD' },
     })
+    fireEvent.change(screen.getByLabelText('Inicio del ciclo financiero'), {
+      target: { value: '25' },
+    })
     fireEvent.click(
       screen.getByRole('button', { name: 'Guardar preferencias' }),
     )
@@ -162,6 +166,7 @@ describe('settings', () => {
         timezone: 'UTC',
         language: 'es-CO',
         dateFormat: 'YYYY-MM-DD',
+        financialCycleStartDay: 25,
       }),
     )
   })

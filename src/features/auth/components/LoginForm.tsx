@@ -30,7 +30,9 @@ export function LoginForm() {
       navigate(safeInternalRedirect(from), { replace: true })
     } catch (error: unknown) {
       if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED')
-        navigate(`/verify-email/pending?email=${encodeURIComponent(values.email)}`)
+        navigate(
+          `/verify-email/pending?email=${encodeURIComponent(values.email)}`,
+        )
       // La mutación conserva el error seguro que renderiza el formulario.
     }
   })
@@ -76,8 +78,13 @@ export function LoginForm() {
       <Button className={styles.submit} type="submit" loading={login.isPending}>
         Iniciar sesión
       </Button>
-      <div className={styles.oauthDivider}><span>o continúa con</span></div>
-      <GoogleButton disabled={login.isPending} onClick={() => window.location.assign(authApi.googleUrl())} />
+      <div className={styles.oauthDivider}>
+        <span>o continúa con</span>
+      </div>
+      <GoogleButton
+        disabled={login.isPending}
+        onClick={() => window.location.assign(authApi.googleUrl())}
+      />
     </form>
   )
 }

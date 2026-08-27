@@ -1,20 +1,13 @@
-import styles from './feedback.module.css'
-import clsx from 'clsx'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface LoadingSpinnerProps {
   label?: string
-  size?: 'small' | 'medium'
+  size?: 'small' | 'medium' | 'large'
 }
 
 export function LoadingSpinner({
   label = 'Cargando',
   size = 'medium',
 }: LoadingSpinnerProps) {
-  return (
-    <span
-      className={clsx(styles.spinner, size === 'small' && styles.spinnerSmall)}
-      role="status"
-      aria-label={label}
-    />
-  )
+  return <Spinner size={size} label={label} />
 }

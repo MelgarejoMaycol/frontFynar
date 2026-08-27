@@ -4,11 +4,11 @@ import {
   Button,
   Card,
   Dialog,
+  Input,
   PageHeader,
   SectionHeader,
 } from '@/components/ui'
 import { ErrorState } from '@/components/feedback/ErrorState'
-import { PageLoader } from '@/components/feedback/PageLoader'
 import { useToast } from '@/components/feedback/toast-context'
 import { ChangePasswordForm } from '@/features/settings/components/ChangePasswordForm'
 import { AvatarUploader } from '@/features/settings/components/AvatarUploader'
@@ -17,6 +17,7 @@ import { PreferencesForm } from '@/features/settings/components/PreferencesForm'
 import {
   useProfile,
   useChangePassword,
+  useDeleteAccount,
   useUpdateProfile,
 } from '@/features/settings/hooks/settings.hooks'
 import {
@@ -26,11 +27,14 @@ import {
   WorkspaceSelector,
 } from '@/features/workspace'
 import { getAuthErrorMessage } from '../auth.errors'
+import { getSettingsErrorMessage } from '@/features/settings/settings.errors'
 import { useLogout, useLogoutAll } from '../hooks/auth.hooks'
 import styles from './settings.module.css'
 
 export function SettingsPage() {
   const [confirmAll, setConfirmAll] = useState(false),
+    [confirmDelete, setConfirmDelete] = useState(false),
+    [deleteText, setDeleteText] = useState(''),
     profile = useProfile(),
     updateProfile = useUpdateProfile(),
     changePassword = useChangePassword(),
@@ -39,6 +43,7 @@ export function SettingsPage() {
     updatePreferences = useUpdatePreferences(),
     logout = useLogout(),
     logoutAll = useLogoutAll(),
+    deleteAccount = useDeleteAccount(),
     navigate = useNavigate(),
     workspace = workspaceQuery.activeWorkspace,
     user = profile.data,
@@ -57,25 +62,6 @@ export function SettingsPage() {
     ADVISOR: 'Asesor',
   }
 
-  if (
-    workspaceQuery.isPending ||
-    preferencesQuery.isPending ||
-    profile.isPending
-  )
-    return <PageLoader />
-  if (workspaceQuery.isError || preferencesQuery.isError || profile.isError)
-    return (
-      <ErrorState
-        title="No pudimos cargar la configuración"
-        message="Comprueba tu conexión e inténtalo nuevamente."
-        onRetry={() => {
-          void workspaceQuery.refetch()
-          void preferencesQuery.refetch()
-          void profile.refetch()
-        }}
-      />
-    )
-
   return (
     <div className={styles.page}>
       <PageHeader
@@ -87,7 +73,15 @@ export function SettingsPage() {
           title="Perfil"
           description={`Sesión de ${fullName}. Correo ${user?.isEmailVerified ? 'verificado' : 'pendiente de verificación'}.`}
         />
-        {user && (
+        {profile.isPending ? (
+          <p role="status">Cargando perfil…</p>
+        ) : profile.isError ? (
+          <ErrorState
+            title="No pudimos consultar tu perfil"
+            message={getSettingsErrorMessage(profile.error)}
+            onRetry={() => void profile.refetch()}
+          />
+        ) : user ? (
           <>
             <AvatarUploader user={user} />
             <ProfileForm
@@ -104,14 +98,22 @@ export function SettingsPage() {
               }}
             />
           </>
-        )}
+        ) : null}
       </Card>
-      <Card className={styles.section}>
+      <Card className={styles.section} id="preferences" tabIndex={-1}>
         <SectionHeader
           title="Apariencia y preferencias"
           description="Personaliza la apariencia y los valores predeterminados."
         />
-        {preferences && (
+        {preferencesQuery.isPending ? (
+          <p role="status">Cargando preferencias…</p>
+        ) : preferencesQuery.isError ? (
+          <ErrorState
+            title="No pudimos consultar las preferencias"
+            message={getSettingsErrorMessage(preferencesQuery.error)}
+            onRetry={() => void preferencesQuery.refetch()}
+          />
+        ) : preferences ? (
           <PreferencesForm
             key={preferences.updatedAt}
             preferences={preferences}
@@ -128,15 +130,25 @@ export function SettingsPage() {
               })
             }}
           />
-        )}
+        ) : null}
       </Card>
       <Card className={styles.section}>
         <SectionHeader
           title="Espacio financiero"
           description="Espacio donde se administra tu información financiera."
         />
-        <WorkspaceSelector />
-        <dl className={styles.details}>
+        {workspaceQuery.isPending ? (
+          <p role="status">Cargando espacio financiero…</p>
+        ) : workspaceQuery.isError ? (
+          <ErrorState
+            title="No pudimos consultar el espacio financiero"
+            message={getSettingsErrorMessage(workspaceQuery.error)}
+            onRetry={() => void workspaceQuery.refetch()}
+          />
+        ) : (
+          <>
+            <WorkspaceSelector />
+            <dl className={styles.details}>
           <div>
             <dt>Espacio activo</dt>
             <dd>{workspace?.name ?? 'Sin espacio activo'}</dd>
@@ -157,7 +169,9 @@ export function SettingsPage() {
             <dt>Zona horaria</dt>
             <dd>{workspace?.timezone ?? 'No disponible'}</dd>
           </div>
-        </dl>
+            </dl>
+          </>
+        )}
       </Card>
       <Card className={styles.section}>
         <SectionHeader
@@ -222,6 +236,25 @@ export function SettingsPage() {
           </Button>
         </div>
       </Card>
+      <Card className={`${styles.section} ${styles.dangerZone}`}>
+        <SectionHeader
+          title="Eliminar mi cuenta"
+          description="Desactiva tu acceso y elimina o anonimiza tus datos personales."
+        />
+        <div className={styles.actions}>
+          <div>
+            <h3>Eliminación irreversible</h3>
+            <p>
+              Se revocarán todas las sesiones. El historial financiero se
+              conservará anonimizado cuando sea necesario para mantener su
+              integridad.
+            </p>
+          </div>
+          <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+            Eliminar mi cuenta
+          </Button>
+        </div>
+      </Card>
       <Dialog
         open={confirmAll}
         title="Cerrar todas las sesiones"
@@ -254,6 +287,69 @@ export function SettingsPage() {
       >
         Esto cerrará tu sesión en todos los dispositivos donde hayas iniciado
         sesión.
+      </Dialog>
+      <Dialog
+        open={confirmDelete}
+        title="Eliminar mi cuenta"
+        onClose={() => {
+          if (deleteAccount.isPending) return
+          setConfirmDelete(false)
+          setDeleteText('')
+        }}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              disabled={deleteAccount.isPending}
+              onClick={() => {
+                setConfirmDelete(false)
+                setDeleteText('')
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              loading={deleteAccount.isPending}
+              disabled={deleteText !== 'ELIMINAR'}
+              onClick={() =>
+                deleteAccount.mutate(undefined, {
+                  onSuccess: () => {
+                    showToast('Tu cuenta fue eliminada.')
+                    navigate('/', { replace: true })
+                  },
+                })
+              }
+            >
+              Eliminar definitivamente
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.deleteConfirmation}>
+          <p>
+            Esta acción eliminará o anonimizará tus datos personales y
+            financieros según la política de retención. Esta acción no se puede
+            deshacer.
+          </p>
+          <label htmlFor="delete-account-confirmation">
+            Escribe <strong>ELIMINAR</strong> para confirmar
+          </label>
+          <Input
+            id="delete-account-confirmation"
+            autoComplete="off"
+            value={deleteText}
+            onChange={(event) => setDeleteText(event.target.value)}
+            aria-describedby={
+              deleteAccount.isError ? 'delete-account-error' : undefined
+            }
+          />
+          {deleteAccount.isError && (
+            <p id="delete-account-error" className={styles.error} role="alert">
+              No fue posible eliminar la cuenta. Inténtalo nuevamente.
+            </p>
+          )}
+        </div>
       </Dialog>
     </div>
   )

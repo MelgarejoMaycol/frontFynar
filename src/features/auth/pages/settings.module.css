@@ -59,6 +59,17 @@
 .securityBlock h3 {
   margin: 0;
 }
+.dangerZone {
+  border-color: color-mix(in srgb, var(--color-error) 40%, var(--color-border));
+}
+.deleteConfirmation {
+  display: grid;
+  gap: var(--space-3);
+}
+.deleteConfirmation p,
+.deleteConfirmation label {
+  margin: 0;
+}
 .avatarSection {
   display: grid;
   gap: var(--space-3);

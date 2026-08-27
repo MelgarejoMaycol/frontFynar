@@ -1,27 +1,22 @@
 import { useState } from 'react'
-import { ArrowDown, ArrowLeftRight, ArrowUp } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { ArrowDown, ArrowLeft, ArrowLeftRight, ArrowUp } from 'lucide-react'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import {
   Badge,
   Button,
   Card,
-  Dialog,
-  FormField,
-  MoneyInput,
   PageHeader,
   SectionHeader,
 } from '@/components/ui'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
-import {
-  useAdjustBalance,
-  useTransactions,
-} from '@/features/transactions/hooks/transactions.hooks'
+import { useTransactions } from '@/features/transactions/hooks/transactions.hooks'
 import { formatTransactionDate } from '@/features/transactions/transactions.format'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { accountNatureLabels, accountTypeLabels } from '../accounts.constants'
 import { formatCurrency } from '../accounts.format'
+import { BalanceAdjustmentDialog } from '../components/BalanceAdjustmentDialog'
 import { useAccount } from '../hooks/accounts.hooks'
 import styles from '../components/accounts.module.css'
 
@@ -36,10 +31,8 @@ export function AccountDetailPage() {
     limit: 10,
   })
   const categories = useCategories(workspace.id)
-  const adjust = useAdjustBalance(workspace.id)
   const navigate = useNavigate()
   const [adjusting, setAdjusting] = useState(false)
-  const [actualBalance, setActualBalance] = useState('')
   if (account.isPending && !account.data) return <PageLoader />
   if (account.isError)
     return (
@@ -50,10 +43,8 @@ export function AccountDetailPage() {
       />
     )
   const item = account.data
-  const difference =
-    actualBalance === ''
-      ? null
-      : Number(actualBalance) - Number(item.currentBalance)
+  if (item.type === 'CREDIT_CARD')
+    return <Navigate to={`/app/debts/cards/${item.id}`} replace />
   const categoryName = (id: string | null) =>
     categories.data?.find((x) => x.id === id)?.name ??
     (id ? 'Categoría no disponible' : 'Sin categoría')
@@ -62,7 +53,11 @@ export function AccountDetailPage() {
       <PageHeader
         title={item.name}
         description="Detalle de tu cuenta financiera."
-        actions={<Link to="/app/accounts">Volver a cuentas</Link>}
+        actions={
+          <Link className={styles.backLink} to="/app/accounts">
+            <ArrowLeft size={17} aria-hidden="true" /> Volver a cuentas
+          </Link>
+        }
       />
       <Card className={styles.detailHero}>
         <div>
@@ -90,17 +85,11 @@ export function AccountDetailPage() {
           {canWrite && item.isActive && (
             <Button
               variant="secondary"
-              onClick={() => {
-                setActualBalance(item.currentBalance)
-                setAdjusting(true)
-              }}
+              onClick={() => setAdjusting(true)}
             >
               Ajustar saldo
             </Button>
           )}
-          <Button variant="ghost" onClick={() => navigate('/app/accounts')}>
-            Administrar cuenta
-          </Button>
         </div>
       </Card>
       <Card className={styles.detailSection}>
@@ -214,76 +203,12 @@ export function AccountDetailPage() {
           <p>No hay movimientos registrados en esta cuenta.</p>
         )}
       </Card>
-      <Dialog
+      <BalanceAdjustmentDialog
+        workspaceId={workspace.id}
+        account={item}
         open={adjusting}
-        title="Ajustar saldo"
-        onClose={() => !adjust.isPending && setAdjusting(false)}
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              disabled={adjust.isPending}
-              onClick={() => setAdjusting(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              loading={adjust.isPending}
-              disabled={difference === null || difference === 0}
-              onClick={() =>
-                adjust.mutate(
-                  {
-                    accountId: item.id,
-                    actualBalance,
-                    occurredAt: new Date().toISOString(),
-                    description: 'Ajuste manual de saldo',
-                  },
-                  { onSuccess: () => setAdjusting(false) },
-                )
-              }
-            >
-              Registrar ajuste
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.form}>
-          <p>
-            Saldo registrado:{' '}
-            <strong>
-              {formatCurrency(item.currentBalance, item.currency)}
-            </strong>
-          </p>
-          <FormField label="Saldo real actual" htmlFor="actual-balance">
-            <MoneyInput
-              id="actual-balance"
-              autoFocus
-              value={actualBalance}
-              onValueChange={setActualBalance}
-            />
-          </FormField>
-          {difference !== null && (
-            <p>
-              Diferencia:{' '}
-              <strong
-                className={difference < 0 ? styles.expense : styles.income}
-              >
-                {difference > 0 ? '+' : ''}
-                {formatCurrency(String(difference), item.currency)}
-              </strong>
-            </p>
-          )}
-          <p>
-            Se registrará un ajuste para que el saldo de la cuenta coincida con
-            el valor indicado.
-          </p>
-          {adjust.error && (
-            <p className={styles.error} role="alert">
-              No pudimos registrar el ajuste.
-            </p>
-          )}
-        </div>
-      </Dialog>
+        onClose={() => setAdjusting(false)}
+      />
     </div>
   )
 }

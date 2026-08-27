@@ -23,7 +23,9 @@ export function ProfileForm({
   const [changingEmail, setChangingEmail] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'pending' | 'sent' | 'error'>('idle')
+  const [emailStatus, setEmailStatus] = useState<
+    'idle' | 'pending' | 'sent' | 'error'
+  >('idle')
   const {
     register,
     handleSubmit,
@@ -82,16 +84,69 @@ export function ProfileForm({
         </FormField>
       </div>
       <p className={styles.help}>
-        ✓ Verificado. Tu correo actual seguirá activo durante cualquier cambio pendiente.
+        ✓ Verificado. Tu correo actual seguirá activo durante cualquier cambio
+        pendiente.
       </p>
-      {!changingEmail ? <Button type="button" variant="secondary" onClick={() => setChangingEmail(true)}>Cambiar correo</Button> : <div className={styles.formGrid}>
-        <FormField label="Nuevo correo" htmlFor="new-email"><Input id="new-email" type="email" value={newEmail} onChange={(event) => setNewEmail(event.target.value)} /></FormField>
-        <FormField label="Contraseña actual" htmlFor="email-password"><Input id="email-password" type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /></FormField>
-        {emailStatus === 'sent' && <p className={styles.help} role="status">Te enviamos un enlace al nuevo correo. El actual seguirá funcionando hasta confirmarlo.</p>}
-        {emailStatus === 'error' && <p className={styles.error} role="alert">No pudimos enviar el correo. Inténtalo nuevamente.</p>}
-        <Button type="button" loading={emailStatus === 'pending'} disabled={!newEmail || !currentPassword} onClick={() => { setEmailStatus('pending'); void settingsApi.requestEmailChange({ newEmail, currentPassword }).then(() => setEmailStatus('sent')).catch(() => setEmailStatus('error')) }}>Enviar verificación</Button>
-        <Button type="button" variant="secondary" onClick={() => setChangingEmail(false)}>Cancelar</Button>
-      </div>}
+      {!changingEmail ? (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setChangingEmail(true)}
+        >
+          Cambiar correo
+        </Button>
+      ) : (
+        <div className={styles.formGrid}>
+          <FormField label="Nuevo correo" htmlFor="new-email">
+            <Input
+              id="new-email"
+              type="email"
+              value={newEmail}
+              onChange={(event) => setNewEmail(event.target.value)}
+            />
+          </FormField>
+          <FormField label="Contraseña actual" htmlFor="email-password">
+            <Input
+              id="email-password"
+              type="password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+            />
+          </FormField>
+          {emailStatus === 'sent' && (
+            <p className={styles.help} role="status">
+              Te enviamos un enlace al nuevo correo. El actual seguirá
+              funcionando hasta confirmarlo.
+            </p>
+          )}
+          {emailStatus === 'error' && (
+            <p className={styles.error} role="alert">
+              No pudimos enviar el correo. Inténtalo nuevamente.
+            </p>
+          )}
+          <Button
+            type="button"
+            loading={emailStatus === 'pending'}
+            disabled={!newEmail || !currentPassword}
+            onClick={() => {
+              setEmailStatus('pending')
+              void settingsApi
+                .requestEmailChange({ newEmail, currentPassword })
+                .then(() => setEmailStatus('sent'))
+                .catch(() => setEmailStatus('error'))
+            }}
+          >
+            Enviar verificación
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setChangingEmail(false)}
+          >
+            Cancelar
+          </Button>
+        </div>
+      )}
       <Button type="submit" loading={pending} disabled={pending || !isDirty}>
         Guardar perfil
       </Button>

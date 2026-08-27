@@ -14,6 +14,7 @@ const labels = {
   EXPENSE: 'Gasto',
   TRANSFER: 'Transferencia',
   ADJUSTMENT: 'Ajuste de saldo',
+  DEBT_PAYMENT: 'Pago de crédito',
 } as const
 export function RecentTransactions({
   items,
@@ -41,7 +42,7 @@ export function RecentTransactions({
           const Icon =
             item.type === 'INCOME'
               ? ArrowUp
-              : item.type === 'EXPENSE'
+              : item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT'
                 ? ArrowDown
                 : ArrowLeftRight
           const account =
@@ -53,13 +54,13 @@ export function RecentTransactions({
           const sign =
             item.type === 'INCOME' || adjustmentDifference > 0
               ? '+'
-              : item.type === 'EXPENSE' || adjustmentDifference < 0
+              : item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT' || adjustmentDifference < 0
                 ? '−'
                 : ''
           const tone =
             item.type === 'INCOME' || adjustmentDifference > 0
               ? 'income'
-              : item.type === 'EXPENSE' || adjustmentDifference < 0
+              : item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT' || adjustmentDifference < 0
                 ? 'expense'
                 : 'transfer'
           return (

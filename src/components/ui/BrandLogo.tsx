@@ -16,7 +16,10 @@ export function BrandLogo({
       aria-label={`${APP_NAME}, inicio`}
     >
       <img
-        className={clsx(styles.brandSymbol, inverse && styles.brandImageInverse)}
+        className={clsx(
+          styles.brandSymbol,
+          inverse && styles.brandImageInverse,
+        )}
         src="/fynar-symbol.png"
         alt=""
       />

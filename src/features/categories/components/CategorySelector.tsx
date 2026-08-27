@@ -1,4 +1,4 @@
-import { createElement, useId } from 'react'
+import { createElement, useEffect, useId, useMemo } from 'react'
 import { Select } from '@/components/ui'
 import {
   categoryContrastColor,
@@ -29,8 +29,14 @@ export function CategorySelector({
 }) {
   const selectId = useId()
   const q = useCategories(workspaceId)
-  const items = (q.data ?? []).filter((x) => x.type === type && x.isActive)
+  const items = useMemo(
+    () => (q.data ?? []).filter((x) => x.type === type && x.isActive),
+    [q.data, type],
+  )
   const selected = items.find((item) => item.id === value)
+  useEffect(() => {
+    if (value && !selected && !q.isPending) onChange('')
+  }, [onChange, q.isPending, selected, value])
   const SelectedIcon = getCategoryIcon(selected?.icon ?? null)
   return (
     <div>
@@ -38,11 +44,15 @@ export function CategorySelector({
       <Select
         id={selectId}
         aria-invalid={Boolean(error)}
-        value={value}
+        value={selected?.id ?? ''}
         disabled={disabled || q.isPending || q.isError}
         onChange={(e) => onChange(e.target.value)}
       >
-        {allowEmpty && <option value="">Sin categoría</option>}
+        {(allowEmpty || !selected) && (
+          <option value="">
+            {allowEmpty ? 'Sin categoría' : 'Selecciona una categoría'}
+          </option>
+        )}
         {items.map((x) => (
           <option key={x.id} value={x.id}>
             {x.name} · {x.scope === 'SYSTEM' ? 'Sistema' : 'Personalizada'}

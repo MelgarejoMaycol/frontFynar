@@ -56,8 +56,8 @@ export function BudgetCard({
           <dd>{formatMoney(budget.progress.spent, budget.currency)}</dd>
         </div>
         <div>
-          <dt>Disponible</dt>
-          <dd>{formatMoney(budget.progress.remaining, budget.currency)}</dd>
+          <dt>{Number(budget.progress.remaining) < 0 ? 'Excedido por' : 'Disponible'}</dt>
+          <dd>{formatMoney(budget.progress.remaining.replace(/^-/, ''), budget.currency)}</dd>
         </div>
       </dl>
       <p>
@@ -88,7 +88,7 @@ export function BudgetCard({
         )}
         {canWrite && !budget.isActive && (
           <Button variant="secondary" loading={busy} onClick={onRestore}>
-            Restaurar
+            Desarchivar
           </Button>
         )}
       </div>

@@ -36,13 +36,19 @@ const normalizePath = (pathname: string) => {
 }
 
 export function getRouteTitle(pathname: string): string {
+  return getRouteNavigation(pathname)?.label ?? APP_NAME
+}
+
+export function getRouteNavigation(
+  pathname: string,
+): NavigationItem | undefined {
   const normalizedPath = normalizePath(pathname)
   const exactMatch = appNavigation.find((item) => item.to === normalizedPath)
-  if (exactMatch) return exactMatch.label
+  if (exactMatch) return exactMatch
 
   const parentMatch = [...appNavigation]
     .sort((first, second) => second.to.length - first.to.length)
     .find((item) => normalizedPath.startsWith(`${item.to}/`))
 
-  return parentMatch?.label ?? APP_NAME
+  return parentMatch
 }

@@ -1,3 +1,5 @@
+await import('./dev-runner.mjs')
+
 import { execFileSync, spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -33,7 +35,7 @@ function processesOnPort(port) {
                 columns.length >= 5 &&
                 columns[0] === 'TCP' &&
                 columns[1]?.endsWith(`:${port}`) &&
-                columns[3] === 'LISTENING',
+                ['LISTENING', 'ESCUCHANDO'].includes(columns[3]),
             )
             .map((columns) => Number(columns[4]))
             .filter((pid) => Number.isInteger(pid) && pid > 0),
@@ -81,18 +83,50 @@ function freePort(port) {
 
 for (const port of ports) freePort(port)
 
+try {
+  console.log('[dev] Verificando migraciones de PostgreSQL local…')
+  execFileSync(process.execPath, [npmCli, 'run', 'qa:migrate'], {
+    cwd: backendDirectory,
+    stdio: 'inherit',
+    env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
+  })
+} catch {
+  console.error(
+    '[dev] PostgreSQL local no está disponible en 127.0.0.1:5434. Inicia Docker Desktop y vuelve a ejecutar npm run dev.',
+  )
+  process.exit(1)
+}
+
 const services = [
-  { name: 'back', directory: backendDirectory, script: 'dev' },
+  { name: 'back', directory: backendDirectory, script: 'qa:server' },
   { name: 'front', directory: frontendDirectory, script: 'dev:front' },
 ]
 
 let stopping = false
+
+function stopChildTree(child) {
+  if (child.killed || !child.pid) return
+  try {
+    if (process.platform === 'win32')
+      execFileSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
+        stdio: 'ignore',
+      })
+    else child.kill('SIGTERM')
+  } catch {
+    if (!child.killed) child.kill('SIGTERM')
+  }
+}
 
 const children = services.map(({ name, directory, script }) => {
   const child = spawn(process.execPath, [npmCli, 'run', script], {
     cwd: directory,
     stdio: 'inherit',
     windowsHide: true,
+    env: {
+      ...process.env,
+      NO_COLOR: '1',
+      FORCE_COLOR: '0',
+    },
   })
 
   child.on('error', (error) => {
@@ -114,9 +148,7 @@ function shutdown(exitCode = 0) {
   if (stopping) return
   stopping = true
 
-  for (const child of children) {
-    if (!child.killed) child.kill('SIGTERM')
-  }
+  for (const child of children) stopChildTree(child)
 
   setTimeout(() => process.exit(exitCode), 250)
 }

@@ -66,11 +66,88 @@
   max-width: 32rem;
   margin: var(--space-6) auto 0;
 }
-.statusPage > svg { color: var(--color-primary); }
-.statusActions { display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-3); }
-.legalPage { width:min(52rem, calc(100% - 2rem)); margin:var(--space-5) auto; }
-.legalContent { display:grid; gap:var(--space-3); margin-block:var(--space-5); }
-.legalContent h2,.legalContent p { margin:0; }
+.statusPage > svg {
+  color: var(--color-primary);
+}
+.statusActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.legalPage {
+  width: min(52rem, calc(100% - 2rem));
+  margin: var(--space-5) auto;
+}
+.legalContent {
+  display: grid;
+  gap: var(--space-3);
+  margin-block: var(--space-5);
+}
+.legalContent h2,
+.legalContent p {
+  margin: 0;
+}
+.legalLayout {
+  display: grid;
+  align-items: start;
+  gap: var(--space-5);
+}
+.legalIndex {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-muted);
+}
+.legalIndex a {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+.legalIndex a:hover {
+  color: var(--color-primary);
+}
+.legalMetadata {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  padding: var(--space-4);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-muted);
+}
+.legalMetadata dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.legalMetadata dd {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+.legalNotice {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-warning-soft);
+}
+.legalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+@media (min-width: 64rem) {
+  .legalLayout {
+    grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+  }
+  .legalIndex {
+    position: sticky;
+    top: var(--space-5);
+  }
+  .legalMetadata {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 @media (min-width: 36rem) {
   .row {
     grid-template-columns: 1fr 1fr;

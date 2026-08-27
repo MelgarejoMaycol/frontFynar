@@ -1,19 +1,9 @@
-import {
-  ChartNoAxesCombined,
-  CircleDollarSign,
-  FolderTree,
-  House,
-  Landmark,
-  Menu,
-  Settings,
-  WalletCards,
-} from 'lucide-react'
+import { Menu } from 'lucide-react'
 import type { RefObject } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Avatar, Button, Dropdown, IconButton } from '@/components/ui'
 import { useLogout, useSession } from '@/features/auth'
-import { WorkspaceSelector } from '@/features/workspace'
-import { getRouteTitle } from './navigation'
+import { getRouteNavigation } from './navigation'
 import styles from './layouts.module.css'
 export function Header({
   menuOpen,
@@ -25,14 +15,9 @@ export function Header({
   menuButtonRef: RefObject<HTMLButtonElement | null>
 }) {
   const pathname = useLocation().pathname
-  const title = getRouteTitle(pathname)
-  const isDashboard = pathname === '/app/dashboard'
-  const isAccounts = pathname.startsWith('/app/accounts')
-  const isCategories = pathname.startsWith('/app/categories')
-  const isTransactions = pathname.startsWith('/app/transactions')
-  const isBudgets = pathname.startsWith('/app/budgets')
-  const isReports = pathname.startsWith('/app/reports')
-  const isSettings = pathname.startsWith('/app/settings')
+  const route = getRouteNavigation(pathname)
+  const title = route?.label ?? 'Fynar'
+  const RouteIcon = route?.icon
   const session = useSession()
   const logout = useLogout()
   const navigate = useNavigate()
@@ -55,24 +40,9 @@ export function Header({
         </IconButton>
         <div className={styles.titleGroup}>
           <p className={styles.headerTitle}>
-            {isDashboard && <House size={18} aria-hidden="true" />}
-            {isAccounts && <Landmark size={18} aria-hidden="true" />}
-            {isCategories && <FolderTree size={18} aria-hidden="true" />}
-            {isTransactions && (
-              <CircleDollarSign size={18} aria-hidden="true" />
-            )}
-            {isBudgets && <WalletCards size={18} aria-hidden="true" />}
-            {isReports && <ChartNoAxesCombined size={18} aria-hidden="true" />}
-            {isSettings && <Settings size={18} aria-hidden="true" />}
             {title}
+            {RouteIcon && <RouteIcon size={18} aria-hidden="true" />}
           </p>
-          {!isDashboard &&
-            !isAccounts &&
-            !isCategories &&
-            !isTransactions &&
-            !isBudgets &&
-            !isReports &&
-            !isSettings && <WorkspaceSelector />}
         </div>
       </div>
       <Dropdown

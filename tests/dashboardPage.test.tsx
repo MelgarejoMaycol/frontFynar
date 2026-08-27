@@ -2,17 +2,26 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+
+vi.mock('@/features/dashboard/components/BudgetDashboardWidget', () => ({
+  BudgetDashboardWidget: () => <section>Widget de presupuestos</section>,
+}))
 import { ApiError } from '@/services/http'
 const mocks = vi.hoisted(() => ({
   permission: true,
   dashboard: vi.fn(),
   refetch: vi.fn(),
+  cycleStartDay: null as number | null,
 }))
 vi.mock('@/features/workspace', () => ({
   useActiveWorkspace: () => ({
     activeWorkspace: { id: 'w', timezone: 'America/Bogota' },
   }),
   usePermission: () => mocks.permission,
+  usePreferences: () => ({
+    data: { financialCycleStartDay: mocks.cycleStartDay },
+    isSuccess: true,
+  }),
 }))
 vi.mock('@/features/dashboard/hooks/dashboard.hooks', () => ({
   useDashboard: (...args: unknown[]) => mocks.dashboard(...args),
@@ -103,12 +112,28 @@ describe('DashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.permission = true
+    mocks.cycleStartDay = null
     mocks.dashboard.mockReturnValue({
       isPending: false,
       isError: false,
       data,
       refetch: mocks.refetch,
     })
+  })
+  it('usa Mi ciclo como período inicial cuando está configurado', () => {
+    mocks.cycleStartDay = 25
+    view()
+    expect(mocks.dashboard).toHaveBeenLastCalledWith(
+      'w',
+      expect.objectContaining({ period: 'MY_CYCLE' }),
+      true,
+    )
+    expect(screen.getByLabelText('Periodo')).toHaveValue('MY_CYCLE')
+    expect(screen.queryByText('Configurar Mi ciclo')).not.toBeInTheDocument()
+  })
+  it('ofrece configurar Mi ciclo cuando falta la preferencia', () => {
+    view()
+    expect(screen.getByRole('button', { name: 'Configurar Mi ciclo' })).toBeInTheDocument()
   })
   it('restringe acceso sin consultar datos financieros', () => {
     mocks.permission = false

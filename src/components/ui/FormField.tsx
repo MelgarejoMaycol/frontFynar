@@ -1,4 +1,4 @@
-import { cloneElement, type ReactElement } from 'react'
+import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
 import styles from './controls.module.css'
 type Props = {
   label: string
@@ -6,11 +6,7 @@ type Props = {
   required?: boolean
   helpText?: string
   error?: string
-  children: ReactElement<{
-    'aria-describedby'?: string
-    'aria-invalid'?: boolean
-    'aria-required'?: boolean
-  }>
+  children: ReactNode
 }
 export function FormField({
   label,
@@ -22,8 +18,13 @@ export function FormField({
 }: Props) {
   const helpId = `${htmlFor}-help`
   const errorId = `${htmlFor}-error`
+  const childList = Children.toArray(children)
+  const control = childList[0]
+  if (!isValidElement<Record<string, unknown>>(control)) {
+    throw new Error('FormField requiere un control de formulario como primer hijo')
+  }
   const describedBy = [
-    children.props['aria-describedby'],
+    control.props['aria-describedby'],
     helpText && helpId,
     error && errorId,
   ]
@@ -39,11 +40,12 @@ export function FormField({
           </span>
         )}
       </label>
-      {cloneElement(children, {
+      {cloneElement(control, {
         'aria-describedby': describedBy || undefined,
-        'aria-invalid': error ? true : children.props['aria-invalid'],
-        'aria-required': required || children.props['aria-required'],
+        'aria-invalid': error ? true : control.props['aria-invalid'],
+        'aria-required': required || control.props['aria-required'],
       })}
+      {childList.slice(1)}
       {helpText && (
         <p className={styles.help} id={helpId}>
           {helpText}

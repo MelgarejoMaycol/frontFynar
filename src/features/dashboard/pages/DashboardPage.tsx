@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { Button, FilterPanel, PageHeader } from '@/components/ui'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
-import { useActiveWorkspace, usePermission } from '@/features/workspace'
+import { useActiveWorkspace, usePermission, usePreferences } from '@/features/workspace'
 import { AccountsSummary } from '../components/AccountsSummary'
 import { DashboardPeriodFilter } from '../components/DashboardPeriodFilter'
 import { FinancialSummary } from '../components/FinancialSummary'
@@ -16,6 +16,7 @@ import { useDashboard } from '../hooks/dashboard.hooks'
 import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDashboardWidget'
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
+import { BudgetDashboardWidget } from '../components/BudgetDashboardWidget'
 const customError = (params: DashboardParams) => {
   if (params.period !== 'CUSTOM') return undefined
   if (!params.dateFrom || !params.dateTo)
@@ -30,15 +31,19 @@ export function DashboardPage() {
   const canRead = usePermission('reports.read')
   const canReadCategories = usePermission('categories.read')
   const canReadDebts = usePermission('debts.read')
-  const [params, setParams] = useState<DashboardParams>({
-    period: 'CURRENT_MONTH',
+  const preferences = usePreferences()
+  const [selectedParams, setSelectedParams] = useState<DashboardParams | null>(null)
+  const params = selectedParams ?? {
+    period: preferences.data?.financialCycleStartDay
+      ? ('MY_CYCLE' as const)
+      : ('CURRENT_MONTH' as const),
     recentLimit: 5,
-  })
+  }
   const validationError = customError(params)
   const dashboard = useDashboard(
     workspace.id,
     params,
-    canRead && !validationError,
+    canRead && preferences.isSuccess && !validationError,
   )
   const categories = useCategories(workspace.id, canReadCategories)
   if (!canRead)
@@ -54,11 +59,13 @@ export function DashboardPage() {
         title="Inicio"
         description="Así están tus finanzas actualmente."
       />
-      <FilterPanel title="Periodo" active={params.period !== 'CURRENT_MONTH'}>
+      <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
         <DashboardPeriodFilter
           value={params}
-          onChange={setParams}
+          onChange={setSelectedParams}
           error={validationError}
+          financialCycleConfigured={Boolean(preferences.data?.financialCycleStartDay)}
+          onConfigureCycle={() => navigate('/app/settings#preferences')}
         />
       </FilterPanel>
       {dashboard.isPending && !validationError ? (
@@ -108,6 +115,7 @@ export function DashboardPage() {
               ))}
             </div>
             <LiabilitiesDashboardWidget />
+            <BudgetDashboardWidget />
             <AccountsSummary accounts={dashboard.data.accountBalances} />
             {dashboard.data.recentTransactions.length === 0 ? (
               <EmptyState

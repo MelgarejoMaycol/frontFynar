@@ -27,8 +27,12 @@ export interface RegisterResult {
   verificationRequired?: true
   tokens?: AuthTokens
 }
-export interface ResendVerificationRequest { email: string }
-export interface VerifyEmailRequest { token: string }
+export interface ResendVerificationRequest {
+  email: string
+}
+export interface VerifyEmailRequest {
+  token: string
+}
 export interface ForgotPasswordRequest {
   email: string
 }

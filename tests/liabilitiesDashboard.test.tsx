@@ -22,6 +22,7 @@ const query = (data: unknown) => ({
   data,
   isPending: false,
   isError: false,
+  isSuccess: true,
   refetch: vi.fn(),
 })
 
@@ -32,6 +33,9 @@ describe('LiabilitiesDashboardWidget', () => {
     mocks.summary.mockReturnValue(
       query({
         nextPayment: {
+          type: 'DEBT_INSTALLMENT',
+          id: 'installment-1',
+          resourceId: 'debt-1',
           name: 'Crédito moto',
           amount: '420000.00',
           currency: 'COP',
@@ -41,29 +45,42 @@ describe('LiabilitiesDashboardWidget', () => {
           { currency: 'COP', overdueAmount: '180000.00' },
           { currency: 'USD', overdueAmount: '45.00' },
         ],
+        upcoming: [
+          { status: 'OVERDUE', currency: 'COP', type: 'DEBT_INSTALLMENT', resourceId: 'debt-overdue' },
+          { status: 'OVERDUE', currency: 'COP' },
+          { status: 'OVERDUE', currency: 'USD' },
+        ],
       }),
     )
-    mocks.upcoming.mockReturnValue(
-      query([
-        { status: 'OVERDUE', currency: 'COP' },
-        { status: 'OVERDUE', currency: 'COP' },
-        { status: 'OVERDUE', currency: 'USD' },
-      ]),
-    )
+    mocks.upcoming.mockReturnValue(query([
+      {
+        type: 'DEBT_INSTALLMENT', id: 'installment-overdue', resourceId: 'debt-overdue',
+        name: 'Crédito vencido', amount: '180000.00', currency: 'COP',
+        date: '2026-08-01', status: 'OVERDUE', daysRemaining: -10,
+      },
+      {
+        type: 'DEBT_INSTALLMENT', id: 'installment-1', resourceId: 'debt-1',
+        name: 'Crédito moto', amount: '420000.00', currency: 'COP',
+        date: '2026-09-03', status: 'PENDING', daysRemaining: 13,
+      },
+    ]))
   })
 
-  it('muestra próximo pago y vencidos separados por moneda', () => {
+  it('muestra vencidos primero y enlaces directos', () => {
     render(
       <MemoryRouter>
         <LiabilitiesDashboardWidget />
       </MemoryRouter>,
     )
     expect(screen.getByText('Crédito moto')).toBeVisible()
-    expect(screen.getByText('2 pagos · COP')).toBeVisible()
-    expect(screen.getByText('1 pagos · USD')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Ver pagos' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Abrir Crédito moto/ })).toHaveAttribute(
       'href',
-      '/app/debts?tab=upcoming',
+      '/app/debts/debt-1',
+    )
+    expect(screen.getByText(/Vencido/)).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Ver todos' })).toHaveAttribute(
+      'href',
+      '/app/debts#upcoming',
     )
   })
 
@@ -77,5 +94,29 @@ describe('LiabilitiesDashboardWidget', () => {
     expect(mocks.summary).not.toHaveBeenCalled()
     expect(mocks.upcoming).not.toHaveBeenCalled()
     expect(screen.queryByText('Créditos y pagos')).not.toBeInTheDocument()
+  })
+
+  it('distingue loading, error y vacío exitoso', () => {
+    mocks.upcoming.mockReturnValueOnce({ isPending: true })
+    const rendered = render(<MemoryRouter><LiabilitiesDashboardWidget /></MemoryRouter>)
+    expect(screen.getByText('Cargando créditos y pagos…')).toBeVisible()
+
+    mocks.upcoming.mockReturnValueOnce({
+      isPending: false,
+      isError: true,
+      refetch: vi.fn(),
+    })
+    rendered.rerender(<MemoryRouter><LiabilitiesDashboardWidget /></MemoryRouter>)
+    expect(screen.getByText('No pudimos cargar créditos y pagos')).toBeVisible()
+
+    mocks.upcoming.mockReturnValue({
+      data: [],
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+      refetch: vi.fn(),
+    })
+    rendered.rerender(<MemoryRouter><LiabilitiesDashboardWidget /></MemoryRouter>)
+    expect(screen.getByText('No tienes pagos pendientes.')).toBeVisible()
   })
 })

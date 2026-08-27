@@ -29,6 +29,7 @@ import type { Budget, BudgetFilters, BudgetInput } from '../types/budget.types'
 import styles from '../components/budgets.module.css'
 import { budgetPeriodLabels, budgetStatusLabels } from '../budgets.constants'
 export function BudgetsPage() {
+  const requestedId = new URLSearchParams(window.location.search).get('budgetId') ?? ''
   const workspace = useActiveWorkspace().activeWorkspace!,
     canRead = usePermission('budgets.read'),
     canWrite = usePermission('budgets.write')
@@ -43,7 +44,7 @@ export function BudgetsPage() {
     [editing, setEditing] = useState(false),
     [archiving, setArchiving] = useState(false)
   const query = useBudgets(workspace.id, filters, canRead),
-    detail = useBudget(workspace.id, selected?.id ?? ''),
+    detail = useBudget(workspace.id, selected?.id ?? requestedId),
     create = useCreateBudget(workspace.id),
     update = useUpdateBudget(workspace.id, selected?.id ?? ''),
     archive = useArchiveBudget(workspace.id)
@@ -71,6 +72,7 @@ export function BudgetsPage() {
       setSelected(null)
       setEditing(false)
       setArchiving(false)
+      if (requestedId) window.history.replaceState({}, '', '/app/budgets')
       create.reset()
       update.reset()
       archive.reset()
@@ -102,6 +104,7 @@ export function BudgetsPage() {
           <label>
             Buscar
             <Input
+              placeholder="Ej: Salidas, comida, universidad..."
               value={filters.search ?? ''}
               onChange={(e) =>
                 setFilters((x) => ({
@@ -135,6 +138,7 @@ export function BudgetsPage() {
           <label>
             Moneda
             <CurrencyCombobox
+              placeholder="Todas las monedas · Ej: COP"
               value={filters.currency ?? ''}
               onChange={(e) =>
                 setFilters((x) => ({
@@ -181,8 +185,8 @@ export function BudgetsPage() {
       </FilterPanel>
       {query.data.items.length === 0 ? (
         <EmptyState
-          title="Aún no tienes presupuestos"
-          message="Define un límite para controlar tus gastos."
+          title={filters.status === 'ARCHIVED' ? 'No tienes presupuestos archivados' : 'Aún no tienes presupuestos'}
+          message={filters.status === 'ARCHIVED' ? 'Los presupuestos que archives aparecerán aquí.' : 'Define un límite para controlar tus gastos.'}
         />
       ) : (
         <div className={styles.list}>
@@ -203,7 +207,7 @@ export function BudgetsPage() {
               busy={restore.isPending}
               onRestore={() =>
                 restore.mutate(b.id, {
-                  onSuccess: () => showToast('Presupuesto restaurado.'),
+                  onSuccess: () => showToast('Presupuesto desarchivado.'),
                   onError: (error) =>
                     showToast(getBudgetErrorMessage(error), 'error'),
                 })
@@ -255,7 +259,7 @@ export function BudgetsPage() {
         />
       </Dialog>
       <Dialog
-        open={Boolean(selected) && !editing && !archiving}
+        open={Boolean(selected || requestedId) && !editing && !archiving}
         title="Detalle del presupuesto"
         onClose={close}
       >
@@ -290,9 +294,9 @@ export function BudgetsPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt>Disponible</dt>
+                  <dt>{Number(current.progress.remaining) < 0 ? 'Excedido por' : 'Disponible'}</dt>
                   <dd>
-                    {formatMoney(current.progress.remaining, current.currency)}
+                    {formatMoney(current.progress.remaining.replace(/^-/, ''), current.currency)}
                   </dd>
                 </div>
                 <div>
@@ -384,34 +388,13 @@ export function BudgetsPage() {
         open={Boolean(current) && archiving}
         title="Archivar presupuesto"
         onClose={close}
-        footer={
-          <>
-            <Button variant="secondary" onClick={close}>
-              Volver
-            </Button>
-            <Button
-              variant="danger"
-              loading={archive.isPending}
-              onClick={() =>
-                current &&
-                archive.mutate(current.id, {
-                  onSuccess: () => success('Presupuesto archivado.'),
-                  onError: (error) =>
-                    showToast(getBudgetErrorMessage(error), 'error'),
-                })
-              }
-            >
-              Archivar presupuesto
-            </Button>
-          </>
-        }
+        footer={<>
+          <Button variant="secondary" onClick={close}>Cancelar</Button>
+          <Button disabled={archive.isPending} onClick={() => current && archive.mutate(current.id, { onSuccess: () => success('Presupuesto archivado.'), onError: (error) => showToast(getBudgetErrorMessage(error), 'error') })}>Archivar</Button>
+        </>}
       >
-        <p>
-          Dejará de aparecer como activo, pero se conservará en el historial.
-        </p>
-        {archive.error && (
-          <p role="alert">{getBudgetErrorMessage(archive.error)}</p>
-        )}
+        <p>¿Quieres archivar este presupuesto? Podrás consultarlo y desarchivarlo después.</p>
+        {archive.error && <p role="alert">{getBudgetErrorMessage(archive.error)}</p>}
       </Dialog>
     </div>
   )

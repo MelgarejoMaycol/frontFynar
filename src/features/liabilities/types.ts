@@ -17,6 +17,11 @@ export type RateBasis =
   | 'EFFECTIVE_ANNUAL'
   | 'NOMINAL_ANNUAL'
   | 'NOMINAL_MONTHLY'
+export type DebtPaymentFrequency =
+  | 'WEEKLY'
+  | 'MONTHLY'
+  | 'BIMONTHLY'
+  | 'SEMIANNUAL'
 export interface DebtInstallment {
   id: string
   debtId: string
@@ -32,9 +37,35 @@ export interface DebtInstallment {
   closingBalance: string
   status: InstallmentStatus
 }
+export interface DebtPayment {
+  id: string
+  installmentId: string | null
+  installmentNumber: number | null
+  paidAt: string
+  totalAmount: string
+  principalAmount: string
+  interestAmount: string
+  insuranceAmount: string
+  feeAmount: string
+  extraPaymentAmount: string
+  reversedAt: string | null
+  account: { id: string; name: string } | null
+}
+export interface DebtPaymentInput {
+  accountId?: string
+  amount: string
+  paidAt: string
+  idempotencyKey: string
+  strategy?: 'REDUCE_TERM' | 'REDUCE_PAYMENT'
+}
+export interface DebtPaymentResult {
+  id: string
+  idempotent: boolean
+}
 export interface Debt {
   id: string
   name: string
+  institutionName: string | null
   lenderName: string | null
   type: DebtType
   status: DebtStatus
@@ -45,6 +76,8 @@ export interface Debt {
   interestRateBasis: RateBasis
   interestType: 'FIXED' | 'VARIABLE' | 'NONE'
   termMonths: number | null
+  installmentCount: number | null
+  paymentFrequency: DebtPaymentFrequency
   installmentAmount: string | null
   disbursementDate: string | null
   firstPaymentDate: string | null
@@ -55,6 +88,7 @@ export interface Debt {
   notes: string | null
   metadata?: unknown
   debtInstallments?: DebtInstallment[]
+  debtPayments?: DebtPayment[]
   createdAt: string
   updatedAt: string
 }
@@ -76,12 +110,24 @@ export interface DebtInput {
   interestRateBasis?: RateBasis
   interestType?: 'FIXED' | 'VARIABLE' | 'NONE'
   termMonths?: number | null
+  installmentCount?: number | null
+  paymentFrequency?: DebtPaymentFrequency
   installmentAmount?: string | null
   disbursementDate?: string | null
   firstPaymentDate?: string | null
   paymentDay?: number | null
   liabilityAccountId?: string | null
   notes?: string | null
+}
+export interface DebtEstimateInput {
+  originalPrincipal?: string
+  currentBalance?: string
+  paymentAmount?: string
+  interestRate?: string
+  interestRateBasis?: RateBasis
+  remainingInstallments?: number
+  paymentFrequency?: DebtPaymentFrequency
+  firstPaymentDate?: string
 }
 export type EstimationSource =
   'PROVIDED' | 'CALCULATED' | 'ESTIMATED' | 'UNKNOWN'
@@ -171,6 +217,7 @@ export interface ObligationInput {
 export interface Card {
   id: string
   name: string
+  institutionName: string | null
   currency: string
   currentBalance: string
   creditLimit: string | null
@@ -179,6 +226,28 @@ export interface Card {
   usedCredit: string
   availableCredit: string
   utilization: string
+  nextBillingDate: string | null
+  nextPaymentDate: string | null
+  nextPayment: {
+    amount: string
+    originalAmount: string
+    paidAmount: string
+    minimumPayment: string | null
+    source: 'INFORMED' | 'ESTIMATED'
+    statementId: string | null
+    expectationId: string | null
+    reportedTotalBalance: string | null
+  } | null
+  referencePeriodicRate: string | null
+  referenceRateSource: 'INFORMED' | 'ESTIMATED' | null
+}
+export interface CardActivity {
+  id: string
+  type: 'PURCHASE' | 'CASH_ADVANCE' | 'PAYMENT' | 'OTHER'
+  description: string
+  amount: string
+  feeAmount: string | null
+  occurredAt: string
 }
 export interface Statement {
   id: string
@@ -197,11 +266,53 @@ export interface Statement {
   paidAmount: string
   status: 'OPEN' | 'PARTIAL' | 'PAID' | 'CLOSED'
 }
+export interface CardPaymentInput {
+  sourceAccountId: string
+  amount: string
+  occurredAt: string
+  idempotencyKey: string
+  applyToNextPayment?: boolean
+}
+export interface CardPaymentAllocation {
+  totalAmount: string
+  appliedToCurrentDue: string
+  extraPayment: string
+  remainingDue: string
+  previousCardBalance: string
+  newCardBalance: string
+  statementId: string | null
+  expectationId: string | null
+}
+export interface CardPaymentResult extends CardPaymentAllocation {
+  transactionId: string
+  idempotent: boolean
+  nextPayment: {
+    amount: string
+    dueDate: string
+    source: 'INFORMED'
+  } | null
+}
+export interface CardCashAdvanceInput {
+  destinationAccountId: string
+  amount: string
+  feeAmount: string
+  occurredAt: string
+  periodicRate?: string
+  installmentCount?: number
+  notes?: string
+  idempotencyKey: string
+}
+export interface CardCashAdvanceResult {
+  id: string
+  transactionId: string
+  idempotent: boolean
+}
 export interface CardPurchase {
   id: string
   installmentCount: number
   periodicRate: string
   outstandingBalance: string
+  trackingStatus: 'ESTIMATED'
   transaction: { description: string; amount: string; occurredAt: string }
   installments: Array<{
     id: string
@@ -211,10 +322,15 @@ export interface CardPurchase {
     interestAmount: string
     totalAmount: string
     status: InstallmentStatus
+    trackingStatus: 'ESTIMATED'
   }>
 }
 export interface Upcoming {
-  type: 'DEBT_INSTALLMENT' | 'OBLIGATION' | 'CARD_STATEMENT'
+  type:
+    | 'DEBT_INSTALLMENT'
+    | 'OBLIGATION'
+    | 'CARD_STATEMENT'
+    | 'CARD_ESTIMATE'
   id: string
   resourceId: string
   name: string
@@ -223,27 +339,40 @@ export interface Upcoming {
   currency: string
   status: string
   daysRemaining: number
+  source: 'INFORMED' | 'ESTIMATED' | 'SCHEDULED'
+  amountLabel: string
 }
 export interface LiabilitiesSummary {
-  totalDebt: string
-  monthlyCommitments: string
+  totalDebt: string | null
+  monthlyCommitments: string | null
   nextPayment: Upcoming | null
-  overdueAmount: string
-  principalPaid: string
-  interestPaid: string
+  overdueAmount: string | null
+  principalPaid: string | null
+  interestPaid: string | null
   activeDebts: number
   activeObligations: number
   cards: {
+    creditLimit: string | null
+    used: string | null
+    available: string | null
+    utilization: string | null
+  }
+  cardsByCurrency: Array<{
+    currency: string
     creditLimit: string
     used: string
     available: string
     utilization: string
-  }
+  }>
   summariesByCurrency: Array<{
     currency: string
+    creditDebt: string
+    cardDebt: string
     totalDebt: string
     monthlyCommitments: string
     overdueAmount: string
+    principalPaid: string
+    interestPaid: string
   }>
   upcoming: Upcoming[]
 }

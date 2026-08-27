@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { accountsKeys } from '@/features/accounts/hooks/accounts.hooks'
 import { transactionsApi } from '../api/transactions.api'
 import type {
@@ -26,6 +26,19 @@ export const useTransactions = (
     enabled,
     staleTime: 60_000,
   })
+export const useInfiniteTransactions = (
+  workspaceId: string,
+  filters: TransactionFilters,
+  enabled = true,
+) => useInfiniteQuery({
+  queryKey: transactionKeys.list(workspaceId, filters),
+  queryFn: async ({ signal, pageParam }) =>
+    (await transactionsApi.list(workspaceId, { ...filters, cursor: pageParam }, signal)).data,
+  initialPageParam: undefined as string | undefined,
+  getNextPageParam: (last) => last.nextCursor ?? undefined,
+  enabled,
+  staleTime: 60_000,
+})
 export const useTransaction = (workspaceId: string, id: string) =>
   useQuery({
     queryKey: transactionKeys.detail(workspaceId, id),
@@ -43,6 +56,7 @@ const useRefreshFinancialData = (workspaceId: string) => {
       client.invalidateQueries({ queryKey: ['dashboard', workspaceId] }),
       client.invalidateQueries({ queryKey: ['budgets', workspaceId] }),
       client.invalidateQueries({ queryKey: ['reports', workspaceId] }),
+      client.invalidateQueries({ queryKey: ['liabilities', workspaceId] }),
       ...(id
         ? [
             client.invalidateQueries({

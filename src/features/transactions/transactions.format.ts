@@ -2,16 +2,25 @@ import {
   getDateFormatOptions,
   getDisplayLocale,
 } from '@/features/workspace/display-preferences'
+import { formatCurrency } from '@/features/accounts/accounts.format'
+import type { Transaction, TransactionStatus } from './types/transaction.types'
 
-export const formatMoney = (amount: string, currency: string) => {
-  const value = Number(amount)
-  return Number.isFinite(value)
-    ? new Intl.NumberFormat(getDisplayLocale(), {
-        style: 'currency',
-        currency,
-      }).format(value)
-    : `${amount} ${currency}`
+export const transactionStatusLabels: Record<TransactionStatus, string> = {
+  PENDING: 'Pendiente',
+  CONFIRMED: 'Confirmado',
+  CANCELLED: 'Cancelado',
 }
+export const transactionTypeLabel = (transaction: Pick<Transaction, 'type' | 'metadata'>) =>
+  transaction.type === 'DEBT_PAYMENT'
+    ? transaction.metadata?.debtOperation === 'EXTRA_PAYMENT'
+      ? 'Abono'
+      : 'Pago de crédito'
+    : transaction.type === 'TRANSFER' && transaction.metadata?.cardCashAdvance === true
+    ? 'Adelanto'
+    : ({ INCOME: 'Ingreso', EXPENSE: 'Gasto', TRANSFER: 'Transferencia', ADJUSTMENT: 'Ajuste de saldo' } as const)[transaction.type]
+
+export const formatMoney = (amount: string, currency: string) =>
+  formatCurrency(amount, currency, getDisplayLocale())
 export const formatTransactionDate = (value: string, timezone: string) =>
   new Intl.DateTimeFormat(getDisplayLocale(), {
     ...getDateFormatOptions(),

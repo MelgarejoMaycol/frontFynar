@@ -237,7 +237,7 @@
     display: none;
   }
   .appArea {
-    padding-left: var(--sidebar-width);
+    margin-left: var(--sidebar-width);
   }
   .header {
     padding-inline: var(--space-6);

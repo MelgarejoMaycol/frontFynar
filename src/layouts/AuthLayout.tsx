@@ -5,7 +5,10 @@ import styles from './layouts.module.css'
 export function AuthLayout() {
   return (
     <div className={styles.auth} data-bs-theme="light">
-      <aside className={styles.authAside} aria-label={`Presentación de ${APP_NAME}`}>
+      <aside
+        className={styles.authAside}
+        aria-label={`Presentación de ${APP_NAME}`}
+      >
         <BrandLogo inverse />
         <div>
           <h1>Claridad para tus decisiones financieras.</h1>

@@ -7,6 +7,15 @@
   display: grid;
   gap: var(--space-4);
   min-width: 0;
+  max-width: 100%;
+}
+.page > *,
+.heroCard > *,
+.moduleHeading,
+.moduleHeading > div,
+.moduleActions {
+  min-width: 0;
+  max-width: 100%;
 }
 .tabs {
   display: flex;
@@ -94,6 +103,30 @@
 .cardHead h2 {
   margin: 0;
 }
+.cardHead h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cardPaymentPreview,
+.paymentEstimate {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-small);
+  background: var(--color-primary-soft);
+}
+.cardPaymentPreview span,
+.paymentEstimate span,
+.paymentEstimate small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.cardCycle {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .cardHead {
   display: flex;
   align-items: flex-start;
@@ -129,11 +162,28 @@
   display: grid;
   gap: var(--space-4);
 }
+.formSectionTitle {
+  grid-column: 1 / -1;
+  margin: var(--space-2) 0 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-lg);
+}
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
   flex-wrap: wrap;
+}
+.percentageInput {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+.percentageInput span {
+  font-weight: 700;
+  color: var(--color-text-secondary);
 }
 .error {
   padding: var(--space-3);
@@ -165,7 +215,9 @@
   overflow-wrap: anywhere;
 }
 .scheduleTable {
-  overflow: auto;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
 }
@@ -214,12 +266,276 @@
   gap: var(--space-2);
   padding: var(--space-4);
 }
+.dashboardPaymentLink {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+}
+.dashboardPaymentLink .dashboardWidgetCard {
+  height: 100%;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.dashboardPaymentLink:hover .dashboardWidgetCard {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.dashboardPaymentLink:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.metricLink,
+.upcomingRowLink {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+}
+.metricLink .metric,
+.upcomingRowLink .row {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.metricLink:hover .metric,
+.upcomingRowLink:hover .row {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.metricLink:focus-visible,
+.upcomingRowLink:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.cardQuickActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.obligationActions,
+.sectionHeading,
+.viewSwitch,
+.calendarNav,
+.upcomingCardFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.obligationActions {
+  justify-content: space-between;
+}
+.upcomingSection,
+.calendarPanel {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.sectionHeading {
+  justify-content: space-between;
+}
+.sectionHeading h2,
+.sectionHeading p,
+.calendarNav h3 {
+  margin: 0;
+}
+.sectionHeading p {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+}
+.upcomingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-3);
+}
+.upcomingCardLink {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+}
+.upcomingCard {
+  display: grid;
+  height: 100%;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.upcomingCard > strong,
+.upcomingCard > b,
+.calendarEvent > strong,
+.calendarEvent > b {
+  overflow-wrap: anywhere;
+}
+.upcomingCard > b {
+  font-size: var(--font-size-xl);
+}
+.upcomingCardType {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  color: #744108;
+  background: #fff0d5;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+.upcomingCardType[data-kind='OBLIGATION'] {
+  color: #185a78;
+  background: #e1f4fc;
+}
+.upcomingCardType[data-kind='CARD_STATEMENT'],
+.upcomingCardType[data-kind='CARD_ESTIMATE'] {
+  color: #0c5b50;
+  background: #dff4ee;
+}
+.upcomingCardFooter {
+  justify-content: space-between;
+}
+.upcomingCardLink:hover .upcomingCard {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.upcomingCardLink:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.upcomingOverdue,
+.overdueSummary {
+  border-color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.overdueSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+}
+.calendarNav h3 {
+  flex: 1;
+  text-align: center;
+  text-transform: capitalize;
+}
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+}
+.calendarWeekday {
+  padding: var(--space-2);
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-soft);
+  font-weight: 700;
+}
+.calendarDay,
+.calendarBlank {
+  min-width: 0;
+  min-height: 8rem;
+  padding: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+.calendarDay {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+.calendarDay > time {
+  font-weight: 700;
+}
+.calendarEvent {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+  padding: 0.4rem;
+  border-left: 3px solid #d7871d;
+  border-radius: var(--radius-small);
+  color: inherit;
+  background: #fff7e9;
+  text-decoration: none;
+  font-size: 0.75rem;
+}
+.calendarEvent[data-kind='OBLIGATION'] {
+  border-left-color: #2786b0;
+  background: #eef9fd;
+}
+.calendarEvent[data-kind='CARD_STATEMENT'],
+.calendarEvent[data-kind='CARD_ESTIMATE'] {
+  border-left-color: #168171;
+  background: #ecf9f5;
+}
+.calendarEvent[data-overdue='true'] {
+  border-left-color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.calendarEvent:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+.calendarAgenda {
+  display: none;
+}
+.agendaDay {
+  display: grid;
+  gap: var(--space-2);
+}
+.agendaDay > time {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.quickActionPrimary,
+.quickActionSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+.quickActionPrimary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+.quickActionSecondary {
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+.quickActionPrimary:focus-visible,
+.quickActionSecondary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+@media (max-width: 26.875rem) {
+  .cardQuickActions > a {
+    width: 100%;
+  }
+}
 .dashboardWidgetCard > span,
 .dashboardWidgetCard small {
   color: var(--color-text-secondary);
 }
 .dashboardWidgetCard > b {
   font-size: var(--font-size-xl);
+}
+.dashboardPaymentOverdue {
+  border-color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.dashboardPaymentOverdue small {
+  color: var(--color-error);
+  font-weight: 600;
 }
 .overdueRow + .overdueRow {
   border-top: 1px solid var(--color-border);
@@ -246,6 +562,19 @@
   .actions button {
     flex: 1 1 10rem;
   }
+  .calendarGrid {
+    display: none;
+  }
+  .calendarAgenda {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .viewSwitch {
+    width: 100%;
+  }
+  .viewSwitch button {
+    flex: 1;
+  }
 }
 @media (max-width: 23.5rem) {
   .row {
@@ -262,5 +591,50 @@
   .tabs {
     margin-inline: 0;
     padding-inline: 0;
+  }
+}
+.moduleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.moduleHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.moduleHeading img {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.moduleHeading h1,
+.moduleHeading p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.moduleHeading p {
+  color: var(--color-text-secondary);
+}
+.moduleActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+@media (max-width: 35.99rem) {
+  .moduleHeader,
+  .moduleHeading,
+  .moduleActions {
+    width: 100%;
+  }
+  .moduleHeading {
+    align-items: flex-start;
+  }
+  .moduleActions > * {
+    flex: 1 1 9rem;
+  }
+  .heroCard {
+    padding: var(--space-4);
   }
 }

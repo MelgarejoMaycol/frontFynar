@@ -3,6 +3,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
   background: var(--color-surface);
+  transition:
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast),
+    transform var(--duration-fast);
+}
+.card:hover {
+  border-color: var(--color-border-strong);
 }
 .raised {
   box-shadow: var(--shadow-soft);
@@ -90,6 +97,10 @@
 .dropdown summary::-webkit-details-marker {
   display: none;
 }
+.dropdown summary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
 .dropdownMenu {
   position: absolute;
   z-index: var(--z-dropdown);
@@ -102,15 +113,31 @@
   border-radius: var(--radius-small);
   background: var(--color-surface);
   box-shadow: var(--shadow-raised);
+  animation: menuEnter var(--duration-fast) ease-out;
+  display: grid;
+  gap: var(--space-1);
+}
+.dropdownMenu button,
+.dropdownMenu a {
+  border-radius: var(--radius-small);
 }
 .dialog {
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(32rem, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
+  overflow: hidden;
   padding: 0;
   border: 0;
   border-radius: var(--radius-large);
   background: var(--color-surface);
   box-shadow: var(--shadow-raised);
+  animation: dialogEnter var(--duration-normal) ease-out;
+}
+.dialog[open] {
+  display: grid;
+}
+.dialogWide {
+  width: min(54rem, calc(100% - 2rem));
 }
 .dialog::backdrop {
   background: var(--color-overlay);
@@ -126,6 +153,10 @@
   justify-content: space-between;
   gap: var(--space-3);
   border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-surface);
 }
 .dialogHeader h2 {
   margin: 0;
@@ -139,6 +170,7 @@
   justify-content: flex-end;
   gap: var(--space-3);
   border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 .pageHeader,
 .sectionHeader {
@@ -220,6 +252,18 @@
 .brandInverse {
   color: var(--color-text-inverse);
 }
+@keyframes menuEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+@keyframes dialogEnter {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem) scale(0.99);
+  }
+}
 @media (max-width: 35.99rem) {
   .card {
     padding: var(--space-3);
@@ -248,6 +292,9 @@
     width: calc(100% - var(--space-3));
     max-height: calc(100dvh - var(--space-3));
     border-radius: var(--radius-medium);
+  }
+  .dialogWide {
+    width: calc(100% - var(--space-3));
   }
   .dialogFooter {
     flex-wrap: wrap;

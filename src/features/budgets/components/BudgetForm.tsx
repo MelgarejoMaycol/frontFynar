@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import {
   Button,
@@ -22,6 +22,8 @@ import {
 import { getBudgetErrorMessage } from '../budgets.errors'
 import type { Budget, BudgetInput } from '../types/budget.types'
 import styles from './budgets.module.css'
+import { useBudgetCycleRange } from '../hooks/budgets.hooks'
+import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
 const currentMonth = (timezone: string) => {
   const localDate = isoToWorkspaceDateTimeValue(
       new Date().toISOString(),
@@ -34,6 +36,13 @@ const currentMonth = (timezone: string) => {
     end: new Date(Date.UTC(y, m + 1, 0)).toISOString().slice(0, 10),
   }
 }
+const friendlyDate = (value: string) =>
+  new Intl.DateTimeFormat('es-CO', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T12:00:00Z`))
 export function BudgetForm({
   workspaceId,
   baseCurrency,
@@ -54,6 +63,8 @@ export function BudgetForm({
   onCancel: () => void
 }) {
   const month = currentMonth(timezone)
+  const [periodChoice, setPeriodChoice] = useState<Budget['period'] | 'MY_CYCLE'>(budget?.period ?? 'MONTHLY')
+  const cycleRange = useBudgetCycleRange(workspaceId, periodChoice === 'MY_CYCLE')
   const accounts = useAccounts(workspaceId),
     categories = useCategories(workspaceId)
   const {
@@ -85,11 +96,18 @@ export function BudgetForm({
     categoryIds = useWatch({ control, name: 'categoryIds' }),
     accountIds = useWatch({ control, name: 'accountIds' })
   useEffect(() => {
+    if (periodChoice === 'MY_CYCLE') return
     if (period === 'CUSTOM') return
     const range = rangeForPeriod(period, getValues('startsOn'))
     setValue('startsOn', range.start, { shouldValidate: true })
     setValue('endsOn', range.end, { shouldValidate: true })
-  }, [getValues, period, setValue])
+  }, [getValues, period, periodChoice, setValue])
+  useEffect(() => {
+    if (periodChoice !== 'MY_CYCLE' || !cycleRange.data) return
+    setValue('period', 'CUSTOM', { shouldValidate: true })
+    setValue('startsOn', cycleRange.data.startsOn, { shouldValidate: true })
+    setValue('endsOn', cycleRange.data.endsOn, { shouldValidate: true })
+  }, [cycleRange.data, periodChoice, setValue])
   useEffect(() => {
     const compatible = new Set(
         (accounts.data ?? [])
@@ -117,7 +135,7 @@ export function BudgetForm({
       className={styles.form}
       onSubmit={(e) =>
         void handleSubmit((v) =>
-          onSubmit({ ...v, currency: v.currency.toUpperCase() }),
+          onSubmit({ ...v, amount: canonicalMoneyInput(v.amount), currency: v.currency.toUpperCase() }),
         )(e)
       }
     >
@@ -128,7 +146,7 @@ export function BudgetForm({
         required
         error={errors.name?.message}
       >
-        <Input id="budget-name" {...register('name')} />
+        <Input id="budget-name" placeholder="Ej: Salidas del mes" {...register('name')} />
       </FormField>
       <FormField
         label="Periodo"
@@ -136,15 +154,28 @@ export function BudgetForm({
         required
         error={errors.period?.message}
       >
-        <Select id="budget-period" {...register('period')}>
+        <Select id="budget-period" value={periodChoice} onChange={(event) => {
+          const next = event.target.value as Budget['period'] | 'MY_CYCLE'
+          const previous = periodChoice
+          setPeriodChoice(next)
+          if (next !== 'MY_CYCLE') {
+            setValue('period', next, { shouldValidate: true })
+            if (previous === 'MY_CYCLE' && next !== 'CUSTOM') {
+              const range = rangeForPeriod(next, month.start)
+              setValue('startsOn', range.start, { shouldValidate: true })
+              setValue('endsOn', range.end, { shouldValidate: true })
+            }
+          }
+        }}>
           <option value="MONTHLY">Mensual</option>
           <option value="WEEKLY">Semanal</option>
           <option value="YEARLY">Anual</option>
           <option value="CUSTOM">Personalizado</option>
+          <option value="MY_CYCLE">Mi ciclo</option>
         </Select>
       </FormField>
       <div className={styles.periodFields}>
-        {period === 'MONTHLY' && (
+        {periodChoice === 'MONTHLY' && (
           <FormField label="Mes" htmlFor="budget-month">
             <Input
               id="budget-month"
@@ -161,7 +192,7 @@ export function BudgetForm({
             />
           </FormField>
         )}
-        {period === 'WEEKLY' && (
+        {periodChoice === 'WEEKLY' && (
           <FormField label="La semana comienza" htmlFor="budget-week">
             <Input
               id="budget-week"
@@ -175,7 +206,7 @@ export function BudgetForm({
             />
           </FormField>
         )}
-        {period === 'YEARLY' && (
+        {periodChoice === 'YEARLY' && (
           <FormField label="Año" htmlFor="budget-year">
             <Input
               id="budget-year"
@@ -194,13 +225,15 @@ export function BudgetForm({
             />
           </FormField>
         )}
-        {period !== 'CUSTOM' && (
+        {periodChoice !== 'CUSTOM' && (
           <p className={styles.rangePreview}>
-            {startsOn} — {endsOn}
+            {periodChoice === 'MY_CYCLE' && cycleRange.isError ? (
+              <>Configura Mi ciclo para utilizar este período. <a href="/app/settings#preferences">Configurar Mi ciclo</a></>
+            ) : cycleRange.isPending && periodChoice === 'MY_CYCLE' ? 'Calculando Mi ciclo…' : `${friendlyDate(startsOn)} — ${friendlyDate(endsOn)}`}
           </p>
         )}
       </div>
-      {period === 'CUSTOM' && (
+      {periodChoice === 'CUSTOM' && (
         <div className={styles.formGrid}>
           <FormField
             label="Desde"
@@ -233,6 +266,8 @@ export function BudgetForm({
             render={({ field }) => (
               <MoneyInput
                 id="budget-amount"
+                minorUnits
+                placeholder="0,00"
                 value={field.value}
                 onValueChange={field.onChange}
                 onBlur={field.onBlur}
@@ -256,14 +291,10 @@ export function BudgetForm({
           error={errors.alertThreshold?.message}
           helpText="Te avisaremos cuando hayas utilizado este porcentaje del presupuesto."
         >
-          <Input
-            id="budget-threshold"
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-            {...register('alertThreshold')}
-          />
+          <div className={styles.percentageInput}>
+            <Input id="budget-threshold" type="number" min="1" max="100" step="1" {...register('alertThreshold')} />
+            <span aria-hidden="true">%</span>
+          </div>
         </FormField>
       </div>
       <fieldset>
@@ -312,7 +343,7 @@ export function BudgetForm({
         <Button type="button" variant="secondary" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" loading={pending} disabled={pending}>
+        <Button type="submit" loading={pending} disabled={pending || (periodChoice === 'MY_CYCLE' && !cycleRange.data)}>
           {budget ? 'Guardar cambios' : 'Crear presupuesto'}
         </Button>
       </div>

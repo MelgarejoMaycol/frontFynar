@@ -30,6 +30,7 @@ import type {
 import styles from '../components/categories.module.css'
 import { getCategoryErrorMessage } from '../categories.errors'
 import { normalizeCategorySearch } from '../categories.search'
+import { orderCategories } from '../categories.order'
 
 type Scope = 'ALL' | 'SYSTEM' | 'CUSTOM'
 type Status = 'ACTIVE' | 'ARCHIVED' | 'ALL'
@@ -53,13 +54,14 @@ export function CategoriesPage() {
   const { showToast } = useToast()
   const visible = useMemo(() => {
     const term = normalizeCategorySearch(search.trim())
-    return (query.data ?? []).filter(
+    const filtered = (query.data ?? []).filter(
       (category) =>
         (type === 'ALL' || category.type === type) &&
         (scope === 'ALL' ||
           (scope === 'SYSTEM' ? category.isSystem : !category.isSystem)) &&
         (!term || normalizeCategorySearch(category.name).includes(term)),
     )
+    return orderCategories(filtered)
   }, [query.data, scope, search, type])
   const activeFilters = Boolean(
     search || type !== 'ALL' || scope !== 'ALL' || status !== 'ACTIVE',
@@ -171,8 +173,8 @@ export function CategoriesPage() {
       </FilterPanel>
       {visible.length === 0 ? (
         <EmptyState
-          title="No encontramos categorías"
-          message="Prueba con otro término o limpia los filtros."
+          title={status === 'ARCHIVED' ? 'No tienes categorías archivadas' : 'No encontramos categorías'}
+          message={status === 'ARCHIVED' ? 'Las categorías que archives aparecerán aquí.' : 'Prueba con otro término o limpia los filtros.'}
           action={
             canWrite ? (
               <Button onClick={() => setCreating(true)}>Nueva categoría</Button>
@@ -180,7 +182,7 @@ export function CategoriesPage() {
           }
         />
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.grid} aria-label="Lista de categorías">
           {visible.map((category) => (
             <CategoryCard
               key={category.id}
@@ -212,15 +214,14 @@ export function CategoriesPage() {
         <CategoryForm
           key={editing?.id ?? 'new'}
           category={editing ?? undefined}
-          categories={activeCategories.data ?? []}
           pending={create.isPending || update.isPending}
           error={editing ? update.error : create.error}
           onCancel={close}
           onSubmit={(input: CategoryInput) => {
             if (editing) {
-              const { name, parentId, icon, color } = input
+              const { name, icon, color } = input
               update.mutate(
-                { name, parentId, icon, color },
+                { name, icon, color },
                 {
                   onSuccess: () => done('Categoría actualizada.'),
                   onError: (error) =>
@@ -243,11 +244,7 @@ export function CategoriesPage() {
         onClose={() => !archive.isPending && setArchiving(null)}
         footer={
           <>
-            <Button
-              variant="secondary"
-              disabled={archive.isPending}
-              onClick={() => setArchiving(null)}
-            >
+            <Button variant="secondary" disabled={archive.isPending} onClick={() => setArchiving(null)}>
               Cancelar
             </Button>
             <Button
@@ -260,8 +257,7 @@ export function CategoriesPage() {
                     setArchiving(null)
                     showToast('Categoría archivada.')
                   },
-                  onError: (error) =>
-                    showToast(getCategoryErrorMessage(error), 'error'),
+                  onError: (error) => showToast(getCategoryErrorMessage(error), 'error'),
                 })
               }
             >
@@ -271,9 +267,13 @@ export function CategoriesPage() {
         }
       >
         <p>
-          La categoría dejará de aparecer entre las categorías activas, pero se
-          conservará en movimientos históricos.
+          ¿Quieres archivar esta categoría? <strong>{archiving?.name}</strong>
         </p>
+        <p>
+          Dejará de aparecer entre las categorías activas, pero conservará su
+          historial y podrás desarchivarla después.
+        </p>
+        {archive.error && <p role="alert">{getCategoryErrorMessage(archive.error)}</p>}
       </Dialog>
     </div>
   )

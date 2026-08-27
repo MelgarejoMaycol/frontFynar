@@ -5,10 +5,8 @@ import type { Account } from '../types/account.types'
 
 export const accountsKeys = {
   all: (workspaceId: string) => ['accounts', workspaceId] as const,
-  list: (workspaceId: string, archived: boolean) =>
-    archived
-      ? (['accounts', workspaceId, 'archived'] as const)
-      : (['accounts', workspaceId] as const),
+  list: (workspaceId: string, archived: boolean, favorite: 'all' | 'favorites' = 'all', excludeCreditCards = false) =>
+    ['accounts', workspaceId, 'list', { archived, favorite, excludeCreditCards }] as const,
   detail: (workspaceId: string, accountId: string) =>
     ['accounts', workspaceId, accountId] as const,
 }
@@ -16,11 +14,13 @@ export const useAccounts = (
   workspaceId: string,
   enabled = true,
   archived = false,
+  favorite: 'all' | 'favorites' = 'all',
+  excludeCreditCards = false,
 ) =>
   useQuery({
-    queryKey: accountsKeys.list(workspaceId, archived),
+    queryKey: accountsKeys.list(workspaceId, archived, favorite, excludeCreditCards),
     queryFn: async ({ signal }) =>
-      (await accountsApi.list(workspaceId, archived, signal)).data,
+      (await accountsApi.list(workspaceId, archived, favorite === 'favorites' ? true : undefined, excludeCreditCards, signal)).data,
     enabled,
     staleTime: 60_000,
   })
@@ -78,14 +78,19 @@ export const useFavoriteAccount = (workspaceId: string) => {
       const previous = client.getQueriesData<Account[]>({
         queryKey: accountsKeys.all(workspaceId),
       })
-      previous.forEach(([key, data]) =>
+      previous.forEach(([key, data]) => {
+        if (!Array.isArray(data)) return
+        const updated = data.map((account) =>
+          account.id === accountId ? { ...account, isFavorite } : account,
+        )
+        const filter = key[3] as { favorite?: 'all' | 'favorites' } | undefined
         client.setQueryData<Account[]>(
           key,
-          data?.map((account) =>
-            account.id === accountId ? { ...account, isFavorite } : account,
-          ),
-        ),
-      )
+          filter?.favorite === 'favorites'
+            ? updated.filter((account) => account.isFavorite)
+            : updated,
+        )
+      })
       const detailKey = accountsKeys.detail(workspaceId, accountId)
       const previousDetail = client.getQueryData<Account>(detailKey)
       client.setQueryData<Account>(detailKey, (current) =>
@@ -115,5 +120,13 @@ export const useRestoreAccount = (workspaceId: string) => {
     mutationFn: (accountId: string) =>
       accountsApi.restore(workspaceId, accountId),
     onSuccess: ({ data }) => refresh(data.id),
+  })
+}
+export const useDeleteAccount = (workspaceId: string) => {
+  const refresh = useRefreshAccounts(workspaceId)
+  return useMutation({
+    mutationFn: (accountId: string) =>
+      accountsApi.remove(workspaceId, accountId),
+    onSuccess: () => refresh(),
   })
 }

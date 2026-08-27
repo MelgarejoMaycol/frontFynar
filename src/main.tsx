@@ -7,8 +7,10 @@ import { AppProviders } from '@/app/providers/AppProviders'
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
 import '@/styles/globals.css'
 import { applyCachedTheme } from '@/features/workspace/theme'
+import { initializeObservability } from '@/services/observability/sentry'
 
 applyCachedTheme()
+initializeObservability()
 
 const root = document.getElementById('root')
 

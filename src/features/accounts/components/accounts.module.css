@@ -6,7 +6,8 @@
 .grid {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 22rem));
+  justify-content: start;
 }
 .card {
   display: grid;
@@ -52,8 +53,11 @@
   overflow-wrap: anywhere;
 }
 .balance {
-  font-size: var(--font-size-xl);
+  min-width: 0;
+  font-size: clamp(1rem, 1.3vw + 0.55rem, var(--font-size-xl));
   font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .institution {
   margin: 0;
@@ -65,12 +69,74 @@
 }
 .listToolbar {
   display: flex;
+  align-items: end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.backLink {
+  display: inline-flex;
+  min-height: 2.5rem;
   align-items: center;
   gap: var(--space-2);
-  max-width: 18rem;
+  padding: 0 var(--space-3);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  font-weight: 600;
+  text-decoration: none;
 }
-.listToolbar label {
+.backLink:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+.backLink:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+.filterGroup {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.filterGroup legend {
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+}
+.filterOptions {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-soft);
+}
+.filterOptions button {
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-text-secondary);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+}
+.filterOptions button:hover {
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+.filterOptions button[aria-pressed='true'] {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+.filterOptions button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 .formSection {
   display: grid;
@@ -179,6 +245,22 @@
   }
 }
 @media (max-width: 35.99rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .listToolbar {
+    align-items: stretch;
+  }
+  .filterGroup,
+  .filterOptions {
+    width: 100%;
+  }
+  .filterOptions button {
+    flex: 1 1 0;
+  }
+  .cardDetails {
+    grid-template-columns: 1fr;
+  }
   .formActions {
     flex-wrap: wrap;
   }

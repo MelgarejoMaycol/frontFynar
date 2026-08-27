@@ -8,10 +8,12 @@ const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60_000,
-        gcTime: 10 * 60_000,
+        staleTime: 45_000,
+        gcTime: 20 * 60_000,
         refetchOnMount: true,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+        placeholderData: (previousData: unknown) => previousData,
         retry: (failureCount, error) =>
           failureCount < 1 &&
           (!(error instanceof ApiError) || ![401, 403].includes(error.status)),

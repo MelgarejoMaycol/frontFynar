@@ -32,8 +32,12 @@ export function useRegister() {
     mutationFn: (input: RegisterRequest) => authApi.register(input),
   })
 }
-export const useResendVerification = () => useMutation({ mutationFn: (email: string) => authApi.resendVerification({ email }) })
-export const useVerifyEmail = () => useMutation({ mutationFn: (token: string) => authApi.verifyEmail({ token }) })
+export const useResendVerification = () =>
+  useMutation({
+    mutationFn: (email: string) => authApi.resendVerification({ email }),
+  })
+export const useVerifyEmail = () =>
+  useMutation({ mutationFn: (token: string) => authApi.verifyEmail({ token }) })
 
 export function useLogout() {
   const queryClient = useQueryClient()

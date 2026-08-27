@@ -1,7 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
-import { Button, Checkbox, FormField, Input, PasswordInput } from '@/components/ui'
+import {
+  Button,
+  Checkbox,
+  FormField,
+  Input,
+  PasswordInput,
+} from '@/components/ui'
 import { Link } from 'react-router'
 import { getAuthErrorMessage } from '../auth.errors'
 import { useRegister } from '../hooks/auth.hooks'
@@ -31,8 +37,16 @@ export function RegisterForm() {
   const submit = handleSubmit(
     async ({ firstName, lastName, email, password, acceptedTerms }) => {
       try {
-        await mutation.mutateAsync({ firstName, lastName, email, password, acceptedTerms })
-        navigate(`/verify-email/pending?email=${encodeURIComponent(email)}`, { replace: true })
+        await mutation.mutateAsync({
+          firstName,
+          lastName,
+          email,
+          password,
+          acceptedTerms,
+        })
+        navigate(`/verify-email/pending?email=${encodeURIComponent(email)}`, {
+          replace: true,
+        })
       } catch {
         // La mutación conserva el error seguro que renderiza el formulario.
       }
@@ -115,10 +129,24 @@ export function RegisterForm() {
       </FormField>
       <div>
         <Checkbox
-          label={<span>Acepto los <Link to="/terms" target="_blank">Términos y Condiciones</Link> y la <Link to="/privacy" target="_blank">Política de Privacidad</Link>.</span>}
+          label={
+            <span>
+              Acepto los{' '}
+              <Link to="/terms" target="_blank">
+                Términos y Condiciones
+              </Link>{' '}
+              y la{' '}
+              <Link to="/privacy" target="_blank">
+                Política de Privacidad
+              </Link>
+              .
+            </span>
+          }
           {...register('acceptedTerms')}
         />
-        {errors.acceptedTerms && <p className={styles.fieldError}>{errors.acceptedTerms.message}</p>}
+        {errors.acceptedTerms && (
+          <p className={styles.fieldError}>{errors.acceptedTerms.message}</p>
+        )}
       </div>
       <Button
         className={styles.submit}
@@ -127,7 +155,9 @@ export function RegisterForm() {
       >
         Crear cuenta
       </Button>
-      <div className={styles.oauthDivider}><span>o continúa con</span></div>
+      <div className={styles.oauthDivider}>
+        <span>o continúa con</span>
+      </div>
       <GoogleButton
         disabled={mutation.isPending}
         onClick={() => {

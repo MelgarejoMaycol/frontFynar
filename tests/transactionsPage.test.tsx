@@ -62,7 +62,7 @@ vi.mock('@/features/categories/hooks/categories.hooks', () => ({
   useCategories: (...args: unknown[]) => mocks.categories(...args),
 }))
 vi.mock('@/features/transactions/hooks/transactions.hooks', () => ({
-  useTransactions: (...args: unknown[]) => mocks.transactions(...args),
+  useInfiniteTransactions: (...args: unknown[]) => mocks.transactions(...args),
   useTransaction: (...args: unknown[]) => mocks.detail(...args),
   useCreateTransaction: () => successMutation(mocks.createMutate),
   useUpdateTransaction: () => successMutation(mocks.updateMutate),
@@ -98,13 +98,10 @@ describe('TransactionsPage', () => {
     mocks.transactions.mockReturnValue({
       isPending: false,
       isError: false,
-      data: {
-        items: [transaction],
-        page: 1,
-        limit: 25,
-        total: 1,
-        totalPages: 1,
-      },
+      data: { pages: [{ items: [transaction], page: 1, limit: 20, total: 1, totalPages: 1, nextCursor: null }], pageParams: [undefined] },
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
       error: null,
       refetch: mocks.transactionRefetch,
     })
@@ -159,7 +156,7 @@ describe('TransactionsPage', () => {
       screen.queryByRole('button', { name: 'Editar' }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Cancelar movimiento' }),
+      screen.queryByRole('button', { name: 'Eliminar' }),
     ).not.toBeInTheDocument()
   })
   it('muestra loading y empty state', () => {
@@ -169,7 +166,10 @@ describe('TransactionsPage', () => {
     mocks.transactions.mockReturnValue({
       isPending: false,
       isError: false,
-      data: { items: [], page: 1, limit: 25, total: 0, totalPages: 0 },
+      data: { pages: [{ items: [], page: 1, limit: 20, total: 0, totalPages: 0, nextCursor: null }], pageParams: [undefined] },
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
       refetch: mocks.transactionRefetch,
     })
     rerender(<TransactionsPage />)
@@ -204,10 +204,8 @@ describe('TransactionsPage', () => {
       expect.anything(),
     )
     fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Cancelar movimiento' }))
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Confirmar cancelación' }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
     expect(mocks.cancelMutate).toHaveBeenCalledWith(
       { id: 't', version: 4 },
       expect.anything(),

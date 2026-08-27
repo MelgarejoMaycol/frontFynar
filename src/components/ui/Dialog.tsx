@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
+import clsx from 'clsx'
 import { X } from 'lucide-react'
 import { IconButton } from './IconButton'
 import styles from './surfaces.module.css'
@@ -8,9 +9,10 @@ type Props = {
   title: string
   children: ReactNode
   footer?: ReactNode
+  size?: 'default' | 'wide'
   onClose: () => void
 }
-export function Dialog({ open, title, children, footer, onClose }: Props) {
+export function Dialog({ open, title, children, footer, size = 'default', onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   useEffect(() => {
@@ -40,7 +42,7 @@ export function Dialog({ open, title, children, footer, onClose }: Props) {
   return (
     <dialog
       ref={ref}
-      className={styles.dialog}
+      className={clsx(styles.dialog, size === 'wide' && styles.dialogWide)}
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault()

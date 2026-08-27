@@ -55,6 +55,41 @@ p {
   background: var(--color-primary);
 }
 
+/* Controles y datos financieros comparten una identidad sobria en ambos temas. */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'] {
+  color-scheme: light dark;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primary);
+}
+td,
+[class*='amount'],
+[class*='balance'],
+[data-money] {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) var(--color-surface-muted);
+}
+*::-webkit-scrollbar {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+*::-webkit-scrollbar-track {
+  background: var(--color-surface-muted);
+}
+*::-webkit-scrollbar-thumb {
+  border: 2px solid var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

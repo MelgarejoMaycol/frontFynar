@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { Button, Dialog, PageHeader, Select } from '@/components/ui'
+import {
+  Button,
+  ConfirmDeleteDialog,
+  Dialog,
+  PageHeader,
+} from '@/components/ui'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
@@ -7,10 +12,12 @@ import { LoadingSpinner } from '@/components/feedback/LoadingSpinner'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { AccountCard } from '../components/AccountCard'
 import { AccountForm } from '../components/AccountForm'
+import { BalanceAdjustmentDialog } from '../components/BalanceAdjustmentDialog'
 import {
   useAccounts,
   useArchiveAccount,
   useCreateAccount,
+  useDeleteAccount,
   useFavoriteAccount,
   useRestoreAccount,
   useUpdateAccount,
@@ -27,13 +34,17 @@ export function AccountsPage() {
   const workspaceId = activeWorkspace!.id
   const canWrite = usePermission('accounts.write')
   const [archived, setArchived] = useState(false)
-  const accounts = useAccounts(workspaceId, true, archived)
+  const [favoriteFilter, setFavoriteFilter] = useState<'all' | 'favorites'>('all')
+  const accounts = useAccounts(workspaceId, true, archived, favoriteFilter, true)
   const create = useCreateAccount(workspaceId)
   const favorite = useFavoriteAccount(workspaceId)
   const archive = useArchiveAccount(workspaceId)
   const restore = useRestoreAccount(workspaceId)
+  const remove = useDeleteAccount(workspaceId)
   const [editing, setEditing] = useState<Account | null>(null)
   const [archiving, setArchiving] = useState<Account | null>(null)
+  const [deleting, setDeleting] = useState<Account | null>(null)
+  const [adjusting, setAdjusting] = useState<Account | null>(null)
   const [creating, setCreating] = useState(
     () => new URLSearchParams(window.location.search).get('new') === '1',
   )
@@ -73,16 +84,21 @@ export function AccountsPage() {
           ) : undefined
         }
       />
-      <div className={styles.listToolbar}>
-        <label htmlFor="account-status">Estado</label>
-        <Select
-          id="account-status"
-          value={archived ? 'archived' : 'active'}
-          onChange={(event) => setArchived(event.target.value === 'archived')}
-        >
-          <option value="active">Activas</option>
-          <option value="archived">Archivadas</option>
-        </Select>
+      <div className={styles.listToolbar} aria-label="Filtros de cuentas">
+        <fieldset className={styles.filterGroup}>
+          <legend>Estado</legend>
+          <div className={styles.filterOptions}>
+            <button type="button" aria-pressed={!archived} onClick={() => setArchived(false)}>Activas</button>
+            <button type="button" aria-pressed={archived} onClick={() => setArchived(true)}>Archivadas</button>
+          </div>
+        </fieldset>
+        <fieldset className={styles.filterGroup}>
+          <legend>Favoritas</legend>
+          <div className={styles.filterOptions}>
+            <button type="button" aria-pressed={favoriteFilter === 'all'} onClick={() => setFavoriteFilter('all')}>Todas</button>
+            <button type="button" aria-pressed={favoriteFilter === 'favorites'} onClick={() => setFavoriteFilter('favorites')}>Solo favoritas</button>
+          </div>
+        </fieldset>
         {accounts.isFetching && (
           <LoadingSpinner size="small" label="Actualizando cuentas" />
         )}
@@ -97,12 +113,16 @@ export function AccountsPage() {
           title={
             archived
               ? 'No hay cuentas archivadas'
+              : favoriteFilter === 'favorites'
+                ? 'No hay cuentas favoritas'
               : 'Aún no tienes cuentas registradas'
           }
           message={
             archived
               ? 'Las cuentas que archives aparecerán aquí y conservarán su historial.'
-              : 'Agrega efectivo, cuentas bancarias, billeteras o tarjetas para comenzar a organizar tu dinero.'
+              : favoriteFilter === 'favorites'
+                ? 'Marca una cuenta con la estrella para verla en este filtro.'
+                : 'Agrega efectivo, cuentas bancarias o billeteras para comenzar a organizar tu dinero.'
           }
           action={
             canWrite ? (
@@ -118,12 +138,16 @@ export function AccountsPage() {
               account={account}
               canWrite={canWrite}
               busy={
-                favorite.isPending || archive.isPending || restore.isPending
+                favorite.isPending ||
+                archive.isPending ||
+                restore.isPending ||
+                remove.isPending
               }
               onEdit={() => {
                 setMessage('')
                 setEditing(account)
               }}
+              onAdjust={() => setAdjusting(account)}
               onFavorite={() =>
                 favorite.mutate(
                   { accountId: account.id, isFavorite: !account.isFavorite },
@@ -138,6 +162,10 @@ export function AccountsPage() {
                 )
               }
               onArchive={() => setArchiving(account)}
+              onDelete={() => {
+                remove.reset()
+                setDeleting(account)
+              }}
               onRestore={() =>
                 restore.mutate(account.id, {
                   onSuccess: () => setMessage('Cuenta restaurada.'),
@@ -170,6 +198,13 @@ export function AccountsPage() {
           }
         />
       </Dialog>
+      <BalanceAdjustmentDialog
+        key={adjusting?.id ?? 'no-adjustment'}
+        workspaceId={workspaceId}
+        account={adjusting}
+        open={Boolean(adjusting)}
+        onClose={() => setAdjusting(null)}
+      />
       <Dialog
         open={Boolean(archiving)}
         title="Archivar cuenta"
@@ -204,6 +239,30 @@ export function AccountsPage() {
         La cuenta dejará de aparecer entre tus cuentas activas, pero conservará
         su historial de movimientos.
       </Dialog>
+      <ConfirmDeleteDialog
+        open={Boolean(deleting)}
+        title="Eliminar cuenta"
+        name={deleting?.name ?? ''}
+        pending={remove.isPending}
+        error={remove.error instanceof Error ? remove.error.message : undefined}
+        onClose={() => {
+          remove.reset()
+          setDeleting(null)
+        }}
+        onConfirm={() =>
+          deleting &&
+          remove.mutate(deleting.id, {
+            onSuccess: ({ data }) => {
+              setDeleting(null)
+              setMessage(
+                data.mode === 'PHYSICAL'
+                  ? 'Cuenta eliminada.'
+                  : 'Cuenta retirada; su historial financiero se conservó.',
+              )
+            },
+          })
+        }
+      />
     </div>
   )
 }

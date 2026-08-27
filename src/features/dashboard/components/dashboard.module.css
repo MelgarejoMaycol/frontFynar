@@ -1,6 +1,10 @@
 .page,
 .currencySections {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
   gap: 1.5rem;
 }
 .periodFilter {
@@ -18,9 +22,18 @@
   margin: 0;
   color: var(--color-error);
 }
+.cycleSetup {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+}
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
   gap: 1rem;
 }
 .summaryCard {
@@ -106,7 +119,16 @@
 .summaryCard svg {
   color: var(--color-primary);
 }
-.summaryCard strong,
+.summaryCard strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: clamp(1rem, 1.35vw + 0.55rem, 1.45rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
 .account strong,
 .recentItem strong {
   font-size: clamp(1rem, 2vw, 1.35rem);
@@ -115,6 +137,9 @@
 }
 .accountGrid {
   display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   gap: var(--space-3);
   padding: var(--space-1) 0 var(--space-3);
   overflow-x: auto;
@@ -172,12 +197,25 @@
 }
 .recentList {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   gap: 0.75rem;
+}
+.recentLink {
+  width: 100%;
+  max-width: 100%;
 }
 .recentItem {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   grid-template-columns: auto minmax(0, 1fr) auto;
   padding-block: var(--space-3);
+}
+.recentItem > div {
+  min-width: 0;
 }
 .recentItem > svg {
   width: 2rem;
@@ -249,20 +287,15 @@
   }
 }
 @media (max-width: 1024px) {
-  .summaryGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
   .skeletonGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @media (max-width: 600px) {
-  .summaryGrid,
   .skeletonGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
   }
-  .summaryGrid > :last-child:nth-child(odd),
   .skeletonGrid > :last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
@@ -274,6 +307,7 @@
     height: 1.25rem;
   }
   .periodFilter,
+  .cycleSetup,
   .account,
   .recentItem,
   .sectionHeader {

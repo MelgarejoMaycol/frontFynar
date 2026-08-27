@@ -171,7 +171,9 @@
   .detail {
     gap: var(--space-2);
   }
-  .actions {
+.actions {
     gap: var(--space-2);
   }
 }
+.percentageInput { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
+.percentageInput span { font-weight: 700; }

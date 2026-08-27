@@ -6,6 +6,7 @@ import type { Transaction } from '@/features/transactions/types/transaction.type
 
 export const dashboardPeriods = [
   'CURRENT_MONTH',
+  'MY_CYCLE',
   'PREVIOUS_MONTH',
   'LAST_7_DAYS',
   'LAST_30_DAYS',

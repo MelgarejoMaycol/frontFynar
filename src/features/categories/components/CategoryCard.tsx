@@ -1,12 +1,6 @@
-import { createElement } from 'react'
 import { Badge, Button, Card } from '@/components/ui'
-import {
-  categoryTypeLabels,
-  categoryContrastColor,
-  getCategoryIcon,
-  safeCategoryColor,
-} from '../categories.constants'
 import type { Category } from '../types/category.types'
+import { CategoryIdentity } from './CategoryIdentity'
 import styles from './categories.module.css'
 
 export function CategoryCard({
@@ -26,35 +20,25 @@ export function CategoryCard({
   onRestore?: () => void
   busy?: boolean
 }) {
-  const Icon = getCategoryIcon(category.icon)
   return (
     <Card
       className={`${styles.card} ${!category.isActive ? styles.archivedCard : ''}`}
     >
-      <div className={styles.cardMain}>
-        <div
-          className={styles.icon}
-          style={
-            {
-              '--category-color': safeCategoryColor(category.color),
-              '--category-contrast': categoryContrastColor(category.color),
-            } as React.CSSProperties
-          }
-        >
-          {createElement(Icon, { 'aria-hidden': true })}
-        </div>
-        <div className={styles.cardCopy}>
-          <h2>{category.name}</h2>
-          <p>
-            {categoryTypeLabels[category.type]}
-            {parent ? ` · ${parent.name}` : ''}
-          </p>
-          <div className={styles.cardBadges}>
-            <Badge>{category.isSystem ? 'Sistema' : 'Personalizada'}</Badge>
-            {!category.isActive && <Badge tone="neutral">Archivada</Badge>}
-          </div>
-        </div>
-      </div>
+      <CategoryIdentity
+        name={category.name}
+        type={category.type}
+        icon={category.icon}
+        color={category.color}
+        details={
+          <>
+            {parent && <p className={styles.parentName}>{parent.name}</p>}
+            <div className={styles.cardBadges}>
+              <Badge>{category.isSystem ? 'Sistema' : 'Personalizada'}</Badge>
+              {!category.isActive && <Badge tone="neutral">Archivada</Badge>}
+            </div>
+          </>
+        }
+      />
       <div className={styles.cardSide}>
         {canWrite && !category.isSystem && (
           <div className={styles.actions}>
@@ -69,7 +53,7 @@ export function CategoryCard({
               </>
             ) : (
               <Button variant="secondary" loading={busy} onClick={onRestore}>
-                Restaurar
+                Desarchivar
               </Button>
             )}
           </div>

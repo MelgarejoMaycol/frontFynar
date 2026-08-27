@@ -28,6 +28,7 @@ export interface UserPreferences {
   theme: 'LIGHT' | 'DARK' | 'SYSTEM'
   startScreen: 'DASHBOARD' | 'TRANSACTIONS' | 'BUDGETS' | 'DEBTS'
   dashboardLayout: Record<string, unknown>
+  financialCycleStartDay?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -42,5 +43,6 @@ export type UpdateUserPreferences = Partial<
     | 'theme'
     | 'startScreen'
     | 'dashboardLayout'
+    | 'financialCycleStartDay'
   >
 >

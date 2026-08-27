@@ -20,7 +20,10 @@ export const settingsApi = {
     ),
   changePassword: authApi.changePassword,
   requestEmailChange: (body: { newEmail: string; currentPassword: string }) =>
-    httpClient.post<ApiSuccess<{ newEmail: string; expiresAt: string }>, typeof body>('/auth/email-change/request', body),
+    httpClient.post<
+      ApiSuccess<{ newEmail: string; expiresAt: string }>,
+      typeof body
+    >('/auth/email-change/request', body),
   confirmEmailChange: (body: { token: string }) =>
     httpClient.post<void, typeof body>('/auth/email-change/confirm', body),
   updateAvatar: (file: File, signal?: AbortSignal) => {
@@ -32,4 +35,8 @@ export const settingsApi = {
       signal,
     )
   },
+  deleteAccount: (confirmation: 'ELIMINAR') =>
+    httpClient.delete<void, { confirmation: 'ELIMINAR' }>('/users/me', {
+      confirmation,
+    }),
 }

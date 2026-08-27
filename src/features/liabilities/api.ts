@@ -2,11 +2,19 @@ import { httpClient } from '@/services/http'
 import type { ApiSuccess } from '@/services/http/httpTypes'
 import type {
   Card,
+  CardActivity,
+  CardCashAdvanceInput,
+  CardCashAdvanceResult,
+  CardPaymentInput,
+  CardPaymentResult,
   CardPurchase,
   CreditEstimation,
   Debt,
+  DebtEstimateInput,
   DebtInput,
   DebtList,
+  DebtPaymentInput,
+  DebtPaymentResult,
   LiabilitiesSummary,
   Obligation,
   ObligationInput,
@@ -18,16 +26,28 @@ const b = (w: string) => `/workspaces/${w}`
 export const liabilitiesApi = {
   summary: (w: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<LiabilitiesSummary>>(`${b(w)}/debts-summary`, s),
-  upcoming: (w: string, s?: AbortSignal) =>
-    httpClient.get<ApiSuccess<Upcoming[]>>(`${b(w)}/upcoming-payments`, s),
+  upcoming: (w: string, s?: AbortSignal, range?: { from?: string; to?: string }) =>
+    httpClient.get<ApiSuccess<Upcoming[]>>(
+      `${b(w)}/upcoming-payments${range ? `?mode=calendar&from=${range.from ?? ''}&to=${range.to ?? ''}` : ''}`,
+      s,
+    ),
+  calendarRange: (w: string, from: string, to: string, s?: AbortSignal) =>
+    httpClient.get<ApiSuccess<Upcoming[]>>(
+      `${b(w)}/upcoming-payments?mode=calendar&from=${from}&to=${to}`,
+      s,
+    ),
   debts: (w: string, q: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<DebtList>>(`${b(w)}/debts?${q}`, s),
   debt: (w: string, id: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<Debt>>(`${b(w)}/debts/${id}`, s),
   createDebt: (w: string, i: DebtInput) =>
     httpClient.post<ApiSuccess<Debt>, DebtInput>(`${b(w)}/debts`, i),
-  estimate: (w: string, i: Record<string, unknown>) =>
-    httpClient.post<ApiSuccess<CreditEstimation>, Record<string, unknown>>(
+  deleteDebt: (w: string, id: string) =>
+    httpClient.delete<ApiSuccess<{ mode: 'PHYSICAL' | 'LOGICAL' }>>(
+      `${b(w)}/debts/${id}`,
+    ),
+  estimate: (w: string, i: DebtEstimateInput) =>
+    httpClient.post<ApiSuccess<CreditEstimation>, DebtEstimateInput>(
       `${b(w)}/debts/estimate`,
       i,
     ),
@@ -41,11 +61,16 @@ export const liabilitiesApi = {
       `${b(w)}/debts/${d}/installments/${id}`,
       i,
     ),
-  payDebt: (w: string, d: string, id: string, i: Record<string, unknown>) =>
-    httpClient.post<
-      ApiSuccess<{ id: string; idempotent: boolean }>,
-      Record<string, unknown>
-    >(`${b(w)}/debts/${d}/installments/${id}/payments`, i),
+  payDebt: (w: string, d: string, id: string, i: DebtPaymentInput) =>
+    httpClient.post<ApiSuccess<DebtPaymentResult>, DebtPaymentInput>(
+      `${b(w)}/debts/${d}/installments/${id}/payments`,
+      i,
+    ),
+  reverseDebtPayment: (w: string, d: string, id: string, reason: string) =>
+    httpClient.post<ApiSuccess<unknown>, { reason: string }>(
+      `${b(w)}/debts/${d}/payments/${id}/reverse`,
+      { reason },
+    ),
   simulatePrepayment: (w: string, d: string, i: Record<string, unknown>) =>
     httpClient.post<ApiSuccess<PrepaymentSimulation>, Record<string, unknown>>(
       `${b(w)}/debts/${d}/prepayments/simulate`,
@@ -68,10 +93,18 @@ export const liabilitiesApi = {
       `${b(w)}/obligations`,
       i,
     ),
-  updateObligation: (w: string, id: string, i: Partial<ObligationInput>) =>
-    httpClient.patch<ApiSuccess<Obligation>, Partial<ObligationInput>>(
+  updateObligation: (
+    w: string,
+    id: string,
+    i: Partial<ObligationInput> & { status?: Obligation['status'] },
+  ) =>
+    httpClient.patch<
+      ApiSuccess<Obligation>,
+      Partial<ObligationInput> & { status?: Obligation['status'] }
+    >(`${b(w)}/obligations/${id}`, i),
+  deleteObligation: (w: string, id: string) =>
+    httpClient.delete<ApiSuccess<{ mode: 'PHYSICAL' | 'LOGICAL' }>>(
       `${b(w)}/obligations/${id}`,
-      i,
     ),
   occurrence: (
     w: string,
@@ -94,9 +127,33 @@ export const liabilitiesApi = {
     ),
   cards: (w: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<Card[]>>(`${b(w)}/cards`, s),
+  createCard: (w: string, i: Record<string, unknown>) =>
+    httpClient.post<ApiSuccess<Card>, Record<string, unknown>>(
+      `${b(w)}/cards`,
+      i,
+    ),
+  updateCard: (w: string, id: string, i: Record<string, unknown>) =>
+    httpClient.patch<ApiSuccess<Card>, Record<string, unknown>>(
+      `${b(w)}/cards/${id}`,
+      i,
+    ),
+  deleteCard: (w: string, id: string) =>
+    httpClient.delete<ApiSuccess<{ mode: 'PHYSICAL' | 'LOGICAL' }>>(
+      `${b(w)}/cards/${id}`,
+    ),
+  cashAdvance: (w: string, c: string, i: CardCashAdvanceInput) =>
+    httpClient.post<ApiSuccess<CardCashAdvanceResult>, CardCashAdvanceInput>(
+      `${b(w)}/cards/${c}/cash-advances`,
+      i,
+    ),
   purchases: (w: string, id: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<CardPurchase[]>>(
       `${b(w)}/cards/${id}/purchases`,
+      s,
+    ),
+  activity: (w: string, id: string, s?: AbortSignal) =>
+    httpClient.get<ApiSuccess<CardActivity[]>>(
+      `${b(w)}/cards/${id}/activity`,
       s,
     ),
   purchase: (w: string, id: string, i: Record<string, unknown>) =>
@@ -114,9 +171,19 @@ export const liabilitiesApi = {
       `${b(w)}/cards/${id}/statements`,
       i,
     ),
-  payCard: (w: string, c: string, id: string, i: Record<string, unknown>) =>
+  updateNextPayment: (w: string, id: string, i: Record<string, unknown>) =>
     httpClient.post<ApiSuccess<unknown>, Record<string, unknown>>(
+      `${b(w)}/cards/${id}/next-payment`,
+      i,
+    ),
+  payCard: (w: string, c: string, id: string, i: CardPaymentInput) =>
+    httpClient.post<ApiSuccess<CardPaymentResult>, CardPaymentInput>(
       `${b(w)}/cards/${c}/statements/${id}/payments`,
+      i,
+    ),
+  payCardBalance: (w: string, c: string, i: CardPaymentInput) =>
+    httpClient.post<ApiSuccess<CardPaymentResult>, CardPaymentInput>(
+      `${b(w)}/cards/${c}/payments`,
       i,
     ),
 }

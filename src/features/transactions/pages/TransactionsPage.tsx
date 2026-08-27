@@ -1,5 +1,12 @@
-import { useState } from 'react'
-import { Button, Dialog, FilterPanel, PageHeader } from '@/components/ui'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
+import {
+  Button,
+  ConfirmDeleteDialog,
+  Dialog,
+  FilterPanel,
+  PageHeader,
+} from '@/components/ui'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
@@ -13,11 +20,11 @@ import {
   useCancelTransaction,
   useCreateTransaction,
   useTransaction,
-  useTransactions,
+  useInfiniteTransactions,
   useUpdateTransaction,
 } from '../hooks/transactions.hooks'
 import { getTransactionErrorMessage } from '../transactions.errors'
-import { formatMoney, formatTransactionDate } from '../transactions.format'
+import { formatMoney, formatTransactionDate, transactionStatusLabels, transactionTypeLabel } from '../transactions.format'
 import type {
   CreateTransactionInput,
   Transaction,
@@ -33,8 +40,7 @@ export function TransactionsPage() {
   const canRead = usePermission('transactions.read'),
     canWrite = usePermission('transactions.write')
   const [filters, setFilters] = useState<Filters>({
-    page: 1,
-    limit: 25,
+    limit: 20,
     type: (initialParams.get('type') || undefined) as Filters['type'],
     accountId: initialParams.get('accountId') || undefined,
   })
@@ -45,7 +51,8 @@ export function TransactionsPage() {
     [editing, setEditing] = useState(false),
     [cancelling, setCancelling] = useState(false),
     [message, setMessage] = useState('')
-  const transactions = useTransactions(workspace.id, filters, canRead),
+  const [creationKey, setCreationKey] = useState(0)
+  const transactions = useInfiniteTransactions(workspace.id, filters, canRead),
     accounts = useAccounts(workspace.id, canRead),
     categories = useCategories(workspace.id, canRead)
   const requestedId = initialParams.get('transactionId') ?? ''
@@ -53,6 +60,18 @@ export function TransactionsPage() {
     create = useCreateTransaction(workspace.id),
     update = useUpdateTransaction(workspace.id, selected?.id ?? ''),
     cancel = useCancelTransaction(workspace.id)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = transactions
+  useEffect(() => {
+    const node = loadMoreRef.current
+    if (!node || !hasNextPage) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting && !isFetchingNextPage)
+        void fetchNextPage()
+    }, { rootMargin: '240px' })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
   if (!canRead)
     return (
       <ErrorState
@@ -110,6 +129,7 @@ export function TransactionsPage() {
               disabled={!accounts.data.some((account) => account.isActive)}
               onClick={() => {
                 setMessage('')
+                setCreationKey((value) => value + 1)
                 setCreating(true)
               }}
             >
@@ -137,52 +157,36 @@ export function TransactionsPage() {
           onChange={setFilters}
         />
       </FilterPanel>
-      {transactions.data.items.length === 0 ? (
+      {transactions.data.pages[0]?.items.length === 0 ? (
         <EmptyState
           title="No hay movimientos"
           message="No encontramos movimientos para los filtros seleccionados."
         />
       ) : (
         <TransactionList
-          items={transactions.data.items}
+          items={transactions.data.pages.flatMap((page) => page.items).filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)}
           accounts={accounts.data}
           categories={categories.data}
           timezone={workspace.timezone}
           onOpen={setSelected}
         />
       )}
-      {transactions.data.totalPages > 1 && (
-        <nav className={styles.pagination} aria-label="Paginación">
-          <Button
-            variant="secondary"
-            disabled={transactions.data.page <= 1}
-            onClick={() =>
-              setFilters((x) => ({ ...x, page: (x.page ?? 1) - 1 }))
-            }
-          >
-            Anterior
+      <div ref={loadMoreRef} className={styles.pagination}>
+        {transactions.isFetchingNextPage ? (
+          <span role="status">Cargando más movimientos…</span>
+        ) : transactions.hasNextPage ? (
+          <Button variant="secondary" onClick={() => void transactions.fetchNextPage()}>
+            Cargar más
           </Button>
-          <span>
-            Página {transactions.data.page} de {transactions.data.totalPages} ·{' '}
-            {transactions.data.total} movimientos
-          </span>
-          <Button
-            variant="secondary"
-            disabled={transactions.data.page >= transactions.data.totalPages}
-            onClick={() =>
-              setFilters((x) => ({ ...x, page: (x.page ?? 1) + 1 }))
-            }
-          >
-            Siguiente
-          </Button>
-        </nav>
-      )}
+        ) : null}
+      </div>
       <Dialog
         open={creating && accounts.data.some((account) => account.isActive)}
         title="Registrar movimiento"
         onClose={close}
       >
         <TransactionForm
+          key={creationKey}
           workspaceId={workspace.id}
           timezone={workspace.timezone}
           initialAccountId={initialAccountId}
@@ -204,13 +208,15 @@ export function TransactionsPage() {
           current &&
           canWrite &&
           current.status === 'CONFIRMED' &&
-          current.type !== 'ADJUSTMENT' ? (
+          current.type !== 'ADJUSTMENT' &&
+          current.type !== 'DEBT_PAYMENT' &&
+          current.metadata?.cardCashAdvance !== true ? (
             <>
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 Editar
               </Button>
               <Button variant="danger" onClick={() => setCancelling(true)}>
-                Cancelar movimiento
+                Eliminar
               </Button>
             </>
           ) : undefined
@@ -226,18 +232,12 @@ export function TransactionsPage() {
               <div>
                 <dt>Tipo</dt>
                 <dd>
-                  {current.type === 'INCOME'
-                    ? 'Ingreso'
-                    : current.type === 'EXPENSE'
-                      ? 'Gasto'
-                      : current.type === 'TRANSFER'
-                        ? 'Transferencia'
-                        : 'Ajuste de saldo'}
+                  {transactionTypeLabel(current)}
                 </dd>
               </div>
               <div>
                 <dt>Estado</dt>
-                <dd>{current.status}</dd>
+                <dd>{transactionStatusLabels[current.status]}</dd>
               </div>
               <div>
                 <dt>Monto</dt>
@@ -264,7 +264,7 @@ export function TransactionsPage() {
                 </dd>
               </div>
               <div>
-                <dt>Cuenta</dt>
+                <dt>{current.metadata?.cardCashAdvance === true ? 'Tarjeta origen' : current.type === 'INCOME' ? 'Destino' : 'Cuenta'}</dt>
                 <dd>{accountName(current.accountId)}</dd>
               </div>
               {current.destinationAccountId && (
@@ -275,8 +275,18 @@ export function TransactionsPage() {
               )}
               <div>
                 <dt>Categoría</dt>
-                <dd>{categoryName(current.categoryId)}</dd>
+                <dd>{current.type === 'DEBT_PAYMENT' ? 'Operación financiera especializada' : categoryName(current.categoryId)}</dd>
               </div>
+              {current.type === 'DEBT_PAYMENT' && (
+                <>
+                  <div><dt>Crédito</dt><dd>{String(current.metadata?.debtName ?? 'No disponible')}</dd></div>
+                  <div><dt>Cuenta origen</dt><dd>{current.accountId ? accountName(current.accountId) : 'Externo'}</dd></div>
+                  {current.metadata?.balanceBefore != null && <div><dt>Saldo anterior</dt><dd>{formatMoney(String(current.metadata.balanceBefore), current.currency)}</dd></div>}
+                  {current.metadata?.balanceAfter != null && <div><dt>Saldo posterior</dt><dd>{formatMoney(String(current.metadata.balanceAfter), current.currency)}</dd></div>}
+                  {current.metadata?.strategy != null && <div><dt>Estrategia</dt><dd>{current.metadata.strategy === 'REDUCE_PAYMENT' ? 'Reducir cuota' : 'Reducir plazo'}</dd></div>}
+                  {current.metadata?.debtId != null && <div><dt>Navegación</dt><dd><Link to={`/app/debts/${String(current.metadata.debtId)}`}>Ver crédito</Link></dd></div>}
+                </>
+              )}
               <div>
                 <dt>Descripción</dt>
                 <dd>{current.description || 'Sin descripción'}</dd>
@@ -314,39 +324,27 @@ export function TransactionsPage() {
           />
         )}
       </Dialog>
-      <Dialog
+      <ConfirmDeleteDialog
         open={Boolean(current) && cancelling}
-        title="¿Cancelar este movimiento?"
-        onClose={close}
-        footer={
-          <>
-            <Button variant="secondary" onClick={close}>
-              Volver
-            </Button>
-            <Button
-              variant="danger"
-              loading={cancel.isPending}
-              onClick={() =>
-                current &&
-                cancel.mutate(
-                  { id: current.id, version: current.version },
-                  { onSuccess: () => success('Movimiento cancelado.') },
-                )
-              }
-            >
-              Confirmar cancelación
-            </Button>
-          </>
+        title="Eliminar movimiento"
+        name={current?.description || 'Movimiento'}
+        description="El backend revertirá su efecto financiero y conservará el registro cancelado para proteger la trazabilidad."
+        pending={cancel.isPending}
+        error={
+          cancel.error ? getTransactionErrorMessage(cancel.error) : undefined
         }
-      >
-        <p>
-          El backend revertirá su efecto financiero. Esta acción no elimina el
-          historial.
-        </p>
-        {cancel.error && (
-          <p role="alert">{getTransactionErrorMessage(cancel.error)}</p>
-        )}
-      </Dialog>
+        onClose={close}
+        onConfirm={() =>
+          current &&
+          cancel.mutate(
+            { id: current.id, version: current.version },
+            {
+              onSuccess: () =>
+                success('Movimiento eliminado y saldo revertido.'),
+            },
+          )
+        }
+      />
     </div>
   )
 }

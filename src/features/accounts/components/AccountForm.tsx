@@ -63,6 +63,7 @@ const payload = (
 })
 const natureForType = (type: AccountFormValues['type']) =>
   type === 'CREDIT_CARD' || type === 'LOAN' ? 'LIABILITY' : 'ASSET'
+const accountCreationTypes = accountTypes.filter((type) => type !== 'CREDIT_CARD')
 export function AccountForm({
   currency,
   account,
@@ -121,7 +122,17 @@ export function AccountForm({
             required
             error={errors.name?.message}
           >
-            <Input id="account-name" {...register('name')} />
+            <Input
+              id="account-name"
+              placeholder={
+                type === 'CASH'
+                  ? 'Ej: Efectivo personal'
+                  : type === 'E_WALLET'
+                    ? 'Ej: Nequi'
+                    : 'Ej: Cuenta de ahorros'
+              }
+              {...register('name')}
+            />
           </FormField>
           <FormField
             label="Tipo"
@@ -130,7 +141,7 @@ export function AccountForm({
             error={errors.type?.message}
           >
             <Select id="account-type" {...register('type')}>
-              {accountTypes.map((value) => (
+              {accountCreationTypes.map((value) => (
                 <option key={value} value={value}>
                   {accountTypeLabels[value]}
                 </option>
@@ -147,7 +158,11 @@ export function AccountForm({
             htmlFor="account-institution"
             error={errors.institutionName?.message}
           >
-            <Input id="account-institution" {...register('institutionName')} />
+            <Input
+              id="account-institution"
+              placeholder={type === 'E_WALLET' ? 'Ej: Nequi' : 'Ej: Bancolombia'}
+              {...register('institutionName')}
+            />
           </FormField>
           {!account && (
             <FormField
@@ -163,11 +178,10 @@ export function AccountForm({
               />
             </FormField>
           )}
-          <FormField
+          {!account && <FormField
             label="Saldo inicial"
             htmlFor="account-opening"
             required
-            helpText="El saldo actual permanece controlado por el backend."
             error={errors.openingBalance?.message}
           >
             <Controller
@@ -176,6 +190,7 @@ export function AccountForm({
               render={({ field }) => (
                 <MoneyInput
                   id="account-opening"
+                  minorUnits
                   value={field.value}
                   onValueChange={field.onChange}
                   onBlur={field.onBlur}
@@ -183,7 +198,7 @@ export function AccountForm({
                 />
               )}
             />
-          </FormField>
+          </FormField>}
           {type === 'CREDIT_CARD' && (
             <>
               <FormField

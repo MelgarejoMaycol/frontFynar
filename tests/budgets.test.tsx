@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
 import { ApiError, httpClient } from '@/services/http'
 import { budgetsApi } from '@/features/budgets/api/budgets.api'
 import { getBudgetErrorMessage } from '@/features/budgets/budgets.errors'
@@ -189,6 +190,24 @@ describe('budgets', () => {
         expect.objectContaining({ currency: 'USD', accountIds: [] }),
       ),
     )
+  })
+  it('usa MoneyInput progresivo y muestra el porcentaje con sufijo', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(accountsApi, 'list').mockResolvedValue({ success: true, data: [] })
+    vi.spyOn(categoriesApi, 'list').mockResolvedValue({ success: true, data: [] })
+    const submit = vi.fn()
+    render(<BudgetForm workspaceId="money-budget" baseCurrency="COP" timezone="America/Bogota" pending={false} error={null} onSubmit={submit} onCancel={vi.fn()} />, { wrapper: provider(new QueryClient()) })
+    await user.type(screen.getByLabelText(/^Nombre/), 'Salidas')
+    const amount = screen.getByLabelText(/^Monto/)
+    await user.type(amount, '9876543')
+    expect(amount).toHaveValue('98.765,43')
+    expect(screen.getByText('%')).toBeVisible()
+    expect(screen.getByLabelText(/Avisarme/)).toHaveValue(80)
+    await user.click(screen.getByRole('button', { name: 'Crear presupuesto' }))
+    await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ amount: '98765.43', alertThreshold: '80' })))
+  })
+  it.each(['1', '50', '80', '100'])('acepta umbral %s', (alertThreshold) => {
+    expect(budgetFormSchema.safeParse({ ...input, alertThreshold }).success).toBe(true)
   })
   const expectInvalidation = (client: QueryClient) => {
     const invalidate = vi.mocked(client.invalidateQueries)
