@@ -38,7 +38,7 @@ import {
   useCards,
   useDebt,
   useLiabilityMutation,
-  useObligations,
+  useObligation,
   usePurchases,
   useStatements,
 } from './hooks'
@@ -1930,7 +1930,7 @@ function CardPaymentForm({
         <Select id="card-account" name="sourceAccountId" required>
           {eligibleAccounts.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name}
+              {a.name} · Disponible {money(a.currentBalance, a.currency)}
             </option>
           ))}
         </Select>
@@ -1997,8 +1997,8 @@ export function ObligationDetailPage() {
   const { obligationId = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const { activeWorkspace: w } = useActiveWorkspace()
-  const q = useObligations(w!.id)
-  const o = q.data?.find((x) => x.id === obligationId)
+  const q = useObligation(w!.id, obligationId)
+  const o = q.data
   const canWrite = usePermission('debts.write')
   const [mode, setMode] = useState<'edit' | 'occurrence' | 'pay' | null>(null)
   const [selected, setSelected] = useState<Occurrence | null>(null)
@@ -2042,7 +2042,7 @@ export function ObligationDetailPage() {
             : 'Monto fijo esperado por periodo.'
         }
         actions={
-          canWrite ? (
+          canWrite && o.status !== 'CANCELLED' ? (
             <>
               <Button variant="secondary" onClick={() => setMode('edit')}>
                 Editar obligación

@@ -98,6 +98,12 @@ describe('vigencia del estimador de créditos', () => {
     expect(
       await screen.findByText('Fecha estimada de finalización'),
     ).toBeVisible()
+    expect(
+      screen.getByLabelText(/Valor esperado de la próxima cuota/),
+    ).toHaveValue('499.241,02')
+    expect(
+      screen.getByText('Estimado · calculado automáticamente'),
+    ).toBeVisible()
 
     fireEvent.change(screen.getByLabelText(/Tasa de interés/), {
       target: { value: '2,00' },

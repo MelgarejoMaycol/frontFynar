@@ -7,7 +7,10 @@ export const liabilityKeys = {
   upcoming: (w: string) => ['liabilities', w, 'upcoming'] as const,
   debts: (w: string, q: string) => ['liabilities', w, 'debts', q] as const,
   debt: (w: string, id: string) => ['liabilities', w, 'debt', id] as const,
-  obligations: (w: string) => ['liabilities', w, 'obligations'] as const,
+  obligations: (w: string, archived = false) =>
+    ['liabilities', w, 'obligations', archived ? 'archived' : 'active'] as const,
+  obligation: (w: string, id: string) =>
+    ['liabilities', w, 'obligation', id] as const,
   cards: (w: string) => ['liabilities', w, 'cards'] as const,
   statements: (w: string, c: string) =>
     ['liabilities', w, 'cards', c, 'statements'] as const,
@@ -53,11 +56,18 @@ export const useDebt = (w: string, id: string) =>
       (await liabilitiesApi.debt(w, id, signal)).data,
     enabled: Boolean(id),
   })
-export const useObligations = (w: string) =>
+export const useObligations = (w: string, archived = false) =>
   useQuery({
-    queryKey: liabilityKeys.obligations(w),
+    queryKey: liabilityKeys.obligations(w, archived),
     queryFn: async ({ signal }) =>
-      (await liabilitiesApi.obligations(w, signal)).data,
+      (await liabilitiesApi.obligations(w, archived, signal)).data,
+  })
+export const useObligation = (w: string, id: string) =>
+  useQuery({
+    queryKey: liabilityKeys.obligation(w, id),
+    queryFn: async ({ signal }) =>
+      (await liabilitiesApi.obligation(w, id, signal)).data,
+    enabled: Boolean(w && id),
   })
 export const useCards = (w: string) =>
   useQuery({

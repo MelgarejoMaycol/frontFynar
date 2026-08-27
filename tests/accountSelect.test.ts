@@ -1,5 +1,8 @@
+import { render, screen } from '@testing-library/react'
+import { createElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { accountOptionLabel } from '../src/features/accounts/accounts.format'
+import { TransactionAccountSelect } from '../src/features/transactions/components/TransactionAccountSelect'
 import type { Account } from '../src/features/accounts/types/account.types'
 
 const account = (input: Partial<Account>): Account => ({
@@ -43,5 +46,26 @@ describe('selector reutilizable de cuentas', () => {
         }),
       ),
     ).toBe('Credi Tarjeta · - $ 845.658,00')
+  })
+
+  it('muestra cupo disponible y deuda cuando una tarjeta origina una compra', () => {
+    render(
+      createElement(TransactionAccountSelect, {
+        'aria-label': 'Cuenta origen',
+        context: 'SOURCE',
+        accounts: [
+          account({
+            name: 'Tarjeta Bancolombia',
+            type: 'CREDIT_CARD',
+            nature: 'LIABILITY',
+            currentBalance: '800000.00',
+            creditLimit: '1000000.00',
+          }),
+        ],
+      }),
+    )
+    expect(screen.getByRole('option', { name: /Tarjeta Bancolombia/ })).toHaveTextContent(
+      'Disponible: $ 200.000,00 · Deuda actual: $ 800.000,00',
+    )
   })
 })

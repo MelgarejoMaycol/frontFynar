@@ -40,6 +40,7 @@ export function BudgetsPage() {
       status: 'ACTIVE',
     }),
     [creating, setCreating] = useState(false),
+    [creationKey, setCreationKey] = useState(0),
     [selected, setSelected] = useState<Budget | null>(null),
     [editing, setEditing] = useState(false),
     [archiving, setArchiving] = useState(false)
@@ -77,8 +78,9 @@ export function BudgetsPage() {
       update.reset()
       archive.reset()
     },
-    success = (text: string) => {
+    success = (text: string, consumeCreateDraft = false) => {
       showToast(text)
+      if (consumeCreateDraft) setCreationKey((value) => value + 1)
       close()
     }
   return (
@@ -243,6 +245,7 @@ export function BudgetsPage() {
       )}
       <Dialog open={creating} title="Crear presupuesto" onClose={close}>
         <BudgetForm
+          key={`new-${creationKey}`}
           workspaceId={workspace.id}
           baseCurrency={workspace.baseCurrency}
           timezone={workspace.timezone}
@@ -251,7 +254,7 @@ export function BudgetsPage() {
           onCancel={close}
           onSubmit={(input) =>
             create.mutate(input, {
-              onSuccess: () => success('Presupuesto creado.'),
+              onSuccess: () => success('Presupuesto creado.', true),
               onError: (error) =>
                 showToast(getBudgetErrorMessage(error), 'error'),
             })

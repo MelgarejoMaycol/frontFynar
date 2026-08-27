@@ -47,7 +47,7 @@ test('crea un crédito calculando la cuota con el backend y PostgreSQL QA reales
     paymentFrequency: 'MONTHLY',
     firstPaymentDate: '2026-09-24',
   })
-  await expect(dialog.getByText(/499\.241,02/)).toBeVisible()
+  await expect(dialog.getByText(/499\.241,02/).first()).toBeVisible()
   await expect(dialog.getByText('24/08/2028')).toBeVisible()
 
   const createResponse = page.waitForResponse(

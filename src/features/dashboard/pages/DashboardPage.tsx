@@ -91,14 +91,14 @@ export function DashboardPage() {
         ) : (
           <>
             <div className={styles.quickActions} aria-label="Acciones rápidas">
+              <Button onClick={() => navigate('/app/transactions?new=1')}>
+                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => navigate('/app/accounts?new=1')}
               >
                 <Landmark size={18} aria-hidden="true" /> Crear cuenta
-              </Button>
-              <Button onClick={() => navigate('/app/transactions?new=1')}>
-                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
               </Button>
               {canReadDebts && (
                 <Button

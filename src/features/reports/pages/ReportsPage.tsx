@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Printer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Printer } from 'lucide-react'
 import { Button, FilterPanel, PageHeader } from '@/components/ui'
 import { APP_NAME } from '@/config/brand'
 import { ErrorState } from '@/components/feedback/ErrorState'
@@ -20,6 +20,33 @@ import { getReportErrorMessage } from '../reports.errors'
 import { customRangeError, groupsForPeriod } from '../reports.validation'
 import type { ReportGroup, ReportParams } from '../types/report.types'
 import styles from '../components/reports.module.css'
+
+const monthRange = (year: number, month: number): ReportParams => {
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return {
+    period: 'CUSTOM',
+    dateFrom: `${year}-${String(month).padStart(2, '0')}-01`,
+    dateTo: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+  }
+}
+
+const currentMonthRange = (timezone: string) => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(new Date())
+  const value = (type: 'year' | 'month') =>
+    Number(parts.find((part) => part.type === type)?.value)
+  return monthRange(value('year'), value('month'))
+}
+
+const shiftMonth = (params: ReportParams, delta: number) => {
+  const base = params.dateFrom ?? new Date().toISOString().slice(0, 10)
+  const [year, month] = base.split('-').map(Number)
+  const shifted = new Date(Date.UTC(year!, month! - 1 + delta, 1))
+  return monthRange(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1)
+}
 
 function ReportSection({
   title,
@@ -72,7 +99,11 @@ export function ReportsPage() {
       workspace.id,
       { page: 1, limit: 100 },
       canRead,
-    )
+    ),
+    navigationRange =
+      params.period === 'CUSTOM' && params.dateFrom && params.dateTo
+        ? params
+        : currentMonthRange(workspace.timezone)
   const changeParams = (next: ReportParams) => {
     const compatible = groupsForPeriod(next.period, next)
     setParams(next)
@@ -120,6 +151,29 @@ export function ReportsPage() {
         </p>
       </header>
       <div className={styles.screenOnly}>
+        <div className={styles.filters} aria-label="Navegación mensual">
+          <Button
+            variant="secondary"
+            aria-label="Mes anterior"
+            onClick={() => changeParams(shiftMonth(navigationRange, -1))}
+          >
+            <ChevronLeft size={18} aria-hidden="true" /> Mes anterior
+          </Button>
+          <strong>
+            {new Intl.DateTimeFormat('es-CO', {
+              month: 'long',
+              year: 'numeric',
+              timeZone: 'UTC',
+            }).format(new Date(`${navigationRange.dateFrom}T00:00:00Z`))}
+          </strong>
+          <Button
+            variant="secondary"
+            aria-label="Mes siguiente"
+            onClick={() => changeParams(shiftMonth(navigationRange, 1))}
+          >
+            Mes siguiente <ChevronRight size={18} aria-hidden="true" />
+          </Button>
+        </div>
         <FilterPanel
           active={params.period !== 'CURRENT_MONTH' || groupBy !== 'DAY'}
         >

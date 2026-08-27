@@ -12,6 +12,13 @@ export function TransactionAccountSelect({ accounts, context, ...props }: Omit<S
     }
     if (context === 'DESTINATION' && account.type === 'CREDIT_CARD')
       return `Deuda pendiente: ${formatMoney(account.currentBalance, account.currency)}`
+    if (context === 'SOURCE' && account.type === 'CREDIT_CARD') {
+      const available = Math.max(
+        0,
+        Number(account.creditLimit ?? 0) - Number(account.currentBalance),
+      )
+      return `Disponible: ${formatMoney(available.toFixed(2), account.currency)} · Deuda actual: ${formatMoney(account.currentBalance, account.currency)}`
+    }
     return `${context === 'SOURCE' ? 'Disponible' : 'Saldo actual'}: ${formatMoney(account.currentBalance, account.currency)}`
   }
   return <Select {...props}>

@@ -49,6 +49,7 @@ export function AccountsPage() {
     () => new URLSearchParams(window.location.search).get('new') === '1',
   )
   const [message, setMessage] = useState('')
+  const [creationKey, setCreationKey] = useState(0)
   const update = useUpdateAccount(workspaceId, editing?.id ?? '')
   const openCreate = () => {
     setMessage('')
@@ -60,8 +61,9 @@ export function AccountsPage() {
     create.reset()
     update.reset()
   }
-  const saved = (text: string) => {
+  const saved = (text: string, consumeCreateDraft = false) => {
     setMessage(text)
+    if (consumeCreateDraft) setCreationKey((value) => value + 1)
     closeForm()
   }
   if (accounts.isPending && !accounts.data) return <PageLoader />
@@ -181,7 +183,7 @@ export function AccountsPage() {
         onClose={() => !create.isPending && !update.isPending && closeForm()}
       >
         <AccountForm
-          key={editing?.id ?? 'new'}
+          key={editing?.id ?? `new-${creationKey}`}
           currency={activeWorkspace!.baseCurrency}
           account={editing ?? undefined}
           pending={create.isPending || update.isPending}
@@ -193,7 +195,7 @@ export function AccountsPage() {
                   onSuccess: () => saved('Cuenta actualizada.'),
                 })
               : create.mutate(input as AccountInput, {
-                  onSuccess: () => saved('Cuenta creada.'),
+                  onSuccess: () => saved('Cuenta creada.', true),
                 })
           }
         />

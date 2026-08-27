@@ -16,6 +16,7 @@ export function cardPayloadFromFormData(
       : { usedCredit: String(data.get('balance')) }),
     billingDay: Number(data.get('billingDay')) || undefined,
     paymentDueDay: Number(data.get('paymentDueDay')) || undefined,
+    currentCyclePaid: data.get('currentCyclePaid') === 'on',
     ...(referencePeriodicRate
       ? { referencePeriodicRate, referenceRateSource: 'INFORMED' }
       : {}),

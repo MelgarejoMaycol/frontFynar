@@ -237,6 +237,16 @@ describe('ReportsPage', () => {
     expect(mocks.cashParams.at(-1)?.groupBy).toBe('MONTH')
     expect(screen.getByText(/agrupación month/)).toBeVisible()
   })
+  it('navega por meses completos usando el periodo personalizado', () => {
+    renderPage()
+    expect(screen.getByText('agosto de 2026')).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Mes anterior' }))
+    expect(screen.getByText(/julio de 2026/i)).toBeVisible()
+    expect(screen.getByLabelText('Desde')).toHaveValue('2026-07-01')
+    expect(screen.getByLabelText('Hasta')).toHaveValue('2026-07-31')
+    fireEvent.click(screen.getByRole('button', { name: 'Mes siguiente' }))
+    expect(screen.getByText('agosto de 2026')).toBeVisible()
+  })
   it('no consulta reportes financieros si CUSTOM supera 366 días', () => {
     renderPage()
     fireEvent.change(screen.getByLabelText('Periodo'), {

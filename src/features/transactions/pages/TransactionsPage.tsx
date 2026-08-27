@@ -108,8 +108,9 @@ export function TransactionsPage() {
     update.reset()
     cancel.reset()
   }
-  const success = (value: string) => {
+  const success = (value: string, consumeCreateDraft = false) => {
     setMessage(value)
+    if (consumeCreateDraft) setCreationKey((key) => key + 1)
     close()
   }
   const accountName = (id: string | null) =>
@@ -129,7 +130,6 @@ export function TransactionsPage() {
               disabled={!accounts.data.some((account) => account.isActive)}
               onClick={() => {
                 setMessage('')
-                setCreationKey((value) => value + 1)
                 setCreating(true)
               }}
             >
@@ -195,7 +195,7 @@ export function TransactionsPage() {
           onCancel={close}
           onSubmit={(input) =>
             create.mutate(input as CreateTransactionInput, {
-              onSuccess: () => success('Movimiento registrado.'),
+              onSuccess: () => success('Movimiento registrado.', true),
             })
           }
         />

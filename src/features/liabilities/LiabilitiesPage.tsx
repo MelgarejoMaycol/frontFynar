@@ -97,6 +97,12 @@ export function LiabilitiesPage() {
   const [modal, setModal] = useState<'debt' | 'obligation' | 'card' | null>(
     null,
   )
+  const [draftVersions, setDraftVersions] = useState({
+    debt: 0,
+    obligation: 0,
+    card: 0,
+  })
+  const [showArchivedObligations, setShowArchivedObligations] = useState(false)
   const [deleting, setDeleting] = useState<{
     kind: 'debt' | 'card' | 'obligation'
     id: string
@@ -122,7 +128,7 @@ export function LiabilitiesPage() {
   const summary = useSummary(w!.id),
     upcoming = useUpcoming(w!.id),
     debts = useDebts(w!.id, debtQuery),
-    obligations = useObligations(w!.id),
+    obligations = useObligations(w!.id, showArchivedObligations),
     cards = useCards(w!.id)
   const selectedObligation = params.get('obligation')
   useEffect(() => {
@@ -147,6 +153,14 @@ export function LiabilitiesPage() {
     ({ id, status }: { id: string; status: 'ACTIVE' | 'PAUSED' }) =>
       liabilitiesApi.updateObligation(w!.id, id, { status }),
   )
+  const closeModal = (consumed = false) => {
+    if (consumed && modal)
+      setDraftVersions((current) => ({
+        ...current,
+        [modal]: current[modal] + 1,
+      }))
+    setModal(null)
+  }
   return (
     <div className={styles.page}>
       <ModulePageHeader
@@ -255,7 +269,26 @@ export function LiabilitiesPage() {
           />
         ))}{' '}
       {tab === 'obligations' &&
-        (obligations.isPending ? (
+        (<>
+          <div className={styles.tabs} aria-label="Estado de pagos recurrentes">
+            <button
+              type="button"
+              className={!showArchivedObligations ? styles.activeTab : ''}
+              aria-pressed={!showArchivedObligations}
+              onClick={() => setShowArchivedObligations(false)}
+            >
+              Activos
+            </button>
+            <button
+              type="button"
+              className={showArchivedObligations ? styles.activeTab : ''}
+              aria-pressed={showArchivedObligations}
+              onClick={() => setShowArchivedObligations(true)}
+            >
+              Archivados
+            </button>
+          </div>
+        {obligations.isPending ? (
           <PageLoader />
         ) : obligations.isError ? (
           <ErrorState
@@ -274,31 +307,41 @@ export function LiabilitiesPage() {
             onStatus={(id, status) =>
               updateObligationStatus.mutate({ id, status })
             }
+            archived={showArchivedObligations}
           />
-        ))}
+        )}</>)}
       <Dialog
         open={modal === 'card'}
         title="Nueva tarjeta"
-        onClose={() => setModal(null)}
+        onClose={() => closeModal()}
       >
         <CardForm
+          key={`card-${draftVersions.card}`}
           workspaceId={w!.id}
           currency={w!.baseCurrency}
-          close={() => setModal(null)}
+          close={closeModal}
         />
       </Dialog>
       <ConfirmDeleteDialog
         open={Boolean(deleting)}
-        title={`Eliminar ${deleting?.kind === 'card' ? 'tarjeta' : deleting?.kind === 'debt' ? 'crédito' : 'obligación'}`}
+        title={
+          deleting?.kind === 'obligation'
+            ? 'Archivar pago recurrente'
+            : deleting?.kind === 'debt'
+              ? 'Archivar crédito'
+              : 'Eliminar tarjeta'
+        }
         name={deleting?.name ?? ''}
-        confirmLabel={deleting?.kind === 'obligation' ? 'Archivar' : 'Eliminar'}
+        confirmLabel={deleting?.kind === 'card' ? 'Eliminar' : 'Archivar'}
         question={
-          deleting?.kind === 'obligation' ? '¿Quieres archivar' : undefined
+          deleting?.kind !== 'card' ? '¿Quieres archivar' : undefined
         }
         description={
           deleting?.kind === 'obligation'
-            ? 'Los pagos y movimientos existentes se conservarán. Los vencimientos pendientes dejarán de mostrarse.'
-            : undefined
+            ? 'Esta obligación dejará de aparecer en próximos pagos, resumen y calendario futuro. Su historial se conservará.'
+            : deleting?.kind === 'debt'
+              ? 'El crédito dejará de aparecer entre los activos. Su cronograma, pagos, movimientos e historial se conservarán.'
+              : undefined
         }
         pending={remove.isPending}
         error={remove.error ? errorMessage(remove.error) : undefined}
@@ -315,23 +358,25 @@ export function LiabilitiesPage() {
         open={modal === 'debt'}
         title="Registrar crédito"
         size="wide"
-        onClose={() => setModal(null)}
+        onClose={() => closeModal()}
       >
         <DebtForm
+          key={`debt-${draftVersions.debt}`}
           workspaceId={w!.id}
           currency={w!.baseCurrency}
-          close={() => setModal(null)}
+          close={closeModal}
         />
       </Dialog>
       <Dialog
         open={modal === 'obligation'}
         title="Nueva obligación"
-        onClose={() => setModal(null)}
+        onClose={() => closeModal()}
       >
         <ObligationForm
+          key={`obligation-${draftVersions.obligation}`}
           workspaceId={w!.id}
           currency={w!.baseCurrency}
-          close={() => setModal(null)}
+          close={closeModal}
         />
       </Dialog>
     </div>
@@ -556,16 +601,26 @@ function Debts({
                     <dd>{calendarDate(d.nextDueDate)}</dd>
                   </div>
                 </dl>
-                <Link to={`/app/debts/${d.id}`}>Ver detalle y cronograma</Link>
-                {canWrite && (
-                  <Button
-                    variant="danger"
-                    size="small"
-                    onClick={() => onDelete(d.id, d.name)}
-                  >
-                    Eliminar
-                  </Button>
-                )}
+                <div className={styles.obligationActions}>
+                  <Link to={`/app/debts/${d.id}`}>Ver detalle y cronograma</Link>
+                  {canWrite && (
+                    <Dropdown
+                      label={`Acciones de ${d.name}`}
+                      trigger={<MoreHorizontal aria-hidden="true" />}
+                    >
+                      <Link to={`/app/debts/${d.id}?action=reconcile`}>
+                        Conciliar
+                      </Link>
+                      <Button
+                        variant="danger"
+                        size="small"
+                        onClick={() => onDelete(d.id, d.name)}
+                      >
+                        Archivar
+                      </Button>
+                    </Dropdown>
+                  )}
+                </div>
               </Card>
             )
           })}
@@ -758,7 +813,7 @@ function CardForm({
 }: {
   workspaceId: string
   currency: string
-  close: () => void
+  close: (consumed?: boolean) => void
 }) {
   const mutate = useLiabilityMutation(
     workspaceId,
@@ -766,6 +821,31 @@ function CardForm({
       liabilitiesApi.createCard(workspaceId, input),
   )
   const [basis, setBasis] = useState<'available' | 'used'>('available')
+  const [billingDay, setBillingDay] = useState('')
+  const [paymentDueDay, setPaymentDueDay] = useState('')
+  const previewDay = (value: string) => {
+    const requested = Number(value)
+    if (!requested) return null
+    const now = new Date()
+    let year = now.getFullYear()
+    let month = now.getMonth()
+    const dayInMonth = (targetYear: number, targetMonth: number) =>
+      Math.min(requested, new Date(targetYear, targetMonth + 1, 0).getDate())
+    let date = new Date(year, month, dayInMonth(year, month))
+    if (date < new Date(year, month, now.getDate())) {
+      month += 1
+      if (month > 11) {
+        month = 0
+        year += 1
+      }
+      date = new Date(year, month, dayInMonth(year, month))
+    }
+    return new Intl.DateTimeFormat('es-CO', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date)
+  }
   return (
     <form
       className={styles.form}
@@ -773,7 +853,7 @@ function CardForm({
         event.preventDefault()
         const data = new FormData(event.currentTarget)
         mutate.mutate(cardPayloadFromFormData(data, basis), {
-          onSuccess: close,
+          onSuccess: () => close(true),
         })
       }}
     >
@@ -822,10 +902,15 @@ function CardForm({
             type="number"
             min="1"
             max="31"
+            value={billingDay}
+            onChange={(event) => setBillingDay(event.target.value)}
           />
           <small>
             Si el mes tiene menos días, Fynar usa su último día válido.
           </small>
+          {previewDay(billingDay) && (
+            <small>Próximo corte: {previewDay(billingDay)}</small>
+          )}
         </div>
       </Field>
       <Field label="Fecha máxima de pago" id="card-due">
@@ -836,12 +921,24 @@ function CardForm({
             type="number"
             min="1"
             max="31"
+            value={paymentDueDay}
+            onChange={(event) => setPaymentDueDay(event.target.value)}
           />
           <small>
             Se aplica la misma regla para febrero y meses de 30 días.
           </small>
+          {previewDay(paymentDueDay) && (
+            <small>Próximo pago: {previewDay(paymentDueDay)}</small>
+          )}
         </div>
       </Field>
+      <label>
+        <Input type="checkbox" name="currentCyclePaid" /> Ya pagué el período
+        actual
+        <small>
+          El próximo pago se calculará para el siguiente ciclo válido.
+        </small>
+      </label>
       <Field label="Tasa mensual de referencia (opcional)" id="card-rate">
         <div>
           <Input
@@ -867,12 +964,14 @@ function Obligations({
   onCreate,
   onDelete,
   onStatus,
+  archived,
 }: {
   items: NonNullable<ReturnType<typeof useObligations>['data']>
   canWrite: boolean
   onCreate: () => void
   onDelete: (id: string, name: string) => void
   onStatus: (id: string, status: 'ACTIVE' | 'PAUSED') => void
+  archived: boolean
 }) {
   return items.length ? (
     <div className={styles.grid}>
@@ -945,22 +1044,22 @@ function Obligations({
                 label={`Acciones de ${o.name}`}
                 trigger={<MoreHorizontal aria-hidden="true" />}
               >
-                {canWrite && nextOccurrence && (
+                {!archived && canWrite && nextOccurrence && (
                   <Link to={`/app/debts/obligations/${o.id}?action=pay`}>
                     Registrar pago
                   </Link>
                 )}
-                {canWrite && (
+                {!archived && canWrite && (
                   <Link to={`/app/debts/obligations/${o.id}?action=edit`}>
                     Editar
                   </Link>
                 )}
-                {canWrite && (
+                {!archived && canWrite && (
                   <Link to={`/app/debts/obligations/${o.id}?action=occurrence`}>
                     Actualizar valor
                   </Link>
                 )}
-                {canWrite && o.status === 'ACTIVE' && (
+                {!archived && canWrite && o.status === 'ACTIVE' && (
                   <Button
                     variant="ghost"
                     size="small"
@@ -969,7 +1068,7 @@ function Obligations({
                     Pausar
                   </Button>
                 )}
-                {canWrite && o.status === 'PAUSED' && (
+                {!archived && canWrite && o.status === 'PAUSED' && (
                   <Button
                     variant="ghost"
                     size="small"
@@ -978,7 +1077,7 @@ function Obligations({
                     Reactivar
                   </Button>
                 )}
-                {canWrite && (
+                {!archived && canWrite && (
                   <Button
                     variant="danger"
                     size="small"
@@ -995,10 +1094,10 @@ function Obligations({
     </div>
   ) : (
     <EmptyState
-      title="Aún no tienes pagos recurrentes"
-      message="Agrega servicios, arriendo, seguros o suscripciones para controlar sus vencimientos."
+      title={archived ? 'No tienes pagos recurrentes archivados' : 'Aún no tienes pagos recurrentes'}
+      message={archived ? 'Los pagos recurrentes que archives aparecerán aquí con su historial.' : 'Agrega servicios, arriendo, seguros o suscripciones para controlar sus vencimientos.'}
       action={
-        canWrite ? (
+        canWrite && !archived ? (
           <Button onClick={onCreate}>Nueva obligación</Button>
         ) : undefined
       }
@@ -1012,12 +1111,15 @@ export function DebtForm({
 }: {
   workspaceId: string
   currency: string
-  close: () => void
+  close: (consumed?: boolean) => void
 }) {
   const create = useCreateDebt(workspaceId)
   const [estimate, setEstimate] = useState<CreditEstimation | null>(null)
   const [estimateError, setEstimateError] = useState('')
   const [estimating, setEstimating] = useState(false)
+  const [calculatedFields, setCalculatedFields] = useState<
+    Set<keyof DebtFormValues>
+  >(new Set())
   const {
     register,
     control,
@@ -1025,6 +1127,7 @@ export function DebtForm({
     getValues,
     setError,
     setFocus,
+    setValue,
     trigger,
     formState: { errors },
   } = useForm<DebtFormValues>({
@@ -1102,6 +1205,22 @@ export function DebtForm({
         debtEstimatePayload(v),
       )
       setEstimate(r.data)
+      const calculated = new Set<keyof DebtFormValues>()
+      if (!v.installmentAmount && r.data.paymentAmount.value) {
+        setValue('installmentAmount', r.data.paymentAmount.value, {
+          shouldValidate: true,
+        })
+        calculated.add('installmentAmount')
+      }
+      if (!v.installmentCount && r.data.remainingInstallments.value) {
+        setValue(
+          'installmentCount',
+          String(r.data.remainingInstallments.value),
+          { shouldValidate: true },
+        )
+        calculated.add('installmentCount')
+      }
+      setCalculatedFields(calculated)
     } catch (e) {
       if (!applyApiValidation(e)) setEstimateError(errorMessage(e))
     } finally {
@@ -1115,7 +1234,7 @@ export function DebtForm({
         void handleSubmit(async (v) => {
           try {
             await create.mutateAsync(debtCreatePayload(v))
-            close()
+            close(true)
           } catch (error) {
             applyApiValidation(error)
           }
@@ -1167,6 +1286,11 @@ export function DebtForm({
                 value={field.value}
                 onValueChange={(value) => {
                   field.onChange(value)
+                  setCalculatedFields((current) => {
+                    const next = new Set(current)
+                    next.delete('installmentAmount')
+                    return next
+                  })
                   invalidateEstimate()
                 }}
               />
@@ -1201,34 +1325,58 @@ export function DebtForm({
           id="debt-payment"
           error={errors.installmentAmount?.message}
         >
-          <Controller
-            name="installmentAmount"
-            control={control}
-            render={({ field }) => (
-              <MoneyInput
-                id="debt-payment"
-                minorUnits
-                placeholder="Ej. 657.874,98"
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value)
-                  invalidateEstimate()
-                }}
-              />
+          <div>
+            <Controller
+              name="installmentAmount"
+              control={control}
+              render={({ field }) => (
+                <MoneyInput
+                  id="debt-payment"
+                  minorUnits
+                  placeholder="Ej. 657.874,98"
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    setCalculatedFields((current) => {
+                      const next = new Set(current)
+                      next.delete('installmentAmount')
+                      return next
+                    })
+                    invalidateEstimate()
+                  }}
+                />
+              )}
+            />
+            {calculatedFields.has('installmentAmount') && (
+              <small>Estimado · calculado automáticamente</small>
             )}
-          />
+          </div>
         </Field>
         <Field
           label="Número de cuotas restantes (opcional)"
           id="debt-term"
           error={errors.installmentCount?.message}
         >
-          <Input
+          <div>
+            <Input
             id="debt-term"
             inputMode="numeric"
             placeholder="Ej. 46"
-            {...register('installmentCount', { onChange: invalidateEstimate })}
-          />
+            {...register('installmentCount', {
+              onChange: () => {
+                setCalculatedFields((current) => {
+                  const next = new Set(current)
+                  next.delete('installmentCount')
+                  return next
+                })
+                invalidateEstimate()
+              },
+            })}
+            />
+            {calculatedFields.has('installmentCount') && (
+              <small>Estimado · calculado automáticamente</small>
+            )}
+          </div>
         </Field>
         <h3 className={styles.formSectionTitle}>Condiciones</h3>
         <Field label="Frecuencia de pago" id="debt-frequency">
@@ -1457,7 +1605,7 @@ export function DebtForm({
           type="button"
           variant="ghost"
           disabled={create.isPending}
-          onClick={close}
+          onClick={() => close()}
         >
           Cancelar
         </Button>
@@ -1475,7 +1623,7 @@ function ObligationForm({
 }: {
   workspaceId: string
   currency: string
-  close: () => void
+  close: (consumed?: boolean) => void
 }) {
   const create = useCreateObligation(workspaceId)
   const {
@@ -1510,7 +1658,7 @@ function ObligationForm({
             remindersEnabled: true,
             dayOfMonth: new Date(`${v.startsOn}T00:00:00Z`).getUTCDate(),
           }
-          create.mutate(input, { onSuccess: close })
+          create.mutate(input, { onSuccess: () => close(true) })
         })(e)
       }
     >
@@ -1563,7 +1711,7 @@ function ObligationForm({
         </p>
       )}
       <div className={styles.actions}>
-        <Button type="button" variant="secondary" onClick={close}>
+        <Button type="button" variant="secondary" onClick={() => close()}>
           Cancelar
         </Button>
         <Button type="submit" loading={create.isPending}>

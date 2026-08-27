@@ -12,7 +12,7 @@ import {
 import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
-import { useDebt, useDebts } from '@/features/liabilities/hooks'
+import { useCards, useDebt, useDebts } from '@/features/liabilities/hooks'
 import {
   transactionFormSchema,
   type TransactionFormValues,
@@ -73,6 +73,7 @@ export function TransactionForm({
   initialAccountId?: string
 }) {
   const accounts = useAccounts(workspaceId)
+  const cards = useCards(workspaceId)
   const {
     register,
     handleSubmit,
@@ -138,9 +139,38 @@ export function TransactionForm({
           Number(nextInstallment.paidAmount),
       ).toFixed(2)
     : ''
-  const activeAccounts = (accounts.data ?? []).filter(
-    (account) => account.isActive,
-  )
+  const activeAccounts = useMemo(() => {
+    const resources = new Map(
+      (accounts.data ?? [])
+        .filter((account) => account.isActive)
+        .map((account) => [account.id, account]),
+    )
+    const cardResources = Array.isArray(cards.data) ? cards.data : []
+    for (const card of cardResources) {
+      if (resources.has(card.id)) continue
+      resources.set(card.id, {
+        id: card.id,
+        name: card.name,
+        type: 'CREDIT_CARD' as const,
+        nature: 'LIABILITY' as const,
+        institutionName: card.institutionName,
+        currency: card.currency,
+        openingBalance: card.currentBalance,
+        currentBalance: card.currentBalance,
+        creditLimit: card.creditLimit,
+        billingDay: card.billingDay,
+        paymentDueDay: card.paymentDueDay,
+        color: null,
+        icon: null,
+        isFavorite: false,
+        isActive: true,
+        includeInNetWorth: true,
+        createdAt: '',
+        updatedAt: '',
+      })
+    }
+    return [...resources.values()]
+  }, [accounts.data, cards.data])
   const destinationAccount = activeAccounts.find(
     (account) => account.id === destinationId,
   )
@@ -166,6 +196,9 @@ export function TransactionForm({
     : 0
   const advanceExceedsCredit =
     type === 'ADVANCE' &&
+    Number(canonicalMoneyInput(amount || '0')) > availableCredit
+  const purchaseExceedsCredit =
+    isCardPurchase &&
     Number(canonicalMoneyInput(amount || '0')) > availableCredit
   const incomeExceedsCardDebt =
     type === 'INCOME' &&
@@ -382,6 +415,12 @@ export function TransactionForm({
       </FormField>
       {incomeExceedsCardDebt && (
         <p role="alert">El monto supera la deuda pendiente de la tarjeta.</p>
+      )}
+      {purchaseExceedsCredit && (
+        <p role="alert">
+          No tienes cupo suficiente. Disponible:{' '}
+          {formatMoney(availableCredit.toFixed(2), sourceAccount?.currency ?? 'COP')}.
+        </p>
       )}
       <FormField
         label={
@@ -746,6 +785,7 @@ export function TransactionForm({
             pending ||
             (type === 'TRANSFER' && !transferCategory) ||
             advanceExceedsCredit ||
+            purchaseExceedsCredit ||
             incomeExceedsCardDebt ||
             debtExceedsBalance ||
             debtExceedsInstallment ||

@@ -22,6 +22,7 @@ describe('contrato CardForm', () => {
       availableCredit: '675231.02',
       billingDay: 20,
       paymentDueDay: 5,
+      currentCyclePaid: false,
     })
   })
   it('conserva banco no vacío y permite informar cupo utilizado', () => {
@@ -31,5 +32,12 @@ describe('contrato CardForm', () => {
       usedCredit: '675231.02',
     })
     expect(payload).not.toHaveProperty('availableCredit')
+  })
+  it('informa explícitamente cuando el ciclo actual ya fue pagado', () => {
+    const data = form('Coomuldesa')
+    data.set('currentCyclePaid', 'on')
+    expect(cardPayloadFromFormData(data, 'available')).toMatchObject({
+      currentCyclePaid: true,
+    })
   })
 })

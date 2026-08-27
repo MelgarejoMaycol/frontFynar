@@ -49,6 +49,7 @@ export function CategoriesPage() {
   const restore = useRestoreCategory(workspaceId)
   const [editing, setEditing] = useState<Category | null>(null)
   const [creating, setCreating] = useState(false)
+  const [creationKey, setCreationKey] = useState(0)
   const [archiving, setArchiving] = useState<Category | null>(null)
   const update = useUpdateCategory(workspaceId, editing?.id ?? '')
   const { showToast } = useToast()
@@ -78,7 +79,8 @@ export function CategoriesPage() {
     create.reset()
     update.reset()
   }
-  const done = (message: string) => {
+  const done = (message: string, consumeCreateDraft = false) => {
+    if (consumeCreateDraft) setCreationKey((value) => value + 1)
     close()
     showToast(message)
   }
@@ -212,7 +214,7 @@ export function CategoriesPage() {
         onClose={() => !create.isPending && !update.isPending && close()}
       >
         <CategoryForm
-          key={editing?.id ?? 'new'}
+          key={editing?.id ?? `new-${creationKey}`}
           category={editing ?? undefined}
           pending={create.isPending || update.isPending}
           error={editing ? update.error : create.error}
@@ -230,7 +232,7 @@ export function CategoriesPage() {
               )
             } else {
               create.mutate(input, {
-                onSuccess: () => done('Categoría creada.'),
+                onSuccess: () => done('Categoría creada.', true),
                 onError: (error) =>
                   showToast(getCategoryErrorMessage(error), 'error'),
               })

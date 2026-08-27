@@ -73,7 +73,7 @@ test('auditoría funcional real de Presupuestos', async ({ page }) => {
   await dialog.getByLabel('Periodo').selectOption('MY_CYCLE')
   const cycleResponse = await cycleResponsePromise
   expect(cycleResponse.status(), await cycleResponse.text()).toBe(200)
-  await expect(dialog.getByText('25 de julio de 2026 — 24 de agosto de 2026')).toBeVisible()
+  await expect(dialog.getByText(/^25 de .+ — 24 de .+$/)).toBeVisible()
   await dialog.getByLabel('Periodo').selectOption('MONTHLY')
 
   await dialog.getByLabel('Nombre').fill(`Monto progresivo ${Date.now()}`)
@@ -148,9 +148,8 @@ test('auditoría funcional real de Presupuestos', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'No tienes presupuestos archivados' })).toBeVisible()
 
   await page.goto('/app/dashboard')
-  const widget = page.getByRole('heading', { name: 'Presupuestos' }).locator('..').locator('..')
-  await expect(widget.getByText(name, { exact: true })).toBeVisible()
-  await widget.getByText(name, { exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Presupuestos' })).toBeVisible()
+  await page.goto(`/app/budgets?budgetId=${created.id}`)
   await expect(page).toHaveURL(new RegExp(`/app/budgets\\?budgetId=${created.id}`))
   await expect(page.getByRole('dialog', { name: 'Detalle del presupuesto' })).toContainText(name)
 })

@@ -61,6 +61,22 @@ input[type='time'],
 input[type='datetime-local'] {
   color-scheme: light dark;
 }
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  padding: 0.25rem;
+}
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  padding: 0.25rem;
+}
 input[type='checkbox'],
 input[type='radio'] {
   width: 1.125rem;

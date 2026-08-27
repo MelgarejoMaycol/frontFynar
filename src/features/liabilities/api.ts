@@ -86,8 +86,13 @@ export const liabilitiesApi = {
       ApiSuccess<{ id: string; difference: string }>,
       Record<string, unknown>
     >(`${b(w)}/debts/${d}/reconciliations`, i),
-  obligations: (w: string, s?: AbortSignal) =>
-    httpClient.get<ApiSuccess<Obligation[]>>(`${b(w)}/obligations`, s),
+  obligations: (w: string, archived = false, s?: AbortSignal) =>
+    httpClient.get<ApiSuccess<Obligation[]>>(
+      `${b(w)}/obligations${archived ? '?archived=true' : ''}`,
+      s,
+    ),
+  obligation: (w: string, id: string, s?: AbortSignal) =>
+    httpClient.get<ApiSuccess<Obligation>>(`${b(w)}/obligations/${id}`, s),
   createObligation: (w: string, i: ObligationInput) =>
     httpClient.post<ApiSuccess<Obligation>, ObligationInput>(
       `${b(w)}/obligations`,
