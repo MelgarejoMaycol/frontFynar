@@ -107,8 +107,10 @@ function killTree(child) {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function waitFor(url, child, label) {
-  const deadline = Date.now() + 30_000
+async function waitFor(url, child, label, timeoutMs) {
+  const startedAt = Date.now()
+  const deadline = startedAt + timeoutMs
+  let nextProgressAt = startedAt + 10_000
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw new Error(`${label} terminó antes de estar disponible`)
     try {
@@ -117,9 +119,18 @@ async function waitFor(url, child, label) {
     } catch {
       // Sigue iniciando.
     }
+    if (Date.now() >= nextProgressAt) {
+      const elapsedSeconds = Math.round((Date.now() - startedAt) / 1_000)
+      console.log(
+        `[dev] ${label} sigue iniciando (${elapsedSeconds}s); el primer arranque puede tardar por la compilación de TypeScript...`,
+      )
+      nextProgressAt += 10_000
+    }
     await delay(200)
   }
-  throw new Error(`${label} no respondió en 30 segundos`)
+  throw new Error(
+    `${label} no respondió en ${Math.round(timeoutMs / 1_000)} segundos`,
+  )
 }
 
 function start(name, cwd, args) {
@@ -187,7 +198,12 @@ try {
     'scripts/run-local-qa.ts',
     'server',
   ])
-  await waitFor('http://127.0.0.1:3000/api/v1/health/live', backend, 'Backend')
+  await waitFor(
+    'http://127.0.0.1:3000/api/v1/health/live',
+    backend,
+    'Backend',
+    180_000,
+  )
   console.log('[dev] Backend disponible en http://127.0.0.1:3000')
 
   if (onPort(FRONTEND_PORT).length)
@@ -200,7 +216,7 @@ try {
     String(FRONTEND_PORT),
     '--strictPort',
   ])
-  await waitFor('http://localhost:5173', frontend, 'Frontend')
+  await waitFor('http://localhost:5173', frontend, 'Frontend', 90_000)
   console.log('[dev] Frontend disponible en http://localhost:5173')
   console.log('[dev] Fynar listo. Presiona Ctrl+C para detener todos los servicios.')
   watchdog = setInterval(() => {
