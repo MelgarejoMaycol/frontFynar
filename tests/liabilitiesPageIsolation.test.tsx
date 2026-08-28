@@ -192,6 +192,48 @@ describe('aislamiento de consultas en Créditos y pagos', () => {
     expect(screen.getByRole('link', { name: 'Actualizar valor' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Archivar' })).toBeVisible()
   })
+  it('limita el menú archivado a restaurar e historial', () => {
+    mocks.canWrite.mockReturnValue(true)
+    mocks.obligations.mockReturnValue(
+      ok([{
+        id: 'obligation-archived', name: 'Spotify QA', description: null,
+        expectedAmount: '20000.00', currency: 'COP', amountType: 'FIXED',
+        status: 'CANCELLED', deletedAt: '2026-08-28T12:00:00Z',
+        paymentAccountId: null, categoryId: null, remindersEnabled: true,
+        recurrenceRules: { frequency: 'MONTHLY', intervalValue: 1, dayOfWeek: null,
+          dayOfMonth: 28, startsOn: '2026-06-28', endsOn: null, nextRunAt: null },
+        occurrences: [],
+      }]),
+    )
+    render(
+      <MemoryRouter initialEntries={['/app/debts?tab=obligations']}>
+        <LiabilitiesPage />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Archivados' }))
+    fireEvent.click(screen.getByLabelText('Acciones de Spotify QA'))
+    expect(screen.getByRole('button', { name: 'Restaurar' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Ver historial' })).toBeVisible()
+    expect(screen.queryByText('Registrar pago')).not.toBeInTheDocument()
+    expect(screen.queryByText('Actualizar valor')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Archivar' })).not.toBeInTheDocument()
+  })
+  it('presenta la nueva tarjeta con ejemplos y checkbox accesible', () => {
+    mocks.canWrite.mockReturnValue(true)
+    render(
+      <MemoryRouter initialEntries={['/app/debts?tab=cards']}>
+        <LiabilitiesPage />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nueva tarjeta' })[0]!)
+    expect(screen.getByPlaceholderText('Ej. Visa principal')).toBeVisible()
+    expect(screen.getByPlaceholderText('Ej. Banco de Bogotá')).toBeVisible()
+    expect(screen.getByPlaceholderText('Ej. 5.000.000')).toBeVisible()
+    const paid = screen.getByRole('checkbox', { name: /Ya pagué el período actual/ })
+    expect(paid).not.toBeChecked()
+    fireEvent.click(screen.getByText('Ya pagué el período actual'))
+    expect(paid).toBeChecked()
+  })
   it('usa la misma agenda para tarjetas y calendario sin duplicar eventos', () => {
     const base = {
       currency: 'COP',

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import styles from './surfaces.module.css'
 export function Dropdown({
   trigger,
@@ -29,7 +29,17 @@ export function Dropdown({
     }
   }, [])
   return (
-    <details ref={ref} className={styles.dropdown}>
+    <details
+      ref={ref}
+      className={styles.dropdown}
+      data-ui-dropdown
+      onToggle={() => {
+        if (!ref.current?.open) return
+        document.querySelectorAll<HTMLDetailsElement>('details[data-ui-dropdown][open]').forEach((item) => {
+          if (item !== ref.current) item.removeAttribute('open')
+        })
+      }}
+    >
       <summary aria-label={label}>{trigger}</summary>
       <div
         className={styles.dropdownMenu}
@@ -42,5 +52,20 @@ export function Dropdown({
         {children}
       </div>
     </details>
+  )
+}
+
+export function DropdownAction({
+  danger = false,
+  className = '',
+  type = 'button',
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { danger?: boolean }) {
+  return (
+    <button
+      type={type}
+      className={`${styles.dropdownAction} ${danger ? styles.dropdownDanger : ''} ${className}`.trim()}
+      {...props}
+    />
   )
 }

@@ -873,13 +873,13 @@ function ReconciliationForm({
         />
       </FormField>
       <FormField label="Nueva cuota (opcional)" htmlFor="rec-payment">
-        <MoneyInput id="rec-payment" name="newPayment" minorUnits />
+        <MoneyInput id="rec-payment" name="newPayment" placeholder="Ej. 250.000" minorUnits />
       </FormField>
       <FormField label="Nueva tasa (opcional)" htmlFor="rec-rate">
-        <Input id="rec-rate" name="newRate" inputMode="decimal" />
+        <Input id="rec-rate" name="newRate" placeholder="Ej. 1.85" inputMode="decimal" />
       </FormField>
       <FormField label="Notas" htmlFor="rec-notes">
-        <Input id="rec-notes" name="notes" />
+        <Input id="rec-notes" name="notes" placeholder="Motivo o detalle de la conciliación" />
       </FormField>
       <MutationActions
         mutation={mutate}
@@ -1497,7 +1497,7 @@ function CashAdvanceForm({
         cuenta elegida. No se registra como ingreso.
       </p>
       <FormField label="Monto retirado" htmlFor="advance-amount">
-        <MoneyInput id="advance-amount" name="amount" minorUnits required />
+        <MoneyInput id="advance-amount" name="amount" placeholder="Ej. 300.000" minorUnits required />
       </FormField>
       <FormField
         label="Cuenta donde recibiste el dinero"
@@ -1544,7 +1544,7 @@ function CashAdvanceForm({
         />
       </FormField>
       <FormField label="Notas" htmlFor="advance-notes">
-        <Textarea id="advance-notes" name="notes" />
+        <Textarea id="advance-notes" name="notes" placeholder="Detalle opcional del avance" />
       </FormField>
       <MutationActions
         mutation={mutate}
@@ -1588,10 +1588,10 @@ function PurchaseForm({
       })}
     >
       <FormField label="Monto" htmlFor="purchase-amount">
-        <MoneyInput id="purchase-amount" name="amount" minorUnits required />
+        <MoneyInput id="purchase-amount" name="amount" placeholder="Ej. 120.000" minorUnits required />
       </FormField>
       <FormField label="Descripción" htmlFor="purchase-description">
-        <Input id="purchase-description" name="description" required />
+        <Input id="purchase-description" name="description" placeholder="Ej. Mercado mensual" required />
       </FormField>
       <FormField label="Categoría" htmlFor="purchase-category">
         <Select id="purchase-category" name="categoryId" required>
@@ -2000,9 +2000,13 @@ export function ObligationDetailPage() {
   const q = useObligation(w!.id, obligationId)
   const o = q.data
   const canWrite = usePermission('debts.write')
+  const restore = useLiabilityMutation<Record<string, never>>(w!.id, () =>
+    liabilitiesApi.restoreObligation(w!.id, obligationId),
+  )
   const [mode, setMode] = useState<'edit' | 'occurrence' | 'pay' | null>(null)
   const [selected, setSelected] = useState<Occurrence | null>(null)
   const action = searchParams.get('action')
+  const isArchived = Boolean(o?.deletedAt)
   const requestedOccurrence = o
     ? [...o.occurrences]
         .filter(
@@ -2010,8 +2014,9 @@ export function ObligationDetailPage() {
         )
         .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0]
     : undefined
-  const activeMode =
-    mode ??
+  const activeMode = isArchived
+    ? null
+    : mode ??
     (action === 'edit' || action === 'occurrence'
       ? action
       : action === 'pay' && requestedOccurrence
@@ -2042,7 +2047,7 @@ export function ObligationDetailPage() {
             : 'Monto fijo esperado por periodo.'
         }
         actions={
-          canWrite && o.status !== 'CANCELLED' ? (
+          canWrite && !isArchived && o.status !== 'CANCELLED' ? (
             <>
               <Button variant="secondary" onClick={() => setMode('edit')}>
                 Editar obligación
@@ -2051,6 +2056,13 @@ export function ObligationDetailPage() {
                 Agregar vencimiento
               </Button>
             </>
+          ) : canWrite && isArchived ? (
+            <Button
+              onClick={() => restore.mutate({})}
+              disabled={restore.isPending}
+            >
+              {restore.isPending ? 'Restaurando…' : 'Restaurar obligación'}
+            </Button>
           ) : undefined
         }
       />
@@ -2058,7 +2070,7 @@ export function ObligationDetailPage() {
         label="Monto esperado"
         value={money(o.expectedAmount, o.currency)}
       />
-      <section>
+      <section id="history">
         <h2>Periodos</h2>
         {o.occurrences.length ? (
           <div className={styles.list}>
@@ -2079,7 +2091,7 @@ export function ObligationDetailPage() {
                   <Badge tone={statusTone(x.status)}>
                     {statusLabel[x.status]}
                   </Badge>
-                  {x.status !== 'PAID' && (
+                  {!isArchived && !['PAID', 'CANCELLED'].includes(x.status) && (
                     <Button
                       size="small"
                       onClick={() => {
@@ -2265,7 +2277,10 @@ function OccurrenceForm({
       })}
     >
       <FormField label="Fecha de vencimiento" htmlFor="occ-date">
-        <Input id="occ-date" name="dueDate" type="date" required />
+        <div>
+          <Input id="occ-date" name="dueDate" type="date" aria-describedby="occ-date-help" required />
+          <small id="occ-date-help">Selecciona la fecha real de vencimiento del período.</small>
+        </div>
       </FormField>
       <FormField
         label={o.amountType === 'VARIABLE' ? 'Valor de este periodo' : 'Valor'}

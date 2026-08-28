@@ -186,6 +186,7 @@ export interface RecurrenceRule {
 }
 export interface Obligation {
   id: string
+  deletedAt?: string | null
   name: string
   description: string | null
   expectedAmount: string

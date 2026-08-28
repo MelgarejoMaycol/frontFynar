@@ -111,6 +111,11 @@ export const liabilitiesApi = {
     httpClient.delete<ApiSuccess<{ mode: 'PHYSICAL' | 'LOGICAL' }>>(
       `${b(w)}/obligations/${id}`,
     ),
+  restoreObligation: (w: string, id: string) =>
+    httpClient.post<ApiSuccess<Obligation>, Record<string, never>>(
+      `${b(w)}/obligations/${id}/restore`,
+      {},
+    ),
   occurrence: (
     w: string,
     id: string,

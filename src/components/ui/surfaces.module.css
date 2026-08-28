@@ -116,10 +116,37 @@
   animation: menuEnter var(--duration-fast) ease-out;
   display: grid;
   gap: var(--space-1);
+  max-height: min(24rem, calc(100dvh - 4rem));
+  overflow: auto;
 }
 .dropdownMenu button,
 .dropdownMenu a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
   border-radius: var(--radius-small);
+  color: var(--color-text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.dropdownMenu button:hover,
+.dropdownMenu a:hover,
+.dropdownMenu button:focus-visible,
+.dropdownMenu a:focus-visible {
+  background: var(--color-surface-muted);
+  outline: none;
+}
+.dropdownDanger {
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--color-border) !important;
+  border-radius: 0 0 var(--radius-small) var(--radius-small) !important;
+  color: var(--color-error) !important;
 }
 .dialog {
   grid-template-rows: auto minmax(0, 1fr) auto;

@@ -9,6 +9,7 @@ import {
   CurrencyCombobox,
   Dialog,
   Dropdown,
+  DropdownAction,
   FormField,
   Input,
   MoneyInput,
@@ -152,6 +153,9 @@ export function LiabilitiesPage() {
     w!.id,
     ({ id, status }: { id: string; status: 'ACTIVE' | 'PAUSED' }) =>
       liabilitiesApi.updateObligation(w!.id, id, { status }),
+  )
+  const restoreObligation = useLiabilityMutation(w!.id, (id: string) =>
+    liabilitiesApi.restoreObligation(w!.id, id),
   )
   const closeModal = (consumed = false) => {
     if (consumed && modal)
@@ -307,6 +311,7 @@ export function LiabilitiesPage() {
             onStatus={(id, status) =>
               updateObligationStatus.mutate({ id, status })
             }
+            onRestore={(id) => restoreObligation.mutate(id)}
             archived={showArchivedObligations}
           />
         )}</>)}
@@ -859,10 +864,10 @@ function CardForm({
     >
       <h3>Datos básicos</h3>
       <Field label="Nombre de la tarjeta" id="card-name">
-        <Input id="card-name" name="name" required />
+        <Input id="card-name" name="name" placeholder="Ej. Visa principal" required />
       </Field>
       <Field label="Entidad o banco" id="card-bank">
-        <Input id="card-bank" name="institutionName" />
+        <Input id="card-bank" name="institutionName" placeholder="Ej. Banco de Bogotá" />
       </Field>
       <Field label="Moneda" id="card-currency">
         <CurrencyCombobox
@@ -873,7 +878,7 @@ function CardForm({
       </Field>
       <h3>Cupo</h3>
       <Field label="Cupo total" id="card-limit">
-        <MoneyInput id="card-limit" name="creditLimit" minorUnits required />
+        <MoneyInput id="card-limit" name="creditLimit" placeholder="Ej. 5.000.000" minorUnits required />
       </Field>
       <Select
         aria-label="Dato de cupo conocido"
@@ -891,7 +896,7 @@ function CardForm({
         }
         id="card-balance"
       >
-        <MoneyInput id="card-balance" name="balance" minorUnits required />
+        <MoneyInput id="card-balance" name="balance" placeholder="Ej. 850.000" minorUnits required />
       </Field>
       <h3>Fechas</h3>
       <Field label="Día de corte" id="card-billing">
@@ -932,12 +937,14 @@ function CardForm({
           )}
         </div>
       </Field>
-      <label>
-        <Input type="checkbox" name="currentCyclePaid" /> Ya pagué el período
-        actual
-        <small>
-          El próximo pago se calculará para el siguiente ciclo válido.
-        </small>
+      <label className={styles.checkboxCard}>
+        <Input type="checkbox" name="currentCyclePaid" />
+        <span>
+          <strong>Ya pagué el período actual</strong>
+          <small>
+            El próximo pago se calculará para el siguiente ciclo válido.
+          </small>
+        </span>
       </label>
       <Field label="Tasa mensual de referencia (opcional)" id="card-rate">
         <div>
@@ -964,6 +971,7 @@ function Obligations({
   onCreate,
   onDelete,
   onStatus,
+  onRestore,
   archived,
 }: {
   items: NonNullable<ReturnType<typeof useObligations>['data']>
@@ -971,6 +979,7 @@ function Obligations({
   onCreate: () => void
   onDelete: (id: string, name: string) => void
   onStatus: (id: string, status: 'ACTIVE' | 'PAUSED') => void
+  onRestore: (id: string) => void
   archived: boolean
 }) {
   return items.length ? (
@@ -1060,31 +1069,32 @@ function Obligations({
                   </Link>
                 )}
                 {!archived && canWrite && o.status === 'ACTIVE' && (
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    onClick={() => onStatus(o.id, 'PAUSED')}
-                  >
+                  <DropdownAction onClick={() => onStatus(o.id, 'PAUSED')}>
                     Pausar
-                  </Button>
+                  </DropdownAction>
                 )}
                 {!archived && canWrite && o.status === 'PAUSED' && (
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    onClick={() => onStatus(o.id, 'ACTIVE')}
-                  >
+                  <DropdownAction onClick={() => onStatus(o.id, 'ACTIVE')}>
                     Reactivar
-                  </Button>
+                  </DropdownAction>
                 )}
                 {!archived && canWrite && (
-                  <Button
-                    variant="danger"
-                    size="small"
+                  <DropdownAction
+                    danger
                     onClick={() => onDelete(o.id, o.name)}
                   >
                     Archivar
-                  </Button>
+                  </DropdownAction>
+                )}
+                {archived && canWrite && (
+                  <DropdownAction onClick={() => onRestore(o.id)}>
+                    Restaurar
+                  </DropdownAction>
+                )}
+                {archived && (
+                  <Link to={`/app/debts/obligations/${o.id}#history`}>
+                    Ver historial
+                  </Link>
                 )}
               </Dropdown>
             </div>
@@ -1264,7 +1274,7 @@ export function DebtForm({
           </Select>
         </Field>
         <Field label="Entidad" id="debt-lender">
-          <Input id="debt-lender" {...register('lenderName')} />
+          <Input id="debt-lender" placeholder="Ej. Banco, cooperativa o persona" {...register('lenderName')} />
         </Field>
         <Field label="Moneda" id="debt-currency">
           <CurrencyCombobox id="debt-currency" {...register('currency')} />
@@ -1434,7 +1444,7 @@ export function DebtForm({
       </div>
       <h3 className={styles.formSectionTitle}>Información adicional</h3>
       <Field label="Notas" id="debt-notes">
-        <Textarea id="debt-notes" {...register('notes')} />
+        <Textarea id="debt-notes" placeholder="Información útil para recordar este crédito" {...register('notes')} />
       </Field>
       {estimateError && (
         <p role="alert" className={styles.error}>
@@ -1664,7 +1674,7 @@ function ObligationForm({
     >
       <div className={styles.formGrid}>
         <Field label="Nombre" id="obl-name" error={errors.name?.message}>
-          <Input id="obl-name" {...register('name')} />
+          <Input id="obl-name" placeholder="Ej. Arriendo, internet o seguro" {...register('name')} />
         </Field>
         <Field
           label="Monto esperado"
