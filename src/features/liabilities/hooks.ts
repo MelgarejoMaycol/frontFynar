@@ -19,12 +19,23 @@ export const liabilityKeys = {
   activity: (w: string, c: string) =>
     ['liabilities', w, 'cards', c, 'activity'] as const,
 }
+
+type LiabilitiesSection = 'summary' | 'debts' | 'cards' | 'obligations'
+
+const isMainLiabilitiesSectionActive = (section: LiabilitiesSection) => {
+  if (typeof window === 'undefined') return true
+  const pathname = window.location.pathname.replace(/\/+$/, '')
+  if (pathname !== '/app/debts') return true
+  const selected = new URLSearchParams(window.location.search).get('tab') ?? 'summary'
+  return selected === section
+}
+
 export const useSummary = (w: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.summary(w),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.summary(w, signal)).data,
-    enabled: Boolean(w) && enabled,
+    enabled: Boolean(w) && enabled && isMainLiabilitiesSectionActive('summary'),
     staleTime: 30_000,
   })
 export const useUpcoming = (w: string, enabled = true) =>
@@ -32,7 +43,7 @@ export const useUpcoming = (w: string, enabled = true) =>
     queryKey: liabilityKeys.upcoming(w),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.upcoming(w, signal)).data,
-    enabled: Boolean(w) && enabled,
+    enabled: Boolean(w) && enabled && isMainLiabilitiesSectionActive('summary'),
     staleTime: 30_000,
   })
 export const useCalendarRange = (w: string, from: string, to: string) =>
@@ -48,7 +59,7 @@ export const useDebts = (w: string, q: string, enabled = true) =>
     queryKey: liabilityKeys.debts(w, q),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.debts(w, q, signal)).data,
-    enabled: Boolean(w) && enabled,
+    enabled: Boolean(w) && enabled && isMainLiabilitiesSectionActive('debts'),
   })
 export const useDebt = (w: string, id: string) =>
   useQuery({
@@ -62,7 +73,8 @@ export const useObligations = (w: string, archived = false, enabled = true) =>
     queryKey: liabilityKeys.obligations(w, archived),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.obligations(w, archived, signal)).data,
-    enabled: Boolean(w) && enabled,
+    enabled:
+      Boolean(w) && enabled && isMainLiabilitiesSectionActive('obligations'),
   })
 export const useObligation = (w: string, id: string) =>
   useQuery({
@@ -75,7 +87,7 @@ export const useCards = (w: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.cards(w),
     queryFn: async ({ signal }) => (await liabilitiesApi.cards(w, signal)).data,
-    enabled: Boolean(w) && enabled,
+    enabled: Boolean(w) && enabled && isMainLiabilitiesSectionActive('cards'),
     staleTime: 30_000,
   })
 export const useStatements = (w: string, c: string) =>
