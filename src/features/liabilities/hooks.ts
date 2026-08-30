@@ -19,20 +19,20 @@ export const liabilityKeys = {
   activity: (w: string, c: string) =>
     ['liabilities', w, 'cards', c, 'activity'] as const,
 }
-export const useSummary = (w: string) =>
+export const useSummary = (w: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.summary(w),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.summary(w, signal)).data,
-    enabled: Boolean(w),
+    enabled: Boolean(w) && enabled,
     staleTime: 30_000,
   })
-export const useUpcoming = (w: string) =>
+export const useUpcoming = (w: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.upcoming(w),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.upcoming(w, signal)).data,
-    enabled: Boolean(w),
+    enabled: Boolean(w) && enabled,
     staleTime: 30_000,
   })
 export const useCalendarRange = (w: string, from: string, to: string) =>
@@ -43,11 +43,12 @@ export const useCalendarRange = (w: string, from: string, to: string) =>
     enabled: Boolean(w && from && to),
     staleTime: 30_000,
   })
-export const useDebts = (w: string, q: string) =>
+export const useDebts = (w: string, q: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.debts(w, q),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.debts(w, q, signal)).data,
+    enabled: Boolean(w) && enabled,
   })
 export const useDebt = (w: string, id: string) =>
   useQuery({
@@ -56,11 +57,12 @@ export const useDebt = (w: string, id: string) =>
       (await liabilitiesApi.debt(w, id, signal)).data,
     enabled: Boolean(id),
   })
-export const useObligations = (w: string, archived = false) =>
+export const useObligations = (w: string, archived = false, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.obligations(w, archived),
     queryFn: async ({ signal }) =>
       (await liabilitiesApi.obligations(w, archived, signal)).data,
+    enabled: Boolean(w) && enabled,
   })
 export const useObligation = (w: string, id: string) =>
   useQuery({
@@ -69,10 +71,11 @@ export const useObligation = (w: string, id: string) =>
       (await liabilitiesApi.obligation(w, id, signal)).data,
     enabled: Boolean(w && id),
   })
-export const useCards = (w: string) =>
+export const useCards = (w: string, enabled = true) =>
   useQuery({
     queryKey: liabilityKeys.cards(w),
     queryFn: async ({ signal }) => (await liabilitiesApi.cards(w, signal)).data,
+    enabled: Boolean(w) && enabled,
     staleTime: 30_000,
   })
 export const useStatements = (w: string, c: string) =>
