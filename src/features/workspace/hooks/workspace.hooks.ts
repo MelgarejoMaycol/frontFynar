@@ -28,6 +28,7 @@ export const workspaceDependentQueryRoots = [
   'budgets',
   'reports',
   'liabilities',
+  'personal-balances',
 ] as const
 
 export function useWorkspaces() {
