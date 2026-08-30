@@ -6,6 +6,7 @@ describe('getRouteTitle', () => {
     ['/app/accounts', 'Cuentas'],
     ['/app/accounts/123', 'Cuentas'],
     ['/app/transactions/123', 'Movimientos'],
+    ['/app/informal-balances', 'Debo y me deben'],
     ['/app/settings/profile', 'Configuración'],
     ['/app/accounting', 'Fynar'],
     ['/ruta-desconocida', 'Fynar'],
