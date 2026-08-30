@@ -300,7 +300,12 @@
 @media (max-width: 600px) {
   .page,
   .currencySections {
-    gap: var(--space-4);
+    gap: var(--space-3);
+    overflow: visible;
+  }
+  .page > * {
+    min-width: 0;
+    max-width: 100%;
   }
   .skeletonGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -308,16 +313,6 @@
   }
   .skeletonGrid > :last-child:nth-child(odd) {
     grid-column: 1 / -1;
-  }
-  .summaryGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .summaryCard {
-    gap: var(--space-1);
-  }
-  .summaryCard svg {
-    width: 1.25rem;
-    height: 1.25rem;
   }
   .periodFilter,
   .cycleSetup,
@@ -334,20 +329,76 @@
   }
   .quickActions {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
+  }
+  .quickActions > :first-child {
+    grid-column: 1 / -1;
   }
   .quickActions button,
   .quickActions a {
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    min-height: 2.75rem;
+    padding-inline: var(--space-3);
     justify-content: center;
     white-space: normal;
+    line-height: 1.2;
+    text-align: center;
   }
   .summaryHeading {
-    gap: var(--space-1);
+    align-items: end;
+    gap: var(--space-2);
     margin-bottom: var(--space-2);
+  }
+  .summaryHeading h2 {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    line-height: 1.1;
+  }
+  .summaryHeading span {
+    flex: none;
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .summaryGrid > :first-child {
+    grid-column: 1 / -1;
+  }
+  .summaryCard {
+    min-height: 7.25rem;
+    align-content: start;
+    gap: 0.25rem;
+    padding: var(--space-3);
+  }
+  .summaryCard svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  .summaryCard span {
+    font-size: var(--font-size-sm);
+    line-height: 1.25;
+  }
+  .summaryCard strong {
+    font-size: clamp(1rem, 5vw, 1.25rem);
+    line-height: 1.2;
+  }
+  .summaryCard small {
+    font-size: var(--font-size-xs);
+    line-height: 1.25;
+  }
+  .summaryGrid > :first-child .summaryCard {
+    min-height: 6.75rem;
+  }
+  .accountGrid {
+    gap: var(--space-2);
+  }
+  .accountLink {
+    width: min(18rem, 84vw);
   }
   .recentItem {
     grid-template-columns: auto minmax(0, 1fr);
@@ -357,13 +408,34 @@
     text-align: left;
   }
 }
-@media (max-width: 380px) {
-  .skeletonGrid {
+@media (max-width: 420px) {
+  .quickActions {
     grid-template-columns: minmax(0, 1fr);
   }
+  .quickActions > :first-child {
+    grid-column: auto;
+  }
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .summaryCard {
+    padding: 0.75rem;
+  }
   .summaryCard strong {
+    font-size: 1rem;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 340px) {
+  .summaryGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .summaryGrid > :first-child {
+    grid-column: auto;
+  }
+  .skeletonGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (prefers-reduced-motion: reduce) {
