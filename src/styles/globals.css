@@ -106,6 +106,99 @@ td,
   background: var(--color-border-strong);
 }
 
+/* En móvil priorizamos densidad sin perder legibilidad ni objetivos táctiles. */
+@media (max-width: 47.99rem) {
+  :root {
+    font-size: 15px;
+  }
+
+  h1 {
+    font-size: clamp(1.45rem, 6vw, 1.7rem);
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+  }
+
+  [class*='moduleHeader'] {
+    gap: 0.75rem !important;
+  }
+
+  [class*='moduleHeading'] {
+    gap: 0.65rem !important;
+  }
+
+  [class*='moduleHeading'] img {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  [class*='moduleHeading'] p {
+    font-size: 0.95rem;
+  }
+
+  [class*='moduleActions'],
+  [class*='cardQuickActions'] {
+    gap: 0.5rem !important;
+  }
+
+  [class*='moduleActions'] button,
+  [class*='cardQuickActions'] button,
+  [class*='cardQuickActions'] a {
+    min-height: 2.5rem;
+  }
+
+  [class*='heroCard'],
+  [class*='resource'],
+  [class*='metric'],
+  [class*='installment'],
+  [class*='dashboardWidgetCard'] {
+    gap: 0.65rem !important;
+    padding: 0.85rem !important;
+  }
+
+  [class*='heroCard'] > strong,
+  [class*='hero'] {
+    font-size: clamp(1.8rem, 9vw, 2.35rem) !important;
+    line-height: 1.05;
+  }
+
+  [class*='metric'] strong,
+  [class*='dashboardWidgetCard'] > b {
+    font-size: 1.2rem !important;
+  }
+
+  [class*='metrics'],
+  [class*='grid'] {
+    gap: 0.65rem !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  [class*='resource'] dl,
+  [class*='installment'] dl {
+    gap: 0.7rem !important;
+  }
+
+  [class*='resource'] dt,
+  [class*='installment'] dt,
+  [class*='metric'] span,
+  [class*='dashboardWidgetCard'] span,
+  [class*='dashboardWidgetCard'] small {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 23.5rem) {
+  [class*='metrics'],
+  [class*='grid'] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
