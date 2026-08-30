@@ -22,7 +22,12 @@ if (!parsed.success) {
   )
 }
 
+const normalizeApiBaseUrl = (value: string) => {
+  const normalized = value.replace(/\/+$/, '')
+  return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`
+}
+
 export const env = Object.freeze({
-  apiBaseUrl: parsed.data.VITE_API_BASE_URL.replace(/\/$/, ''),
+  apiBaseUrl: normalizeApiBaseUrl(parsed.data.VITE_API_BASE_URL),
   sentryDsn: parsed.data.VITE_SENTRY_DSN,
 })
