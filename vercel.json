@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://backfynar.onrender.com/api/v1/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
