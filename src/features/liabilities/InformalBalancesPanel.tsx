@@ -16,7 +16,11 @@ import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { usePermission } from '@/features/workspace'
-import { informalBalancesApi, type InformalBalance, type InformalDirection } from './informal-balances.api'
+import {
+  informalBalancesApi,
+  type InformalBalance,
+  type InformalDirection,
+} from './informal-balances.api'
 import { idempotency, money, shortCalendarDate } from './format'
 import styles from './informal-balances.module.css'
 
@@ -94,7 +98,18 @@ export function InformalBalancesPanel({
       </div>
 
       <div className={styles.metrics}>
-        {(summary.data.length ? summary.data : [{ currency, totalPayable: '0', totalReceivable: '0', net: '0', overdueCount: 0 }]).map((item) => (
+        {(summary.data.length
+          ? summary.data
+          : [
+              {
+                currency,
+                totalPayable: '0',
+                totalReceivable: '0',
+                net: '0',
+                overdueCount: 0,
+              },
+            ]
+        ).map((item) => (
           <div className={styles.currencyGroup} key={item.currency}>
             <Card className={styles.metric}>
               <span>Yo debo · {item.currency}</span>
@@ -115,22 +130,42 @@ export function InformalBalancesPanel({
 
       <div className={styles.filters}>
         <div className={styles.segmented} aria-label="Filtrar por tipo">
-          <button className={!direction ? styles.active : ''} onClick={() => setDirection('')}>Todos</button>
-          <button className={direction === 'PAYABLE' ? styles.active : ''} onClick={() => setDirection('PAYABLE')}>Yo debo</button>
-          <button className={direction === 'RECEIVABLE' ? styles.active : ''} onClick={() => setDirection('RECEIVABLE')}>Me deben</button>
+          <button className={!direction ? styles.active : ''} onClick={() => setDirection('')}>
+            Todos
+          </button>
+          <button
+            className={direction === 'PAYABLE' ? styles.active : ''}
+            onClick={() => setDirection('PAYABLE')}
+          >
+            Yo debo
+          </button>
+          <button
+            className={direction === 'RECEIVABLE' ? styles.active : ''}
+            onClick={() => setDirection('RECEIVABLE')}
+          >
+            Me deben
+          </button>
         </div>
         <label className={styles.search}>
           <Search size={17} aria-hidden="true" />
           <span className="visually-hidden">Buscar persona o motivo</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar persona o motivo" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar persona o motivo"
+          />
         </label>
       </div>
 
       {list.data.length === 0 ? (
         <EmptyState
           title="No hay pendientes por aquí"
-          description="Registra cuando alguien te preste dinero o cuando tú le prestes a otra persona."
-          action={canWrite ? <Button onClick={() => setCreateOpen(true)}>Registrar el primero</Button> : undefined}
+          message="Registra cuando alguien te preste dinero o cuando tú le prestes a otra persona."
+          action={
+            canWrite ? (
+              <Button onClick={() => setCreateOpen(true)}>Registrar el primero</Button>
+            ) : undefined
+          }
         />
       ) : (
         <div className={styles.list}>
@@ -145,22 +180,52 @@ export function InformalBalancesPanel({
                     <strong>{item.counterpartyName}</strong>
                     <span>{item.description}</span>
                   </div>
-                  <Badge tone={item.status === 'SETTLED' ? 'success' : item.status === 'PARTIAL' ? 'warning' : 'neutral'}>
-                    {item.status === 'SETTLED' ? 'Listo' : item.status === 'PARTIAL' ? 'Pago parcial' : item.direction === 'PAYABLE' ? 'Debo' : 'Me deben'}
+                  <Badge
+                    tone={
+                      item.status === 'SETTLED'
+                        ? 'success'
+                        : item.status === 'PARTIAL'
+                          ? 'warning'
+                          : 'neutral'
+                    }
+                  >
+                    {item.status === 'SETTLED'
+                      ? 'Listo'
+                      : item.status === 'PARTIAL'
+                        ? 'Pago parcial'
+                        : item.direction === 'PAYABLE'
+                          ? 'Debo'
+                          : 'Me deben'}
                   </Badge>
                 </div>
                 <div className={styles.amounts}>
-                  <div><span>Pendiente</span><strong>{money(item.currentBalance, item.currency)}</strong></div>
-                  <div><span>Original</span><span>{money(item.originalAmount, item.currency)}</span></div>
-                  <div><span>Fecha</span><span>{shortCalendarDate(item.occurredOn)}</span></div>
-                  <div><span>Vence</span><span>{item.dueOn ? shortCalendarDate(item.dueOn) : 'Sin fecha'}</span></div>
+                  <div>
+                    <span>Pendiente</span>
+                    <strong>{money(item.currentBalance, item.currency)}</strong>
+                  </div>
+                  <div>
+                    <span>Original</span>
+                    <span>{money(item.originalAmount, item.currency)}</span>
+                  </div>
+                  <div>
+                    <span>Fecha</span>
+                    <span>{shortCalendarDate(item.occurredOn)}</span>
+                  </div>
+                  <div>
+                    <span>Vence</span>
+                    <span>{item.dueOn ? shortCalendarDate(item.dueOn) : 'Sin fecha'}</span>
+                  </div>
                 </div>
                 {canWrite && item.status !== 'SETTLED' && (
                   <div className={styles.actions}>
                     <Button onClick={() => setSettling(item)}>
                       {item.direction === 'PAYABLE' ? 'Registrar pago' : 'Registrar cobro'}
                     </Button>
-                    <Button variant="secondary" onClick={() => archive.mutate(item.id)} disabled={archive.isPending}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => archive.mutate(item.id)}
+                      disabled={archive.isPending}
+                    >
                       Archivar
                     </Button>
                   </div>
@@ -234,27 +299,85 @@ function CreateInformalDialog({
       open={open}
       title="Nuevo pendiente entre personas"
       onClose={onClose}
-      footer={<><Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>Cancelar</Button><Button loading={mutation.isPending} disabled={!valid} onClick={() => mutation.mutate()}>Guardar</Button></>}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
+            Cancelar
+          </Button>
+          <Button loading={mutation.isPending} disabled={!valid} onClick={() => mutation.mutate()}>
+            Guardar
+          </Button>
+        </>
+      }
     >
       <div className={styles.form}>
         <div className={styles.choice}>
-          <button type="button" className={direction === 'PAYABLE' ? styles.choiceActive : ''} onClick={() => setDirection('PAYABLE')}><UserRoundMinus />Yo debo</button>
-          <button type="button" className={direction === 'RECEIVABLE' ? styles.choiceActive : ''} onClick={() => setDirection('RECEIVABLE')}><UserRoundPlus />Me deben</button>
+          <button
+            type="button"
+            className={direction === 'PAYABLE' ? styles.choiceActive : ''}
+            onClick={() => setDirection('PAYABLE')}
+          >
+            <UserRoundMinus />
+            Yo debo
+          </button>
+          <button
+            type="button"
+            className={direction === 'RECEIVABLE' ? styles.choiceActive : ''}
+            onClick={() => setDirection('RECEIVABLE')}
+          >
+            <UserRoundPlus />
+            Me deben
+          </button>
         </div>
-        <FormField label={direction === 'PAYABLE' ? '¿A quién le debes?' : '¿Quién te debe?'} htmlFor="informal-person">
-          <Input id="informal-person" autoFocus value={person} onChange={(event) => setPerson(event.target.value)} placeholder="Ej. Carlos" />
+        <FormField
+          label={direction === 'PAYABLE' ? '¿A quién le debes?' : '¿Quién te debe?'}
+          htmlFor="informal-person"
+        >
+          <Input
+            id="informal-person"
+            autoFocus
+            value={person}
+            onChange={(event) => setPerson(event.target.value)}
+            placeholder="Ej. Carlos"
+          />
         </FormField>
         <FormField label="¿Por qué quedó pendiente?" htmlFor="informal-description">
-          <Input id="informal-description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Ej. Gasolina de la moto" />
+          <Input
+            id="informal-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="Ej. Gasolina de la moto"
+          />
         </FormField>
         <FormField label={`Monto · ${currency}`} htmlFor="informal-amount">
           <MoneyInput id="informal-amount" minorUnits value={amount} onValueChange={setAmount} />
         </FormField>
         <div className={styles.twoCols}>
-          <FormField label="Fecha" htmlFor="informal-date"><Input id="informal-date" type="date" value={occurredOn} onChange={(event) => setOccurredOn(event.target.value)} /></FormField>
-          <FormField label="Fecha para recordar (opcional)" htmlFor="informal-due"><Input id="informal-due" type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} /></FormField>
+          <FormField label="Fecha" htmlFor="informal-date">
+            <Input
+              id="informal-date"
+              type="date"
+              value={occurredOn}
+              onChange={(event) => setOccurredOn(event.target.value)}
+            />
+          </FormField>
+          <FormField label="Fecha para recordar (opcional)" htmlFor="informal-due">
+            <Input
+              id="informal-due"
+              type="date"
+              value={dueOn}
+              onChange={(event) => setDueOn(event.target.value)}
+            />
+          </FormField>
         </div>
-        <FormField label="Nota (opcional)" htmlFor="informal-notes"><Textarea id="informal-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Algo que quieras recordar" /></FormField>
+        <FormField label="Nota (opcional)" htmlFor="informal-notes">
+          <Textarea
+            id="informal-notes"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder="Algo que quieras recordar"
+          />
+        </FormField>
         {mutation.isError && <p className={styles.error}>{message(mutation.error)}</p>}
       </div>
     </Dialog>
@@ -277,7 +400,10 @@ function SettleInformalDialog({
   const [notes, setNotes] = useState('')
   const accounts = useAccounts(workspaceId, Boolean(item), false, 'all', true)
   const availableAccounts = useMemo(
-    () => (accounts.data ?? []).filter((account) => account.nature === 'ASSET' && account.currency === item?.currency),
+    () =>
+      (accounts.data ?? []).filter(
+        (account) => account.nature === 'ASSET' && account.currency === item?.currency,
+      ),
     [accounts.data, item?.currency],
   )
   const shownAmount = amount || item?.currentBalance || ''
@@ -297,21 +423,64 @@ function SettleInformalDialog({
   return (
     <Dialog
       open
-      title={item.direction === 'PAYABLE' ? `Pagar a ${item.counterpartyName}` : `Cobrar a ${item.counterpartyName}`}
+      title={
+        item.direction === 'PAYABLE'
+          ? `Pagar a ${item.counterpartyName}`
+          : `Cobrar a ${item.counterpartyName}`
+      }
       onClose={onClose}
-      footer={<><Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>Cancelar</Button><Button loading={mutation.isPending} disabled={!valid} onClick={() => mutation.mutate()}>{item.direction === 'PAYABLE' ? 'Registrar pago' : 'Registrar cobro'}</Button></>}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
+            Cancelar
+          </Button>
+          <Button loading={mutation.isPending} disabled={!valid} onClick={() => mutation.mutate()}>
+            {item.direction === 'PAYABLE' ? 'Registrar pago' : 'Registrar cobro'}
+          </Button>
+        </>
+      }
     >
       <div className={styles.form}>
-        <div className={styles.settleHint}><HandCoins /><p>Pendiente actual: <strong>{money(item.currentBalance, item.currency)}</strong>. Puedes pagar/cobrar todo o solo una parte.</p></div>
-        <FormField label={`Monto · ${item.currency}`} htmlFor="settle-amount"><MoneyInput id="settle-amount" minorUnits value={shownAmount} onValueChange={setAmount} /></FormField>
+        <div className={styles.settleHint}>
+          <HandCoins />
+          <p>
+            Pendiente actual: <strong>{money(item.currentBalance, item.currency)}</strong>. Puedes
+            pagar/cobrar todo o solo una parte.
+          </p>
+        </div>
+        <FormField label={`Monto · ${item.currency}`} htmlFor="settle-amount">
+          <MoneyInput
+            id="settle-amount"
+            minorUnits
+            value={shownAmount}
+            onValueChange={setAmount}
+          />
+        </FormField>
         <FormField label="Cuenta de Fynar (opcional)" htmlFor="settle-account">
-          <select id="settle-account" className={styles.nativeSelect} value={accountId} onChange={(event) => setAccountId(event.target.value)}>
+          <select
+            id="settle-account"
+            className={styles.nativeSelect}
+            value={accountId}
+            onChange={(event) => setAccountId(event.target.value)}
+          >
             <option value="">Pago/cobro fuera de Fynar</option>
-            {availableAccounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {money(account.currentBalance, account.currency)}</option>)}
+            {availableAccounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} · {money(account.currentBalance, account.currency)}
+              </option>
+            ))}
           </select>
         </FormField>
-        <p className={styles.help}>{accountId ? (item.direction === 'PAYABLE' ? 'El dinero saldrá de esta cuenta y quedará un movimiento de pago.' : 'El dinero entrará a esta cuenta y quedará un movimiento de cobro.') : 'Solo se actualizará el pendiente; no se tocará ningún saldo de tus cuentas.'}</p>
-        <FormField label="Nota (opcional)" htmlFor="settle-notes"><Textarea id="settle-notes" value={notes} onChange={(event) => setNotes(event.target.value)} /></FormField>
+        <p className={styles.help}>
+          {accountId
+            ? item.direction === 'PAYABLE'
+              ? 'El dinero saldrá de esta cuenta y quedará un movimiento de pago.'
+              : 'El dinero entrará a esta cuenta y quedará un movimiento de cobro.'
+            : 'Solo se actualizará el pendiente; no se tocará ningún saldo de tus cuentas.'}
+        </p>
+        <FormField label="Nota (opcional)" htmlFor="settle-notes">
+          <Textarea id="settle-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
+        </FormField>
         {mutation.isError && <p className={styles.error}>{message(mutation.error)}</p>}
       </div>
     </Dialog>
