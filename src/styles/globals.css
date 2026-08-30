@@ -106,7 +106,7 @@ td,
   background: var(--color-border-strong);
 }
 
-/* En móvil priorizamos densidad sin perder legibilidad ni objetivos táctiles. */
+/* En móvil priorizamos densidad sin romper grids de contenido completo. */
 @media (max-width: 47.99rem) {
   :root {
     font-size: 15px;
@@ -195,8 +195,7 @@ td,
     line-height: 1.15;
   }
 
-  [class*='metrics'],
-  [class*='grid'] {
+  [class*='metrics'] {
     gap: 0.55rem !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
@@ -222,8 +221,7 @@ td,
 }
 
 @media (max-width: 23.5rem) {
-  [class*='metrics'],
-  [class*='grid'] {
+  [class*='metrics'] {
     grid-template-columns: 1fr !important;
   }
 }
