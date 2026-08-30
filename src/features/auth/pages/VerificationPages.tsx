@@ -155,8 +155,20 @@ export function GoogleCallbackPage() {
   useEffect(() => {
     if (started.current || callbackError) return
     started.current = true
+
+    const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const refreshToken = fragment.get('refreshToken') ?? undefined
+
+    if (window.location.hash) {
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${window.location.search}`,
+      )
+    }
+
     void authApi
-      .refresh()
+      .refresh(refreshToken)
       .then(({ data }) => {
         useAuthStore.getState().setAccessToken(data.accessToken)
         navigate('/app', { replace: true })
