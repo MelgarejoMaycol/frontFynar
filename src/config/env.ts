@@ -28,6 +28,11 @@ const normalizeApiBaseUrl = (value: string) => {
 }
 
 export const env = Object.freeze({
-  apiBaseUrl: normalizeApiBaseUrl(parsed.data.VITE_API_BASE_URL),
+  // En producción la API pasa por Vercel para que las cookies HttpOnly sean
+  // first-party. Safari/iOS bloquea las cookies de terceros entre vercel.app
+  // y onrender.com, que era la causa de los 401 tras OAuth con Google.
+  apiBaseUrl: import.meta.env.PROD
+    ? '/api/v1'
+    : normalizeApiBaseUrl(parsed.data.VITE_API_BASE_URL),
   sentryDsn: parsed.data.VITE_SENTRY_DSN,
 })
