@@ -74,7 +74,11 @@ export const authApi = {
     ),
   googleUrl: () => `${env.apiBaseUrl}${AUTH_ROUTES.google}`,
   completeGoogleRegistration: (
-    body: { acceptedTerms: true; acceptedPrivacy: true },
+    body: {
+      acceptedTerms: true
+      acceptedPrivacy: true
+      pendingToken: string
+    },
     signal?: AbortSignal,
   ) =>
     httpClient.post<ApiSuccess<AuthResult>, typeof body>(
