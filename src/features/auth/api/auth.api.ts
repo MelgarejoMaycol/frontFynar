@@ -30,10 +30,13 @@ export const authApi = {
       body,
       signal,
     ),
-  refresh: (signal?: AbortSignal) =>
-    httpClient.post<ApiSuccess<AuthTokens>, undefined>(
+  refresh: (refreshToken?: string, signal?: AbortSignal) =>
+    httpClient.post<
+      ApiSuccess<AuthTokens>,
+      { refreshToken: string } | undefined
+    >(
       AUTH_ROUTES.refresh,
-      undefined,
+      refreshToken ? { refreshToken } : undefined,
       signal,
     ),
   logout: (signal?: AbortSignal) =>
