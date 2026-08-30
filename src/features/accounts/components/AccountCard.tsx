@@ -1,6 +1,12 @@
 import { MoreHorizontal, Star } from 'lucide-react'
 import { Link } from 'react-router'
-import { Button, Card, Dropdown, IconButton } from '@/components/ui'
+import {
+  Button,
+  Card,
+  Dropdown,
+  DropdownAction,
+  IconButton,
+} from '@/components/ui'
 import { accountTypeLabels } from '../accounts.constants'
 import { formatCurrency } from '../accounts.format'
 import type { Account } from '../types/account.types'
@@ -87,23 +93,18 @@ export function AccountCard({
               label={`Acciones de ${account.name}`}
               trigger={<MoreHorizontal size={20} />}
             >
-              <Button variant="ghost" disabled={busy} onClick={onEdit}>
+              <DropdownAction disabled={busy} onClick={onEdit}>
                 Editar
-              </Button>
-              <Button variant="ghost" disabled={busy} onClick={onAdjust}>
+              </DropdownAction>
+              <DropdownAction disabled={busy} onClick={onAdjust}>
                 Ajustar saldo
-              </Button>
-              <Button variant="ghost" disabled={busy} onClick={onArchive}>
+              </DropdownAction>
+              <DropdownAction disabled={busy} onClick={onArchive}>
                 Archivar
-              </Button>
-              <Button
-                variant="danger"
-                size="small"
-                disabled={busy}
-                onClick={onDelete}
-              >
+              </DropdownAction>
+              <DropdownAction danger disabled={busy} onClick={onDelete}>
                 Eliminar
-              </Button>
+              </DropdownAction>
             </Dropdown>
           ) : (
             <Button variant="secondary" loading={busy} onClick={onRestore}>
