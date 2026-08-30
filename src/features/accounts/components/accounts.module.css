@@ -52,6 +52,15 @@
   margin: var(--space-1) 0 0;
   overflow-wrap: anywhere;
 }
+.balanceBlock {
+  display: grid;
+  gap: 0.2rem;
+}
+.balanceBlock > span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
 .balance {
   min-width: 0;
   font-size: clamp(1rem, 1.3vw + 0.55rem, var(--font-size-xl));
@@ -245,18 +254,99 @@
   }
 }
 @media (max-width: 35.99rem) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
+  .page {
+    gap: var(--space-3);
+  }
+  .page > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-2);
+    margin-bottom: 0;
+  }
+  .page > header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.05;
+  }
+  .page > header p {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+  .page > header button {
+    min-height: 2.4rem;
+    padding-inline: var(--space-3);
+    font-size: 0.9rem;
+    white-space: nowrap;
   }
   .listToolbar {
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--space-2);
   }
   .filterGroup,
   .filterOptions {
+    min-width: 0;
     width: 100%;
   }
+  .filterGroup {
+    gap: 0.2rem;
+  }
+  .filterGroup legend {
+    font-size: 0.78rem;
+  }
+  .filterOptions {
+    padding: 0.12rem;
+    border-radius: var(--radius-small);
+  }
   .filterOptions button {
+    min-height: 2rem;
     flex: 1 1 0;
+    padding: 0 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.1;
+  }
+  .success,
+  .error {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.86rem;
+  }
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .card {
+    gap: var(--space-2);
+    padding: 0.8rem;
+  }
+  .cardHead {
+    gap: var(--space-2);
+  }
+  .cardHead h2 {
+    font-size: 1.05rem;
+    line-height: 1.15;
+  }
+  .cardHead p,
+  .institution,
+  .balanceBlock > span {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+  .balanceBlock {
+    gap: 0.1rem;
+  }
+  .balance {
+    font-size: 1.15rem;
+    line-height: 1.15;
+  }
+  .cardActions {
+    min-height: 2rem;
+    align-items: center;
+  }
+  .cardActions a {
+    font-size: 0.85rem;
   }
   .cardDetails {
     grid-template-columns: 1fr;
@@ -272,5 +362,16 @@
   }
   .movement > :last-child {
     grid-column: 2;
+  }
+}
+@media (max-width: 390px) {
+  .page > header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .page > header button {
+    width: fit-content;
+  }
+  .listToolbar {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
