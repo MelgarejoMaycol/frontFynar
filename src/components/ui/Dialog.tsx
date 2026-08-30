@@ -44,6 +44,14 @@ export function Dialog({ open, title, children, footer, size = 'default', onClos
       ref={ref}
       className={clsx(styles.dialog, size === 'wide' && styles.dialogWide)}
       aria-labelledby={titleId}
+      style={
+        open
+          ? {
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          : undefined
+      }
       onCancel={(event) => {
         event.preventDefault()
         onClose()
@@ -58,7 +66,12 @@ export function Dialog({ open, title, children, footer, size = 'default', onClos
           <X size={20} />
         </IconButton>
       </header>
-      <div className={styles.dialogBody}>{children}</div>
+      <div
+        className={styles.dialogBody}
+        style={{ minHeight: 0, flex: '1 1 auto' }}
+      >
+        {children}
+      </div>
       {footer && <footer className={styles.dialogFooter}>{footer}</footer>}
     </dialog>
   )
