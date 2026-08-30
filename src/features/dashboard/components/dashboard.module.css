@@ -189,7 +189,13 @@
   align-items: center;
 }
 .quickActions {
+  width: 100%;
+  min-width: 0;
   justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.quickActions > * {
+  min-width: 0;
 }
 .quickActions a,
 .sectionHeader a {
@@ -292,12 +298,19 @@
   }
 }
 @media (max-width: 600px) {
+  .page,
+  .currencySections {
+    gap: var(--space-4);
+  }
   .skeletonGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
   }
   .skeletonGrid > :last-child:nth-child(odd) {
     grid-column: 1 / -1;
+  }
+  .summaryGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
   .summaryCard {
     gap: var(--space-1);
@@ -314,11 +327,23 @@
     align-items: stretch;
     flex-direction: column;
   }
-  .quickActions {
-    flex-wrap: wrap;
+  .periodFilter > *,
+  .cycleSetup > * {
+    width: 100%;
+    max-width: 100%;
   }
-  .quickActions button {
-    flex: 1 1 11rem;
+  .quickActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .quickActions button,
+  .quickActions a {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-content: center;
+    white-space: normal;
   }
   .summaryHeading {
     gap: var(--space-1);
@@ -330,6 +355,15 @@
   .recentItem strong {
     grid-column: 2;
     text-align: left;
+  }
+}
+@media (max-width: 380px) {
+  .skeletonGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .summaryCard strong {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 @media (prefers-reduced-motion: reduce) {
