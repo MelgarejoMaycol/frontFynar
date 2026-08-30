@@ -1,4 +1,5 @@
 export { LiabilitiesPage } from './LiabilitiesPage'
+export { InformalBalancesPage } from './InformalBalancesPage'
 export {
   DebtDetailPage,
   CardDetailPage,
