@@ -73,18 +73,12 @@ export function AccountCard({
       {account.institutionName && (
         <p className={styles.institution}>{account.institutionName}</p>
       )}
-      <dl className={styles.cardDetails}>
-        <div>
-          <dt>Tipo</dt>
-          <dd>{accountTypeLabels[account.type]}</dd>
-        </div>
-        <div>
-          <dt>Saldo actual</dt>
-          <dd className={styles.balance}>
-            {formatCurrency(account.currentBalance, account.currency)}
-          </dd>
-        </div>
-      </dl>
+      <div className={styles.balanceBlock}>
+        <span>Saldo actual</span>
+        <strong className={styles.balance}>
+          {formatCurrency(account.currentBalance, account.currency)}
+        </strong>
+      </div>
       <div className={styles.cardActions}>
         <Link to={`/app/accounts/${account.id}`}>Ver detalle</Link>
         {canWrite &&
