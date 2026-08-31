@@ -4,7 +4,10 @@ import path from 'node:path'
 
 const FRONTEND_PORT = 5173
 const BACKEND_PORT = 3000
-const frontDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const frontDirectory = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+)
 const backDirectory = path.resolve(frontDirectory, '..', 'BackFynar')
 const npmCli = process.env.npm_execpath
 const children = []
@@ -48,11 +51,15 @@ function onPort(port) {
 function processInfo(pid) {
   try {
     const command = `$p=Get-Process -Id ${pid} -ErrorAction Stop;[pscustomobject]@{Name=$p.ProcessName+'.exe'}|ConvertTo-Json -Compress`
-    const output = execFileSync('powershell.exe', ['-NoProfile', '-Command', command], {
-      encoding: 'utf8',
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
+    const output = execFileSync(
+      'powershell.exe',
+      ['-NoProfile', '-Command', command],
+      {
+        encoding: 'utf8',
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    ).trim()
     if (!output) return { name: 'desconocido', commandLine: '' }
     const info = JSON.parse(output)
     return { name: info.Name ?? 'desconocido', commandLine: '' }
@@ -66,7 +73,10 @@ function assertPortsFree() {
     .flatMap((port) => onPort(port))
     .filter(
       (item, index, all) =>
-        all.findIndex((candidate) => candidate.port === item.port && candidate.pid === item.pid) === index,
+        all.findIndex(
+          (candidate) =>
+            candidate.port === item.port && candidate.pid === item.pid,
+        ) === index,
     )
     .map((item) => ({ ...item, ...processInfo(item.pid) }))
   if (!occupied.length) {
@@ -83,8 +93,65 @@ function assertPortsFree() {
     if (item.commandLine) console.error(`Comando: ${item.commandLine}`)
     console.error('')
   }
-  console.error('[dev] No se terminó ningún proceso. Cierra la instancia propietaria e inténtalo de nuevo.')
+  console.error(
+    '[dev] No se terminó ningún proceso. Cierra la instancia propietaria e inténtalo de nuevo.',
+  )
   throw new Error('Puertos requeridos ocupados')
+}
+
+async function existingFynarIsHealthy() {
+  if (!onPort(FRONTEND_PORT).length || !onPort(BACKEND_PORT).length)
+    return false
+  try {
+    const [backendResponse, frontendResponse] = await Promise.all([
+      fetch('http://127.0.0.1:3000/api/v1/health/live', {
+        signal: AbortSignal.timeout(3_000),
+      }),
+      fetch('http://localhost:5173', {
+        signal: AbortSignal.timeout(3_000),
+      }),
+    ])
+    if (!backendResponse.ok || !frontendResponse.ok) return false
+    const backend = await backendResponse.json()
+    const frontend = await frontendResponse.text()
+    return (
+      backend?.success === true &&
+      backend?.data?.environment === 'test' &&
+      frontend.includes('<div id="root">')
+    )
+  } catch {
+    return false
+  }
+}
+
+async function stopExistingFynar() {
+  const processIds = [FRONTEND_PORT, BACKEND_PORT]
+    .flatMap((port) => onPort(port).map(({ pid }) => pid))
+    .filter((pid, index, all) => all.indexOf(pid) === index)
+  for (const pid of processIds) {
+    try {
+      if (process.platform === 'win32') {
+        try {
+          execFileSync('taskkill.exe', ['/PID', String(pid), '/T', '/F'], {
+            stdio: 'ignore',
+            windowsHide: true,
+          })
+        } catch {
+          process.kill(pid, 'SIGTERM')
+        }
+      } else process.kill(pid, 'SIGTERM')
+    } catch {
+      // El runner anterior puede haber cerrado el segundo servicio al perder el primero.
+    }
+  }
+  const deadline = Date.now() + 10_000
+  while (Date.now() < deadline) {
+    if (!onPort(FRONTEND_PORT).length && !onPort(BACKEND_PORT).length) return
+    await delay(100)
+  }
+  throw new Error(
+    'Windows no permitió cerrar la instancia anterior. Ciérrala una vez con Ctrl+C y ejecuta npm run dev de nuevo.',
+  )
 }
 
 function killTree(child) {
@@ -112,7 +179,8 @@ async function waitFor(url, child, label, timeoutMs) {
   const deadline = startedAt + timeoutMs
   let nextProgressAt = startedAt + 10_000
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`${label} terminó antes de estar disponible`)
+    if (child.exitCode !== null)
+      throw new Error(`${label} terminó antes de estar disponible`)
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(1_000) })
       if (response.ok) return
@@ -161,7 +229,8 @@ async function shutdown(code = 0) {
   for (const child of children) killTree(child)
   const deadline = Date.now() + 8_000
   while (Date.now() < deadline) {
-    if (!onPort(FRONTEND_PORT).length && !onPort(BACKEND_PORT).length) process.exit(code)
+    if (!onPort(FRONTEND_PORT).length && !onPort(BACKEND_PORT).length)
+      process.exit(code)
     await delay(100)
   }
   console.error('[dev] Un puerto no se liberó dentro del tiempo esperado.')
@@ -180,59 +249,69 @@ process.on('unhandledRejection', (error) => {
   void shutdown(1)
 })
 
-try {
-  console.log('[dev] Verificando PostgreSQL QA y migraciones...')
-  execFileSync(process.execPath, [npmCli, 'run', 'qa:migrate'], {
-    cwd: backDirectory,
-    stdio: 'inherit',
-    env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
-  })
-  console.log('[dev] PostgreSQL QA disponible y migraciones verificadas.')
+startup: {
+  try {
+    console.log('[dev] Verificando PostgreSQL QA y migraciones...')
+    execFileSync(process.execPath, [npmCli, 'run', 'qa:migrate'], {
+      cwd: backDirectory,
+      stdio: 'inherit',
+      env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
+    })
+    console.log('[dev] PostgreSQL QA disponible y migraciones verificadas.')
 
-  // Evita que una comprobación anterior a las migraciones se trate como garantía.
-  assertPortsFree()
-
-  console.log('[dev] Iniciando backend QA...')
-  const backend = start('backend', backDirectory, [
-    path.join(backDirectory, 'node_modules', 'tsx', 'dist', 'cli.mjs'),
-    'scripts/run-local-qa.ts',
-    'server',
-  ])
-  await waitFor(
-    'http://127.0.0.1:3000/api/v1/health/live',
-    backend,
-    'Backend',
-    180_000,
-  )
-  console.log('[dev] Backend disponible en http://127.0.0.1:3000')
-
-  if (onPort(FRONTEND_PORT).length)
-    throw new Error(`El puerto ${FRONTEND_PORT} fue ocupado durante el arranque`)
-
-  console.log('[dev] Iniciando frontend...')
-  const frontend = start('frontend', frontDirectory, [
-    path.join(frontDirectory, 'node_modules', 'vite', 'bin', 'vite.js'),
-    '--port',
-    String(FRONTEND_PORT),
-    '--strictPort',
-  ])
-  await waitFor('http://localhost:5173', frontend, 'Frontend', 90_000)
-  console.log('[dev] Frontend disponible en http://localhost:5173')
-  console.log('[dev] Fynar listo. Presiona Ctrl+C para detener todos los servicios.')
-  watchdog = setInterval(() => {
-    if (stopping) return
-    if (!onPort(FRONTEND_PORT).length) {
-      console.error('[dev] El listener del frontend desapareció.')
-      void shutdown(1)
-    } else if (!onPort(BACKEND_PORT).length) {
-      console.error('[dev] El listener del backend desapareció.')
-      void shutdown(1)
+    // Evita que una comprobación anterior a las migraciones se trate como garantía.
+    if (await existingFynarIsHealthy()) {
+      console.log(
+        '[dev] Reiniciando la instancia anterior de Fynar para conectar los logs a esta terminal...',
+      )
+      await stopExistingFynar()
     }
-  }, 1_000)
-} catch (error) {
-  if (error.message !== 'Puertos requeridos ocupados') console.error(`[dev] ${error.message}`)
-  await shutdown(1)
-}
+    assertPortsFree()
 
-// Mantiene vivo el importador y evita ejecutar el lanzador legado que queda debajo.
-await new Promise(() => {})
+    console.log('[dev] Iniciando backend QA...')
+    const backend = start('backend', backDirectory, [
+      path.join(backDirectory, 'node_modules', 'tsx', 'dist', 'cli.mjs'),
+      'scripts/run-local-qa.ts',
+      'server',
+    ])
+    await waitFor(
+      'http://127.0.0.1:3000/api/v1/health/live',
+      backend,
+      'Backend',
+      180_000,
+    )
+    console.log('[dev] Backend disponible en http://127.0.0.1:3000')
+
+    if (onPort(FRONTEND_PORT).length)
+      throw new Error(
+        `El puerto ${FRONTEND_PORT} fue ocupado durante el arranque`,
+      )
+
+    console.log('[dev] Iniciando frontend...')
+    const frontend = start('frontend', frontDirectory, [
+      path.join(frontDirectory, 'node_modules', 'vite', 'bin', 'vite.js'),
+      '--port',
+      String(FRONTEND_PORT),
+      '--strictPort',
+    ])
+    await waitFor('http://localhost:5173', frontend, 'Frontend', 90_000)
+    console.log('[dev] Frontend disponible en http://localhost:5173')
+    console.log(
+      '[dev] Fynar listo. Presiona Ctrl+C para detener todos los servicios.',
+    )
+    watchdog = setInterval(() => {
+      if (stopping) return
+      if (!onPort(FRONTEND_PORT).length) {
+        console.error('[dev] El listener del frontend desapareció.')
+        void shutdown(1)
+      } else if (!onPort(BACKEND_PORT).length) {
+        console.error('[dev] El listener del backend desapareció.')
+        void shutdown(1)
+      }
+    }, 1_000)
+  } catch (error) {
+    if (error.message !== 'Puertos requeridos ocupados')
+      console.error(`[dev] ${error.message}`)
+    await shutdown(1)
+  }
+}

@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { Badge, Button, Card } from '@/components/ui'
+import { useCalendarRange } from '@/features/liabilities/hooks'
 import { CalendarDays, CreditCard, HandCoins, Repeat2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
@@ -12,7 +13,6 @@ import {
   upcomingResourcePath,
   upcomingTypeLabel,
 } from './format'
-import { useCalendarRange } from './hooks'
 import styles from './liabilities.module.css'
 import type { Upcoming } from './types'
 

@@ -12,6 +12,8 @@ import {
   Textarea,
 } from '@/components/ui'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
+import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
+import { AccountSelect } from '@/features/accounts/components/AccountSelect'
 import {
   useAddPersonalBalanceEntry,
   useArchivePersonalBalance,
@@ -19,12 +21,17 @@ import {
   usePersonalBalance,
   usePersonalBalances,
   usePersonalBalancesSummary,
-  useSettlePersonalBalance,
   useUpdatePersonalBalance,
+  usePeople,
+  useCreatePerson,
+  useReversePersonalBalanceEntry,
+  useUpdatePerson,
+  useArchivePerson,
 } from './hooks'
 import type {
   PersonalBalance,
   PersonalBalanceDirection,
+  FinancialPerson,
 } from './types'
 import styles from './personal-balances.module.css'
 
@@ -52,6 +59,30 @@ const statusLabel: Record<PersonalBalance['status'], string> = {
   CANCELLED: 'Cancelado',
 }
 
+function PersonDialog({ person, pending, error, onClose, onSubmit }: {
+  person: FinancialPerson | null | undefined
+  pending: boolean
+  error: Error | null
+  onClose: () => void
+  onSubmit: (input: { name: string; relationship: string | null; notes: string | null }) => void
+}) {
+  const [name, setName] = useState(person?.name ?? '')
+  const [relationship, setRelationship] = useState(person?.relationship ?? '')
+  const [notes, setNotes] = useState(person?.notes ?? '')
+  return <Dialog open title={person ? 'Editar persona' : 'Nueva persona'} onClose={onClose}>
+    <form className={styles.form} onSubmit={(event) => {
+      event.preventDefault()
+      if (name.trim()) onSubmit({ name: name.trim(), relationship: relationship.trim() || null, notes: notes.trim() || null })
+    }}>
+      <label className={styles.field}><span>Nombre</span><Input value={name} onChange={(e) => setName(e.target.value)} required autoFocus /></label>
+      <label className={styles.field}><span>Parentesco o relación</span><Input value={relationship} onChange={(e) => setRelationship(e.target.value)} /></label>
+      <label className={styles.field}><span>Notas</span><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} /></label>
+      {error ? <p className={styles.error}>{error.message}</p> : null}
+      <div className={styles.dialogActions}><Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button><Button type="submit" loading={pending} disabled={!name.trim()}>Guardar</Button></div>
+    </form>
+  </Dialog>
+}
+
 function CreateDialog({
   open,
   workspaceCurrency,
@@ -59,6 +90,8 @@ function CreateDialog({
   error,
   onClose,
   onSubmit,
+  people,
+  onCreatePerson,
 }: {
   open: boolean
   workspaceCurrency: string
@@ -66,7 +99,7 @@ function CreateDialog({
   error: Error | null
   onClose: () => void
   onSubmit: (input: {
-    counterpartyName: string
+    personId: string
     direction: PersonalBalanceDirection
     amount: string
     currency: string
@@ -75,20 +108,25 @@ function CreateDialog({
     dueOn?: string | null
     notes?: string
   }) => void
+  people: FinancialPerson[]
+  onCreatePerson: (input: { name: string; relationship?: string | null }, select: (id: string) => void) => void
 }) {
   const [direction, setDirection] = useState<PersonalBalanceDirection>('PAYABLE')
-  const [counterpartyName, setCounterpartyName] = useState('')
+  const [personId, setPersonId] = useState('')
+  const [addingPerson, setAddingPerson] = useState(false)
+  const [personName, setPersonName] = useState('')
+  const [relationship, setRelationship] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [occurredOn, setOccurredOn] = useState(today())
   const [dueOn, setDueOn] = useState('')
   const [notes, setNotes] = useState('')
-  const valid = counterpartyName.trim() && Number(amount) > 0
+  const valid = personId && Number(amount) > 0
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!valid) return
     onSubmit({
-      counterpartyName: counterpartyName.trim(),
+      personId,
       direction,
       amount,
       currency: workspaceCurrency,
@@ -123,14 +161,16 @@ function CreateDialog({
         </div>
         <label className={styles.field}>
           <span>Persona</span>
-          <Input
-            value={counterpartyName}
-            onChange={(event) => setCounterpartyName(event.target.value)}
-            placeholder="Ej. Hermano"
-            autoFocus
-            required
-          />
+          <select value={personId} onChange={(event) => setPersonId(event.target.value)} required autoFocus>
+            <option value="">Buscar o seleccionar persona...</option>
+            {people.map((person) => <option key={person.id} value={person.id}>
+              {person.name}{person.relationship ? ` · ${person.relationship}` : ''}
+            </option>)}
+          </select>
         </label>
+        <Button type="button" variant="secondary" onClick={() => setAddingPerson(true)}>
+          <Plus size={16} aria-hidden="true" /> Agregar persona
+        </Button>
         <label className={styles.field}>
           <span>Concepto</span>
           <Input
@@ -188,6 +228,20 @@ function CreateDialog({
           </Button>
         </div>
       </form>
+      <Dialog open={addingPerson} title="Agregar persona" onClose={() => setAddingPerson(false)}>
+        <form className={styles.form} onSubmit={(event) => {
+          event.preventDefault()
+          if (!personName.trim()) return
+          onCreatePerson({ name: personName.trim(), relationship: relationship.trim() || null }, (id) => {
+            setPersonId(id)
+            setAddingPerson(false)
+          })
+        }}>
+          <label className={styles.field}><span>Nombre</span><Input value={personName} onChange={(e) => setPersonName(e.target.value)} required /></label>
+          <label className={styles.field}><span>Parentesco o relación</span><Input value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="Ej. Hermano, amiga, compañero" /></label>
+          <div className={styles.dialogActions}><Button type="button" variant="secondary" onClick={() => setAddingPerson(false)}>Cancelar</Button><Button type="submit">Guardar persona</Button></div>
+        </form>
+      </Dialog>
     </Dialog>
   )
 }
@@ -200,6 +254,7 @@ function EntryDialog({
   error,
   onClose,
   onSubmit,
+  accounts,
 }: {
   item: PersonalBalance | null
   type: 'INCREASE' | 'PAYMENT'
@@ -207,17 +262,19 @@ function EntryDialog({
   pending: boolean
   error: Error | null
   onClose: () => void
-  onSubmit: (amount: string, notes?: string) => void
+  onSubmit: (amount: string, accountId: string, notes?: string) => void
+  accounts: Parameters<typeof AccountSelect>[0]['accounts']
 }) {
   const [amount, setAmount] = useState('')
   const [notes, setNotes] = useState('')
+  const [accountId, setAccountId] = useState('')
   const isPayment = type === 'PAYMENT'
   const action = item?.direction === 'PAYABLE' ? 'pago' : 'cobro'
   const title = isPayment ? `Registrar ${action}` : 'Añadir monto'
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (Number(amount) <= 0) return
-    onSubmit(amount, notes.trim() || undefined)
+    if (Number(amount) <= 0 || (isPayment && !accountId)) return
+    onSubmit(amount, accountId, notes.trim() || undefined)
   }
   return (
     <Dialog open={open} title={title} onClose={onClose}>
@@ -237,6 +294,10 @@ function EntryDialog({
             autoFocus
           />
         </label>
+        {isPayment ? <label className={styles.field}>
+          <span>{item?.direction === 'PAYABLE' ? '¿Desde qué cuenta vas a pagar?' : '¿A qué cuenta llegó el dinero?'}</span>
+          <AccountSelect accounts={accounts} value={accountId} onChange={(event) => setAccountId(event.target.value)} required />
+        </label> : null}
         <label className={styles.field}>
           <span>Nota</span>
           <Textarea
@@ -251,7 +312,7 @@ function EntryDialog({
           <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>
             Cancelar
           </Button>
-          <Button type="submit" loading={pending} disabled={Number(amount) <= 0}>
+          <Button type="submit" loading={pending} disabled={Number(amount) <= 0 || (isPayment && !accountId)}>
             Guardar
           </Button>
         </div>
@@ -266,19 +327,23 @@ function EditDialog({
   error,
   onClose,
   onSubmit,
+  people,
 }: {
   item: PersonalBalance | null
   pending: boolean
   error: Error | null
   onClose: () => void
   onSubmit: (input: {
-    counterpartyName: string
+    personId: string
+    originalAmount: string
     description: string | null
     dueOn: string | null
     notes: string | null
   }) => void
+  people: FinancialPerson[]
 }) {
-  const [counterpartyName, setCounterpartyName] = useState(item?.counterpartyName ?? '')
+  const [personId, setPersonId] = useState(item?.personId ?? '')
+  const [originalAmount, setOriginalAmount] = useState(item?.originalAmount ?? '')
   const [description, setDescription] = useState(item?.description ?? '')
   const [dueOn, setDueOn] = useState(item?.dueOn ?? '')
   const [notes, setNotes] = useState(item?.notes ?? '')
@@ -289,9 +354,10 @@ function EditDialog({
         className={styles.form}
         onSubmit={(event) => {
           event.preventDefault()
-          if (!counterpartyName.trim()) return
+          if (!personId || Number(originalAmount) <= 0) return
           onSubmit({
-            counterpartyName: counterpartyName.trim(),
+            personId,
+            originalAmount,
             description: description.trim() || null,
             dueOn: dueOn || null,
             notes: notes.trim() || null,
@@ -300,7 +366,13 @@ function EditDialog({
       >
         <label className={styles.field}>
           <span>Persona</span>
-          <Input value={counterpartyName} onChange={(event) => setCounterpartyName(event.target.value)} />
+          <select value={personId} onChange={(event) => setPersonId(event.target.value)} required>
+            {people.map((person) => <option key={person.id} value={person.id}>{person.name}{person.relationship ? ` · ${person.relationship}` : ''}</option>)}
+          </select>
+        </label>
+        <label className={styles.field}>
+          <span>Monto original</span>
+          <MoneyInput value={originalAmount} onValueChange={setOriginalAmount} currency={item.currency} minorUnits required />
         </label>
         <label className={styles.field}>
           <span>Concepto</span>
@@ -337,6 +409,9 @@ export function PersonalBalancesPage() {
   const [detailId, setDetailId] = useState('')
   const [editing, setEditing] = useState<PersonalBalance | null>(null)
   const [archiving, setArchiving] = useState<PersonalBalance | null>(null)
+  const [personFilter, setPersonFilter] = useState('')
+  const [section, setSection] = useState<'balances' | 'people'>('balances')
+  const [personDialog, setPersonDialog] = useState<FinancialPerson | null | undefined>(undefined)
 
   const filters = useMemo(
     () => ({
@@ -349,15 +424,21 @@ export function PersonalBalancesPage() {
   )
   const list = usePersonalBalances(workspaceId, filters)
   const summary = usePersonalBalancesSummary(workspaceId)
+  const people = usePeople(workspaceId)
+  const accounts = useAccounts(workspaceId, true, false, 'all', true)
   const detail = usePersonalBalance(workspaceId, detailId)
   const create = useCreatePersonalBalance(workspaceId)
   const addEntry = useAddPersonalBalanceEntry(workspaceId, entryTarget?.id ?? '')
-  const settle = useSettlePersonalBalance(workspaceId)
+  const createPerson = useCreatePerson(workspaceId)
+  const updatePerson = useUpdatePerson(workspaceId)
+  const archivePerson = useArchivePerson(workspaceId)
+  const reverseEntry = useReversePersonalBalanceEntry(workspaceId, detailId)
   const archive = useArchivePersonalBalance(workspaceId)
   const update = useUpdatePersonalBalance(workspaceId, editing?.id ?? '')
   const summaryCurrency =
     summary.data?.currencies.find(({ currency }) => currency === activeWorkspace!.baseCurrency) ??
     summary.data?.currencies[0]
+  const activeAccounts = (accounts.data ?? []).filter((account) => account.nature === 'ASSET')
 
   if (list.isPending && !list.data) return <PageLoader />
   if (list.isError)
@@ -389,7 +470,12 @@ export function PersonalBalancesPage() {
         }
       />
 
-      <section className={styles.summaryGrid} aria-label="Resumen de deudas y cobros">
+      <div className={styles.filters} aria-label="Secciones">
+        <button type="button" aria-pressed={section === 'balances'} onClick={() => setSection('balances')}>Deudas y cobros</button>
+        <button type="button" aria-pressed={section === 'people'} onClick={() => setSection('people')}>Personas ({people.data?.length ?? 0})</button>
+      </div>
+
+      {section === 'balances' ? <><section className={styles.summaryGrid} aria-label="Resumen de deudas y cobros">
         <article className={styles.summaryCard}>
           <span>Debo</span>
           <strong>{money(summaryCurrency?.iOwe ?? '0', summaryCurrency?.currency ?? activeWorkspace!.baseCurrency)}</strong>
@@ -410,7 +496,7 @@ export function PersonalBalancesPage() {
       <div className={styles.toolbar}>
         <div className={styles.filters} aria-label="Filtros">
           {([
-            ['all', 'Todos'],
+            ['all', 'Activos'],
             ['PAYABLE', 'Debo'],
             ['RECEIVABLE', 'Me deben'],
             ['SETTLED', 'Saldados'],
@@ -425,6 +511,10 @@ export function PersonalBalancesPage() {
             </button>
           ))}
         </div>
+        <select aria-label="Filtrar por persona" value={personFilter} onChange={(event) => setPersonFilter(event.target.value)}>
+          <option value="">Todas las personas</option>
+          {(people.data ?? []).map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
+        </select>
         <label className={styles.searchBox}>
           <Search size={17} aria-hidden="true" />
           <input
@@ -446,22 +536,29 @@ export function PersonalBalancesPage() {
         />
       ) : (
         <div className={styles.list}>
-          {list.data!.map((item) => (
-            <article key={item.id} className={styles.balanceCard}>
+          {list.data!.filter((item) => !personFilter || item.personId === personFilter).map((item) => (
+            <article key={item.id} className={`${styles.balanceCard} ${item.direction === 'PAYABLE' ? styles.balancePayable : styles.balanceReceivable}`}>
               <button className={styles.cardMain} type="button" onClick={() => setDetailId(item.id)}>
                 <span className={styles.avatar} aria-hidden="true">{item.counterpartyName.slice(0, 1).toUpperCase()}</span>
                 <span className={styles.cardText}>
                   <strong>{item.counterpartyName}</strong>
+                  {item.person.relationship ? <small>{item.person.relationship}</small> : null}
                   <small>{item.description || (item.direction === 'PAYABLE' ? 'Dinero que debes' : 'Dinero que te deben')}</small>
                   <span>{shortDate(item.dueOn)} · {statusLabel[item.status]}</span>
                 </span>
                 <span className={styles.amountBlock}>
-                  <strong>{money(item.currentBalance, item.currency)}</strong>
+                  <strong>{money(item.status === 'SETTLED' ? item.originalAmount : item.currentBalance, item.currency)}</strong>
                   <small className={item.direction === 'PAYABLE' ? styles.payable : styles.receivable}>
-                    {item.direction === 'PAYABLE' ? 'Debo' : 'Me deben'}
+                    {item.status === 'SETTLED'
+                      ? `Saldado${item.settledAt ? ` · ${shortDate(item.settledAt.slice(0, 10))}` : ''}`
+                      : item.direction === 'PAYABLE' ? 'Debo' : 'Me deben'}
                   </small>
                 </span>
               </button>
+              <div className={styles.progressBlock} aria-label={`${Math.round((1 - Number(item.currentBalance) / Number(item.originalAmount)) * 100)}% ${item.direction === 'PAYABLE' ? 'pagado' : 'cobrado'}`}>
+                <span><span style={{ width: `${Math.max(0, Math.min(100, (1 - Number(item.currentBalance) / Number(item.originalAmount)) * 100))}%` }} /></span>
+                <small>{money(String(Number(item.originalAmount) - Number(item.currentBalance)), item.currency)} de {money(item.originalAmount, item.currency)} {item.direction === 'PAYABLE' ? 'pagados' : 'cobrados'}</small>
+              </div>
               {canWrite && item.status !== 'SETTLED' && (
                 <div className={styles.quickActions}>
                   <Button variant="secondary" onClick={() => openEntry(item, 'PAYMENT')}>
@@ -474,6 +571,16 @@ export function PersonalBalancesPage() {
           ))}
         </div>
       )}
+
+      </> : <section className={styles.peopleSection}>
+        <div className={styles.peopleHeader}><div><h2>Personas</h2><p>Contrapartes relacionadas con tus deudas y cobros.</p></div>{canWrite ? <Button onClick={() => setPersonDialog(null)}><Plus size={16} /> Nueva persona</Button> : null}</div>
+        <div className={styles.peopleGrid}>{(people.data ?? []).map((person) => {
+          const related = list.data!.filter((item) => item.personId === person.id)
+          const payable = related.filter((item) => item.direction === 'PAYABLE').reduce((sum, item) => sum + Number(item.currentBalance), 0)
+          const receivable = related.filter((item) => item.direction === 'RECEIVABLE').reduce((sum, item) => sum + Number(item.currentBalance), 0)
+          return <article key={person.id} className={styles.personCard}><div><strong>{person.name}</strong><small>{person.relationship || 'Sin relación indicada'}</small></div><dl><div><dt>Me debe</dt><dd>{money(String(receivable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Le debo</dt><dd>{money(String(payable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Balance</dt><dd>{money(String(receivable - payable), activeWorkspace!.baseCurrency)}</dd></div></dl>{canWrite ? <div className={styles.quickActions}><Button variant="secondary" onClick={() => setPersonDialog(person)}>Editar</Button><Button variant="danger" onClick={() => archivePerson.mutate(person.id)}>Archivar</Button></div> : null}</article>
+        })}</div>
+      </section>}
 
       <CreateDialog
         key={creating ? 'create-open' : 'create-closed'}
@@ -490,7 +597,19 @@ export function PersonalBalancesPage() {
             },
           })
         }
+        people={people.data ?? []}
+        onCreatePerson={(input, select) => createPerson.mutate(input, { onSuccess: ({ data }) => select(data.id) })}
       />
+
+      {personDialog !== undefined ? <PersonDialog
+        key={personDialog?.id ?? 'new-person'} person={personDialog}
+        pending={personDialog ? updatePerson.isPending : createPerson.isPending}
+        error={(personDialog ? updatePerson.error : createPerson.error) instanceof Error ? (personDialog ? updatePerson.error : createPerson.error) as Error : null}
+        onClose={() => setPersonDialog(undefined)}
+        onSubmit={(input) => personDialog
+          ? updatePerson.mutate({ id: personDialog.id, input }, { onSuccess: () => setPersonDialog(undefined) })
+          : createPerson.mutate(input, { onSuccess: () => setPersonDialog(undefined) })}
+      /> : null}
 
       <EntryDialog
         key={`${entryTarget?.id ?? 'none'}-${entryType}`}
@@ -500,9 +619,12 @@ export function PersonalBalancesPage() {
         pending={addEntry.isPending}
         error={addEntry.error instanceof Error ? addEntry.error : null}
         onClose={() => !addEntry.isPending && setEntryTarget(null)}
-        onSubmit={(amount, notes) =>
+        accounts={activeAccounts}
+        onSubmit={(amount, accountId, notes) =>
           addEntry.mutate(
-            { type: entryType, amount, notes },
+            entryType === 'PAYMENT'
+              ? { type: 'PAYMENT', amount, accountId, notes }
+              : { type: 'INCREASE', amount, notes },
             {
               onSuccess: () => {
                 setEntryTarget(null)
@@ -541,32 +663,22 @@ export function PersonalBalancesPage() {
                   <span>
                     <strong>{entry.type === 'PAYMENT' ? (detail.data!.direction === 'PAYABLE' ? 'Pago' : 'Cobro') : entry.type === 'INCREASE' ? 'Monto añadido' : 'Registro inicial'}</strong>
                     <small>{new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(entry.occurredAt))}</small>
+                    {entry.accountName ? <small>{detail.data!.direction === 'PAYABLE' ? 'Desde' : 'A'} {entry.accountName}</small> : null}
                   </span>
-                  <strong className={entry.type === 'PAYMENT' ? styles.historyPayment : undefined}>
-                    {entry.type === 'PAYMENT' ? '−' : '+'}{money(entry.amount, detail.data.currency)}
-                  </strong>
+                  <span className={styles.entryAmount}>
+                    <strong className={entry.type === 'PAYMENT' ? styles.historyPayment : undefined}>
+                      {entry.type === 'PAYMENT' ? '−' : '+'}{money(entry.amount, detail.data.currency)}
+                    </strong>
+                    {canWrite && entry.type === 'PAYMENT' && entry.transactionId && !entry.reversedAt ? (
+                      <Button variant="secondary" loading={reverseEntry.isPending} onClick={() => reverseEntry.mutate(entry.id)}>Revertir</Button>
+                    ) : entry.reversedAt ? <small>Revertido</small> : null}
+                  </span>
                 </div>
               ))}
             </div>
             {canWrite && (
               <div className={styles.detailActions}>
                 <Button variant="secondary" onClick={() => { setEditing(detail.data!); setDetailId('') }}>Editar</Button>
-                {detail.data.status !== 'SETTLED' && (
-                  <Button
-                    variant="secondary"
-                    loading={settle.isPending}
-                    onClick={() =>
-                      settle.mutate(detail.data!.id, {
-                        onSuccess: () => {
-                          setDetailId('')
-                          setMessage('Saldo marcado como saldado.')
-                        },
-                      })
-                    }
-                  >
-                    Marcar como saldado
-                  </Button>
-                )}
                 <Button variant="danger" onClick={() => { setArchiving(detail.data!); setDetailId('') }}>Archivar</Button>
               </div>
             )}
@@ -588,6 +700,7 @@ export function PersonalBalancesPage() {
             },
           })
         }
+        people={people.data ?? []}
       />
 
       <Dialog

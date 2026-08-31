@@ -6,6 +6,8 @@ import type {
   PersonalBalanceEntryInput,
   PersonalBalanceSummary,
   UpdatePersonalBalanceInput,
+  FinancialPerson,
+  PersonInput,
 } from './types'
 
 const base = (workspaceId: string) =>
@@ -60,11 +62,25 @@ export const personalBalancesApi = {
       `${base(workspaceId)}/${id}/entries`,
       input,
     ),
-  settle: (workspaceId: string, id: string) =>
-    httpClient.post<ApiSuccess<PersonalBalance>, Record<string, never>>(
+  settle: (workspaceId: string, id: string, accountId: string) =>
+    httpClient.post<ApiSuccess<PersonalBalance>, { accountId: string }>(
       `${base(workspaceId)}/${id}/settle`,
-      {},
+      { accountId },
     ),
   archive: (workspaceId: string, id: string) =>
     httpClient.delete<ApiSuccess<{ id: string }>>(`${base(workspaceId)}/${id}`),
+  reverseEntry: (workspaceId: string, id: string, entryId: string) =>
+    httpClient.post<ApiSuccess<PersonalBalance>, Record<string, never>>(
+      `${base(workspaceId)}/${id}/entries/${entryId}/reverse`, {},
+    ),
+  people: (workspaceId: string, q = '', signal?: AbortSignal) =>
+    httpClient.get<ApiSuccess<FinancialPerson[]>>(
+      `${base(workspaceId)}/people${q ? `?q=${encodeURIComponent(q)}` : ''}`, signal,
+    ),
+  createPerson: (workspaceId: string, input: PersonInput) =>
+    httpClient.post<ApiSuccess<FinancialPerson>, PersonInput>(`${base(workspaceId)}/people`, input),
+  updatePerson: (workspaceId: string, id: string, input: Partial<PersonInput>) =>
+    httpClient.patch<ApiSuccess<FinancialPerson>, Partial<PersonInput>>(`${base(workspaceId)}/people/${id}`, input),
+  archivePerson: (workspaceId: string, id: string) =>
+    httpClient.delete<ApiSuccess<{ id: string }>>(`${base(workspaceId)}/people/${id}`),
 }

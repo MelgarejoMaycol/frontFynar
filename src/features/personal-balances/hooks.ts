@@ -4,6 +4,7 @@ import type {
   CreatePersonalBalanceInput,
   PersonalBalanceEntryInput,
   UpdatePersonalBalanceInput,
+  PersonInput,
 } from './types'
 
 export const personalBalanceKeys = {
@@ -14,6 +15,7 @@ export const personalBalanceKeys = {
     ['personal-balances', workspaceId, 'summary'] as const,
   detail: (workspaceId: string, id: string) =>
     ['personal-balances', workspaceId, 'detail', id] as const,
+  people: (workspaceId: string) => ['personal-balances', workspaceId, 'people'] as const,
 }
 
 export const usePersonalBalances = (
@@ -49,6 +51,8 @@ const useRefresh = (workspaceId: string) => {
     await Promise.all([
       client.invalidateQueries({ queryKey: personalBalanceKeys.all(workspaceId) }),
       client.invalidateQueries({ queryKey: ['dashboard', workspaceId] }),
+      client.invalidateQueries({ queryKey: ['accounts', workspaceId] }),
+      client.invalidateQueries({ queryKey: ['transactions', workspaceId] }),
     ])
   }
 }
@@ -83,7 +87,47 @@ export const useAddPersonalBalanceEntry = (workspaceId: string, id: string) => {
 export const useSettlePersonalBalance = (workspaceId: string) => {
   const refresh = useRefresh(workspaceId)
   return useMutation({
-    mutationFn: (id: string) => personalBalancesApi.settle(workspaceId, id),
+    mutationFn: ({ id, accountId }: { id: string; accountId: string }) =>
+      personalBalancesApi.settle(workspaceId, id, accountId),
+    onSuccess: refresh,
+  })
+}
+
+export const usePeople = (workspaceId: string) => useQuery({
+  queryKey: personalBalanceKeys.people(workspaceId),
+  queryFn: async ({ signal }) => (await personalBalancesApi.people(workspaceId, '', signal)).data,
+  enabled: Boolean(workspaceId),
+})
+
+export const useCreatePerson = (workspaceId: string) => {
+  const refresh = useRefresh(workspaceId)
+  return useMutation({
+    mutationFn: (input: PersonInput) => personalBalancesApi.createPerson(workspaceId, input),
+    onSuccess: refresh,
+  })
+}
+
+export const useUpdatePerson = (workspaceId: string) => {
+  const refresh = useRefresh(workspaceId)
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<PersonInput> }) =>
+      personalBalancesApi.updatePerson(workspaceId, id, input),
+    onSuccess: refresh,
+  })
+}
+
+export const useArchivePerson = (workspaceId: string) => {
+  const refresh = useRefresh(workspaceId)
+  return useMutation({
+    mutationFn: (id: string) => personalBalancesApi.archivePerson(workspaceId, id),
+    onSuccess: refresh,
+  })
+}
+
+export const useReversePersonalBalanceEntry = (workspaceId: string, id: string) => {
+  const refresh = useRefresh(workspaceId)
+  return useMutation({
+    mutationFn: (entryId: string) => personalBalancesApi.reverseEntry(workspaceId, id, entryId),
     onSuccess: refresh,
   })
 }
