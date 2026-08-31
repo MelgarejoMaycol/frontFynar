@@ -99,7 +99,7 @@ function CreateDialog({
     })
   }
   return (
-    <Dialog open={open} title="Registrar entre personas" onClose={onClose}>
+    <Dialog open={open} title="Registrar deuda o cobro" onClose={onClose}>
       <form className={styles.form} onSubmit={submit}>
         <div className={styles.directionGrid} role="radiogroup" aria-label="Tipo de saldo">
           <button
@@ -161,7 +161,7 @@ function CreateDialog({
             />
           </label>
           <label className={styles.field}>
-            <span>Fecha esperada de pago</span>
+            <span>Fecha esperada de pago (opcional)</span>
             <Input
               type="date"
               value={dueOn}
@@ -307,7 +307,7 @@ function EditDialog({
           <Input value={description} onChange={(event) => setDescription(event.target.value)} />
         </label>
         <label className={styles.field}>
-          <span>Fecha esperada de pago</span>
+          <span>Fecha esperada de pago (opcional)</span>
           <Input type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} />
         </label>
         <label className={styles.field}>
@@ -363,7 +363,7 @@ export function PersonalBalancesPage() {
   if (list.isError)
     return (
       <ErrorState
-        title="No pudimos cargar Entre personas"
+        title="No pudimos cargar Deudas y cobros"
         message="Comprueba tu conexión e inténtalo nuevamente."
         onRetry={() => void list.refetch()}
       />
@@ -378,7 +378,7 @@ export function PersonalBalancesPage() {
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Entre personas"
+        title="Deudas y cobros"
         description="Controla fácilmente lo que debes y lo que otras personas te deben, sin intereses ni cuotas."
         actions={
           canWrite ? (
@@ -389,7 +389,7 @@ export function PersonalBalancesPage() {
         }
       />
 
-      <section className={styles.summaryGrid} aria-label="Resumen entre personas">
+      <section className={styles.summaryGrid} aria-label="Resumen de deudas y cobros">
         <article className={styles.summaryCard}>
           <span>Debo</span>
           <strong>{money(summaryCurrency?.iOwe ?? '0', summaryCurrency?.currency ?? activeWorkspace!.baseCurrency)}</strong>
