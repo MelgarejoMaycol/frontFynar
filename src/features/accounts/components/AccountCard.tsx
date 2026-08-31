@@ -101,9 +101,6 @@ export function AccountCard({
           />
         ) : null}
       </div>
-      {account.institutionName && (
-        <p className={styles.institution}>{account.institutionName}</p>
-      )}
       <div className={styles.balanceBlock}>
         <span>Saldo actual</span>
         <strong className={styles.balance}>

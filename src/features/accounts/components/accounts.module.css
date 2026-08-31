@@ -16,7 +16,7 @@
   min-height: 16.5rem;
   min-width: 0;
   padding: var(--space-5);
-  overflow: hidden;
+  overflow: visible;
   border-top: 3px solid var(--account-accent, var(--color-primary));
   box-shadow: 0 1px 2px color-mix(in srgb, var(--color-dark) 6%, transparent);
 }
@@ -24,6 +24,9 @@
   border-color: var(--account-accent, var(--color-primary));
   box-shadow: var(--shadow-soft);
   transform: translateY(-2px);
+}
+.card:has(details[open]) {
+  z-index: calc(var(--z-dropdown) - 1);
 }
 .cardHead,
 .cardActions,
@@ -104,12 +107,6 @@
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-.institution {
-  margin: 0;
-  min-height: 1.25rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
 }
 .favorite {
   color: var(--color-warning);

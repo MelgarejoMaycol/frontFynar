@@ -99,7 +99,7 @@ describe('cuentas financieras', () => {
       'account-1',
     ])
   })
-  it('presenta cuenta, favorita y modo solo lectura', () => {
+  it('presenta cuenta, favorita y modo solo lectura sin repetir la institución', () => {
     render(
       wrapper(
         <AccountCard
@@ -116,11 +116,37 @@ describe('cuentas financieras', () => {
       ),
     )
     expect(screen.getByRole('heading', { name: 'Ahorros' })).toBeVisible()
+    expect(screen.queryByText('Banco')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Cuenta favorita')).toBeVisible()
     expect(screen.getByRole('link', { name: 'Ver detalle' })).toBeVisible()
     expect(
       screen.queryByRole('button', { name: 'Editar' }),
     ).not.toBeInTheDocument()
+  })
+  it('abre el menú completo de acciones de una cuenta', async () => {
+    const user = userEvent.setup()
+    render(
+      wrapper(
+        <AccountCard
+          account={account}
+          canWrite
+          busy={false}
+          onEdit={vi.fn()}
+          onAdjust={vi.fn()}
+          onFavorite={vi.fn()}
+          onArchive={vi.fn()}
+          onDelete={vi.fn()}
+          onRestore={vi.fn()}
+        />,
+      ),
+    )
+    const trigger = screen.getByLabelText('Acciones de Ahorros')
+    await user.click(trigger)
+    expect(trigger.closest('details')).toHaveAttribute('open')
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Ajustar saldo' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Archivar' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Eliminar' })).toBeVisible()
   })
   it('crea cuentas con centavos progresivos y sin ofrecer tarjetas', async () => {
     const submit = vi.fn()
