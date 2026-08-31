@@ -11,7 +11,7 @@ export function AccountsSummary({
   accounts: DashboardAccount[]
 }) {
   return (
-    <section>
+    <section className={styles.dashboardSection}>
       <div className={styles.sectionHeader}>
         <h2>Cuentas</h2>
         <Link to="/app/accounts">Ver todas</Link>

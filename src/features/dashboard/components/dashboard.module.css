@@ -4,8 +4,13 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   gap: 1.5rem;
+}
+.dashboardSection {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 .periodFilter {
   display: flex;

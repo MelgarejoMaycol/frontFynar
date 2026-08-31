@@ -28,7 +28,7 @@ export function RecentTransactions({
   categories: Category[]
 }) {
   return (
-    <section>
+    <section className={styles.dashboardSection}>
       <div className={styles.sectionHeader}>
         <h2>Movimientos recientes</h2>
         <Link to="/app/transactions">Ver movimientos</Link>
@@ -54,13 +54,17 @@ export function RecentTransactions({
           const sign =
             item.type === 'INCOME' || adjustmentDifference > 0
               ? '+'
-              : item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT' || adjustmentDifference < 0
+              : item.type === 'EXPENSE' ||
+                  item.type === 'DEBT_PAYMENT' ||
+                  adjustmentDifference < 0
                 ? '−'
                 : ''
           const tone =
             item.type === 'INCOME' || adjustmentDifference > 0
               ? 'income'
-              : item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT' || adjustmentDifference < 0
+              : item.type === 'EXPENSE' ||
+                  item.type === 'DEBT_PAYMENT' ||
+                  adjustmentDifference < 0
                 ? 'expense'
                 : 'transfer'
           return (

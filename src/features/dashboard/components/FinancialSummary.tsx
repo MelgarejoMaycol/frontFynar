@@ -47,7 +47,10 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
     return formatted
   }
   return (
-    <section aria-labelledby={`currency-${summary.currency}`}>
+    <section
+      className={styles.dashboardSection}
+      aria-labelledby={`currency-${summary.currency}`}
+    >
       <div className={styles.summaryHeading}>
         <h2 id={`currency-${summary.currency}`}>Resumen financiero</h2>
         <span>Valores en {summary.currency}</span>

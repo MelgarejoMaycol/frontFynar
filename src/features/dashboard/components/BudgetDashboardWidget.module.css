@@ -1,5 +1,8 @@
 .widget {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   gap: 0.75rem;
   padding: 1rem;
 }
