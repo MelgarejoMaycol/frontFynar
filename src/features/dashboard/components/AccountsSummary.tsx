@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react'
 import { Link } from 'react-router'
-import { Card } from '@/components/ui'
+import { Card, HorizontalScrollArea } from '@/components/ui'
 import { accountTypeLabels } from '@/features/accounts/accounts.constants'
 import { formatMoney } from '@/features/transactions/transactions.format'
 import type { DashboardAccount } from '../types/dashboard.types'
@@ -16,11 +16,9 @@ export function AccountsSummary({
         <h2>Cuentas</h2>
         <Link to="/app/accounts">Ver todas</Link>
       </div>
-      <div
+      <HorizontalScrollArea
         className={styles.accountGrid}
-        role="region"
-        aria-label="Cuentas disponibles"
-        tabIndex={0}
+        label="cuentas disponibles"
       >
         {accounts
           .filter((account) => account.type !== 'CREDIT_CARD')
@@ -51,7 +49,7 @@ export function AccountsSummary({
               </Card>
             </Link>
           ))}
-      </div>
+      </HorizontalScrollArea>
     </section>
   )
 }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Card } from '@/components/ui'
+import { Card, HorizontalScrollArea } from '@/components/ui'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
@@ -59,11 +59,9 @@ function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
           message="Tus próximos vencimientos aparecerán aquí."
         />
       ) : (
-        <div
+        <HorizontalScrollArea
           className={styles.dashboardWidgetGrid}
-          role="region"
-          aria-label="Próximos pagos"
-          tabIndex={0}
+          label="próximos pagos"
         >
           {nextItems.slice(0, 6).map((item, index) => (
             <Link
@@ -84,7 +82,7 @@ function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
               </Card>
             </Link>
           ))}
-        </div>
+        </HorizontalScrollArea>
       )}
     </section>
   )

@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
-import { Button, FormField, Input, PasswordInput } from '@/components/ui'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  Button,
+  FormField,
+  HorizontalScrollArea,
+  Input,
+  PasswordInput,
+} from '@/components/ui'
 import {
   formatMoneyInput,
   normalizeMoneyInput,
@@ -45,5 +51,34 @@ describe('componentes fundamentales', () => {
       'El correo no es válido',
     )
     expect(screen.getByRole('alert')).toBeVisible()
+  })
+  it('permite desplazar una fila con rueda y controles visibles', async () => {
+    const user = userEvent.setup()
+    render(
+      <HorizontalScrollArea label="tarjetas">
+        <div>Uno</div>
+        <div>Dos</div>
+      </HorizontalScrollArea>,
+    )
+    const region = screen.getByRole('region', { name: 'tarjetas' })
+    Object.defineProperties(region, {
+      clientWidth: { configurable: true, value: 300 },
+      scrollWidth: { configurable: true, value: 900 },
+      scrollLeft: { configurable: true, writable: true, value: 0 },
+    })
+    const scrollBy = vi.fn()
+    Object.defineProperty(region, 'scrollBy', {
+      configurable: true,
+      value: scrollBy,
+    })
+    fireEvent.scroll(region)
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Desplazar tarjetas a la derecha',
+      }),
+    )
+    expect(scrollBy).toHaveBeenCalledWith({ left: 240, behavior: 'smooth' })
+    fireEvent.wheel(region, { deltaY: 120 })
+    expect(region.scrollLeft).toBe(120)
   })
 })

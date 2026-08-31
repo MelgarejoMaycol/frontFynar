@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Card } from '@/components/ui'
+import { Card, HorizontalScrollArea } from '@/components/ui'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { useBudgets } from '@/features/budgets/hooks/budgets.hooks'
 import { formatMoney } from '@/features/transactions/transactions.format'
@@ -48,11 +48,9 @@ export function BudgetDashboardWidget() {
           <Link to="/app/budgets">Crear presupuesto</Link>
         </div>
       ) : (
-        <div
+        <HorizontalScrollArea
           className={styles.list}
-          role="region"
-          aria-label="Presupuestos activos"
-          tabIndex={0}
+          label="presupuestos activos"
         >
           {relevant.map((budget) => {
             const percentage = Number(budget.progress.percentage)
@@ -87,7 +85,7 @@ export function BudgetDashboardWidget() {
               </Link>
             )
           })}
-        </div>
+        </HorizontalScrollArea>
       )}
     </Card>
   )

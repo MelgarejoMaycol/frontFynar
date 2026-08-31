@@ -5,7 +5,7 @@ import {
   Scale,
   Wallet,
 } from 'lucide-react'
-import { Card } from '@/components/ui'
+import { Card, HorizontalScrollArea } from '@/components/ui'
 import { Link } from 'react-router'
 import { formatMoney } from '@/features/transactions/transactions.format'
 import type { CurrencySummary } from '../types/dashboard.types'
@@ -52,11 +52,9 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
         <h2 id={`currency-${summary.currency}`}>Resumen financiero</h2>
         <span>Valores en {summary.currency}</span>
       </div>
-      <div
+      <HorizontalScrollArea
         className={styles.summaryGrid}
-        role="region"
-        aria-label={`Resumen financiero en ${summary.currency}`}
-        tabIndex={0}
+        label={`resumen financiero en ${summary.currency}`}
       >
         {values.map(([label, key, Icon, tone, to]) => {
           const content = (
@@ -89,7 +87,7 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
             <div key={key}>{content}</div>
           )
         })}
-      </div>
+      </HorizontalScrollArea>
     </section>
   )
 }
