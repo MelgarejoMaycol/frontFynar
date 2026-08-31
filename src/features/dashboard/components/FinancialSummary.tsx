@@ -52,7 +52,12 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
         <h2 id={`currency-${summary.currency}`}>Resumen financiero</h2>
         <span>Valores en {summary.currency}</span>
       </div>
-      <div className={styles.summaryGrid}>
+      <div
+        className={styles.summaryGrid}
+        role="region"
+        aria-label={`Resumen financiero en ${summary.currency}`}
+        tabIndex={0}
+      >
         {values.map(([label, key, Icon, tone, to]) => {
           const content = (
             <Card className={`${styles.summaryCard} ${styles[tone]}`}>

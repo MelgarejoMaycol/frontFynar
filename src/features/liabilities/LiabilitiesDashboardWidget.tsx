@@ -59,7 +59,12 @@ function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
           message="Tus próximos vencimientos aparecerán aquí."
         />
       ) : (
-        <div className={styles.dashboardWidgetGrid}>
+        <div
+          className={styles.dashboardWidgetGrid}
+          role="region"
+          aria-label="Próximos pagos"
+          tabIndex={0}
+        >
           {nextItems.slice(0, 6).map((item, index) => (
             <Link
               className={styles.dashboardPaymentLink}

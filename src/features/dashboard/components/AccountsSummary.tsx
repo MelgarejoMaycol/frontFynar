@@ -16,7 +16,12 @@ export function AccountsSummary({
         <h2>Cuentas</h2>
         <Link to="/app/accounts">Ver todas</Link>
       </div>
-      <div className={styles.accountGrid}>
+      <div
+        className={styles.accountGrid}
+        role="region"
+        aria-label="Cuentas disponibles"
+        tabIndex={0}
+      >
         {accounts
           .filter((account) => account.type !== 'CREDIT_CARD')
           .map((account) => (
