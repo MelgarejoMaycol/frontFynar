@@ -19,6 +19,7 @@ export const mainNavigation: NavigationItem[] = [
   { to: '/app/transactions', label: 'Movimientos', icon: CircleDollarSign },
   { to: '/app/budgets', label: 'Presupuestos', icon: WalletCards },
   { to: '/app/debts', label: 'Créditos y pagos', icon: HandCoins },
+  { to: '/app/lending', label: 'Préstamos', icon: HandCoins },
   { to: '/app/personal-balances', label: 'Deudas y cobros', icon: UsersRound },
   { to: '/app/reports', label: 'Reportes', icon: ChartNoAxesCombined },
 ]
