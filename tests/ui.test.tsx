@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   Button,
   FormField,
@@ -52,8 +52,7 @@ describe('componentes fundamentales', () => {
     )
     expect(screen.getByRole('alert')).toBeVisible()
   })
-  it('permite desplazar una fila con rueda y controles visibles', async () => {
-    const user = userEvent.setup()
+  it('permite desplazar una fila con la rueda y sin flechas', () => {
     render(
       <HorizontalScrollArea label="tarjetas">
         <div>Uno</div>
@@ -66,18 +65,7 @@ describe('componentes fundamentales', () => {
       scrollWidth: { configurable: true, value: 900 },
       scrollLeft: { configurable: true, writable: true, value: 0 },
     })
-    const scrollBy = vi.fn()
-    Object.defineProperty(region, 'scrollBy', {
-      configurable: true,
-      value: scrollBy,
-    })
-    fireEvent.scroll(region)
-    await user.click(
-      screen.getByRole('button', {
-        name: 'Desplazar tarjetas a la derecha',
-      }),
-    )
-    expect(scrollBy).toHaveBeenCalledWith({ left: 240, behavior: 'smooth' })
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
     fireEvent.wheel(region, { deltaY: 120 })
     expect(region.scrollLeft).toBe(120)
   })
