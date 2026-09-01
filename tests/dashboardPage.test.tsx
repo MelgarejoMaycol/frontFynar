@@ -6,6 +6,9 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 vi.mock('@/features/dashboard/components/BudgetDashboardWidget', () => ({
   BudgetDashboardWidget: () => <section>Widget de presupuestos</section>,
 }))
+vi.mock('@/features/transactions/components/TransactionForm', () => ({
+  TransactionForm: () => <form aria-label="Formulario de movimiento" />,
+}))
 import { ApiError } from '@/services/http'
 const mocks = vi.hoisted(() => ({
   permission: true,
@@ -25,6 +28,22 @@ vi.mock('@/features/workspace', () => ({
 }))
 vi.mock('@/features/dashboard/hooks/dashboard.hooks', () => ({
   useDashboard: (...args: unknown[]) => mocks.dashboard(...args),
+}))
+vi.mock('@/features/transactions/hooks/transactions.hooks', () => ({
+  useCreateTransaction: () => ({
+    isPending: false,
+    error: null,
+    mutate: vi.fn(),
+    reset: vi.fn(),
+  }),
+}))
+vi.mock('@/features/accounts/hooks/accounts.hooks', () => ({
+  useCreateAccount: () => ({
+    isPending: false,
+    error: null,
+    mutate: vi.fn(),
+    reset: vi.fn(),
+  }),
 }))
 vi.mock('@/features/categories/hooks/categories.hooks', () => ({
   useCategories: () => ({
@@ -180,7 +199,7 @@ describe('DashboardPage', () => {
     expect(
       screen.getByRole('button', { name: 'Nuevo movimiento' }),
     ).toBeVisible()
-    expect(screen.getByText('Cuenta de ahorros')).toBeVisible()
+    expect(screen.getAllByText('Cuenta de ahorros')[0]).toBeVisible()
     expect(
       screen.getByRole('link', { name: /Bancolombia\s*Cuenta favorita/i }),
     ).toHaveAttribute('href', '/app/accounts/a')

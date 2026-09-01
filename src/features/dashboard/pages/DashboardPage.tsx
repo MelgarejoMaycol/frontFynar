@@ -1,11 +1,21 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Landmark, Plus } from 'lucide-react'
+import { Landmark, Plus, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
-import { Button, FilterPanel, PageHeader } from '@/components/ui'
+import { Button, Dialog, FilterPanel, PageHeader } from '@/components/ui'
+import { AccountForm } from '@/features/accounts/components/AccountForm'
+import { useCreateAccount } from '@/features/accounts/hooks/accounts.hooks'
+import type { AccountInput } from '@/features/accounts/types/account.types'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
-import { useActiveWorkspace, usePermission, usePreferences } from '@/features/workspace'
+import { TransactionForm } from '@/features/transactions/components/TransactionForm'
+import { useCreateTransaction } from '@/features/transactions/hooks/transactions.hooks'
+import type { CreateTransactionInput } from '@/features/transactions/types/transaction.types'
+import {
+  useActiveWorkspace,
+  usePermission,
+  usePreferences,
+} from '@/features/workspace'
 import { AccountsSummary } from '../components/AccountsSummary'
 import { DashboardPeriodFilter } from '../components/DashboardPeriodFilter'
 import { FinancialSummary } from '../components/FinancialSummary'
@@ -17,6 +27,7 @@ import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDa
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
 import { BudgetDashboardWidget } from '../components/BudgetDashboardWidget'
+
 const customError = (params: DashboardParams) => {
   if (params.period !== 'CUSTOM') return undefined
   if (!params.dateFrom || !params.dateTo)
@@ -25,14 +36,25 @@ const customError = (params: DashboardParams) => {
     return 'La fecha desde no puede ser posterior a la fecha hasta.'
   return undefined
 }
+
 export function DashboardPage() {
   const navigate = useNavigate()
   const workspace = useActiveWorkspace().activeWorkspace!
   const canRead = usePermission('reports.read')
   const canReadCategories = usePermission('categories.read')
   const canReadDebts = usePermission('debts.read')
+  const canCreateTransactions = usePermission('transactions.write')
+  const canCreateAccounts = usePermission('accounts.write')
   const preferences = usePreferences()
-  const [selectedParams, setSelectedParams] = useState<DashboardParams | null>(null)
+  const [selectedParams, setSelectedParams] = useState<DashboardParams | null>(
+    null,
+  )
+  const [creatingTransaction, setCreatingTransaction] = useState(false)
+  const [creatingAccount, setCreatingAccount] = useState(false)
+  const [transactionCreationKey, setTransactionCreationKey] = useState(0)
+  const [accountCreationKey, setAccountCreationKey] = useState(0)
+  const [quickMessage, setQuickMessage] = useState('')
+
   const params = selectedParams ?? {
     period: preferences.data?.financialCycleStartDay
       ? ('MY_CYCLE' as const)
@@ -46,6 +68,26 @@ export function DashboardPage() {
     canRead && preferences.isSuccess && !validationError,
   )
   const categories = useCategories(workspace.id, canReadCategories)
+  const createTransaction = useCreateTransaction(workspace.id)
+  const createAccount = useCreateAccount(workspace.id)
+
+  const closeTransaction = () => {
+    setCreatingTransaction(false)
+    createTransaction.reset()
+  }
+  const closeAccount = () => {
+    setCreatingAccount(false)
+    createAccount.reset()
+  }
+  const openTransaction = () => {
+    setQuickMessage('')
+    setCreatingTransaction(true)
+  }
+  const openAccount = () => {
+    setQuickMessage('')
+    setCreatingAccount(true)
+  }
+
   if (!canRead)
     return (
       <ErrorState
@@ -53,21 +95,60 @@ export function DashboardPage() {
         message="No tienes permiso para consultar el dashboard de este workspace."
       />
     )
+
   return (
     <div className={styles.page}>
-      <PageHeader
-        title="Inicio"
-        description="Así están tus finanzas actualmente."
-      />
-      <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
-        <DashboardPeriodFilter
-          value={params}
-          onChange={setSelectedParams}
-          error={validationError}
-          financialCycleConfigured={Boolean(preferences.data?.financialCycleStartDay)}
-          onConfigureCycle={() => navigate('/app/settings#preferences')}
-        />
-      </FilterPanel>
+      <section className={styles.topPanel} aria-label="Resumen de inicio">
+        <div className={styles.topPanelGlow} aria-hidden="true" />
+        <div className={styles.topPanelContent}>
+          <div className={styles.dashboardEyebrow}>
+            <Sparkles size={15} aria-hidden="true" />
+            Tu panorama financiero
+          </div>
+          <PageHeader
+            title="Inicio"
+            description="Así están tus finanzas actualmente."
+          />
+          <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
+            <DashboardPeriodFilter
+              value={params}
+              onChange={setSelectedParams}
+              error={validationError}
+              financialCycleConfigured={Boolean(
+                preferences.data?.financialCycleStartDay,
+              )}
+              onConfigureCycle={() => navigate('/app/settings#preferences')}
+            />
+          </FilterPanel>
+          <div className={styles.quickActions} aria-label="Acciones rápidas">
+            {canCreateTransactions && (
+              <Button onClick={openTransaction}>
+                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
+              </Button>
+            )}
+            {canCreateAccounts && (
+              <Button variant="secondary" onClick={openAccount}>
+                <Landmark size={18} aria-hidden="true" /> Crear cuenta
+              </Button>
+            )}
+            {canReadDebts && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/app/debts')}
+              >
+                Ver créditos y pagos
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {quickMessage && (
+        <p className={styles.quickSuccess} role="status">
+          {quickMessage}
+        </p>
+      )}
+
       {dashboard.isPending && !validationError ? (
         <DashboardSkeleton />
       ) : dashboard.isError ? (
@@ -83,32 +164,13 @@ export function DashboardPage() {
             title="Empieza a organizar tus finanzas"
             message="Crea tu primera cuenta para comenzar a registrar ingresos y gastos."
             action={
-              <Button onClick={() => navigate('/app/accounts?new=1')}>
-                Crear mi primera cuenta
-              </Button>
+              canCreateAccounts ? (
+                <Button onClick={openAccount}>Crear mi primera cuenta</Button>
+              ) : undefined
             }
           />
         ) : (
           <>
-            <div className={styles.quickActions} aria-label="Acciones rápidas">
-              <Button onClick={() => navigate('/app/transactions?new=1')}>
-                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/app/accounts?new=1')}
-              >
-                <Landmark size={18} aria-hidden="true" /> Crear cuenta
-              </Button>
-              {canReadDebts && (
-                <Button
-                  variant="secondary"
-                  onClick={() => navigate('/app/debts')}
-                >
-                  Ver créditos y pagos
-                </Button>
-              )}
-            </div>
             <div className={styles.currencySections}>
               {dashboard.data.summariesByCurrency.map((summary) => (
                 <FinancialSummary key={summary.currency} summary={summary} />
@@ -122,9 +184,9 @@ export function DashboardPage() {
                 title="Registra tu primer movimiento"
                 message="Añade un ingreso, gasto o transferencia para empezar tu historial."
                 action={
-                  <Button onClick={() => navigate('/app/transactions?new=1')}>
-                    Nuevo movimiento
-                  </Button>
+                  canCreateTransactions ? (
+                    <Button onClick={openTransaction}>Nuevo movimiento</Button>
+                  ) : undefined
                 }
               />
             ) : (
@@ -138,6 +200,54 @@ export function DashboardPage() {
           </>
         )
       ) : null}
+
+      <Dialog
+        open={creatingTransaction}
+        title="Registrar movimiento"
+        size="wide"
+        onClose={() => !createTransaction.isPending && closeTransaction()}
+      >
+        <TransactionForm
+          key={`dashboard-transaction-${transactionCreationKey}`}
+          workspaceId={workspace.id}
+          timezone={workspace.timezone}
+          pending={createTransaction.isPending}
+          error={createTransaction.error}
+          onCancel={closeTransaction}
+          onSubmit={(input) =>
+            createTransaction.mutate(input as CreateTransactionInput, {
+              onSuccess: () => {
+                setTransactionCreationKey((value) => value + 1)
+                setQuickMessage('Movimiento registrado correctamente.')
+                closeTransaction()
+              },
+            })
+          }
+        />
+      </Dialog>
+
+      <Dialog
+        open={creatingAccount}
+        title="Nueva cuenta"
+        onClose={() => !createAccount.isPending && closeAccount()}
+      >
+        <AccountForm
+          key={`dashboard-account-${accountCreationKey}`}
+          currency={workspace.baseCurrency}
+          pending={createAccount.isPending}
+          error={createAccount.error}
+          onCancel={closeAccount}
+          onSubmit={(input) =>
+            createAccount.mutate(input as AccountInput, {
+              onSuccess: () => {
+                setAccountCreationKey((value) => value + 1)
+                setQuickMessage('Cuenta creada correctamente.')
+                closeAccount()
+              },
+            })
+          }
+        />
+      </Dialog>
     </div>
   )
 }
