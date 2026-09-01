@@ -242,6 +242,146 @@ header[data-liabilities-header] ~ dialog [class*='_comparison_'] {
   box-shadow: 0 .35rem 1rem rgb(13 43 40 / 4%);
 }
 
+/* Compact, single-open accordion for credit, card and recurring-payment resources. */
+[data-liability-accordion='true'] {
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform 220ms cubic-bezier(.22, 1, .36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+
+[data-liability-accordion='true']:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+[data-liability-accordion='true'][data-expanded='true'] {
+  border-color: color-mix(in srgb, var(--color-primary) 42%, var(--color-border)) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary-soft) 22%, var(--color-surface)), var(--color-surface) 54%) !important;
+  box-shadow: 0 1.1rem 2.8rem rgb(13 43 40 / 12%) !important;
+  transform: translateY(-2px);
+}
+
+.liabilityAccordionSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .6rem;
+  max-height: 8rem;
+  opacity: 1;
+  overflow: hidden;
+  transition:
+    max-height 300ms cubic-bezier(.22, 1, .36, 1),
+    opacity 180ms ease,
+    transform 300ms cubic-bezier(.22, 1, .36, 1),
+    margin 300ms ease;
+}
+
+.liabilityAccordionSummary > span {
+  display: grid;
+  gap: .15rem;
+  min-width: 0;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  border-radius: .75rem;
+  background: color-mix(in srgb, var(--color-surface-soft) 78%, var(--color-surface));
+}
+
+.liabilityAccordionSummary small {
+  color: var(--color-text-secondary);
+  font-size: .76rem;
+}
+
+.liabilityAccordionSummary strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: .92rem;
+}
+
+[data-liability-accordion='true'][data-expanded='true'] > .liabilityAccordionSummary {
+  max-height: 0;
+  margin-block: -.25rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+}
+
+[data-liability-detail='true'] {
+  max-height: 0;
+  margin-block: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition:
+    max-height 380ms cubic-bezier(.22, 1, .36, 1),
+    opacity 220ms ease 20ms,
+    transform 380ms cubic-bezier(.22, 1, .36, 1),
+    margin 300ms ease;
+}
+
+[data-liability-accordion='true'][data-expanded='true'] > [data-liability-detail='true'] {
+  max-height: 42rem;
+  margin-block: .15rem !important;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.liabilityAccordionToggle {
+  display: flex;
+  width: 100%;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .1rem;
+  padding: .55rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
+  border-radius: .75rem;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary-soft) 58%, var(--color-surface));
+  cursor: pointer;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.liabilityAccordionToggle:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary-soft) 78%, var(--color-surface));
+}
+
+.liabilityAccordionToggle:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.liabilityAccordionChevron {
+  display: inline-grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 320ms cubic-bezier(.22, 1, .36, 1);
+}
+
+[data-liability-accordion='true'][data-expanded='true'] .liabilityAccordionChevron {
+  transform: rotate(180deg);
+}
+
 @media (max-width: 47.99rem) {
   header[data-liabilities-header] {
     min-height: 0;
@@ -275,5 +415,19 @@ header[data-liabilities-header] ~ dialog [class*='_comparison_'] {
 
   header[data-liabilities-header] + [role='tablist'] button {
     flex: 1 0 auto;
+  }
+
+  .liabilityAccordionSummary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-liability-accordion='true'],
+  [data-liability-detail='true'],
+  .liabilityAccordionSummary,
+  .liabilityAccordionChevron,
+  .liabilityAccordionToggle {
+    transition-duration: 1ms !important;
   }
 }
