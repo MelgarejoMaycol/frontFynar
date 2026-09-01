@@ -6,6 +6,9 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 vi.mock('@/features/dashboard/components/BudgetDashboardWidget', () => ({
   BudgetDashboardWidget: () => <section>Widget de presupuestos</section>,
 }))
+vi.mock('@/features/transactions/components/TransactionForm', () => ({
+  TransactionForm: () => <form aria-label="Formulario de movimiento" />,
+}))
 import { ApiError } from '@/services/http'
 const mocks = vi.hoisted(() => ({
   permission: true,
