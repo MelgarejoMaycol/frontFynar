@@ -175,26 +175,48 @@
   background: var(--color-error-soft) !important;
 }
 .dialog {
+  --dialog-accent: var(--color-primary);
+  --dialog-accent-soft: var(--color-primary-soft);
   grid-template-rows: auto minmax(0, 1fr) auto;
-  width: min(32rem, calc(100% - 2rem));
+  width: min(44rem, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
-  border-radius: var(--radius-large);
+  border: 1px solid color-mix(in srgb, var(--dialog-accent) 24%, var(--color-border));
+  border-radius: 1.5rem;
   background: var(--color-surface);
-  box-shadow: 0 1.75rem 5rem rgb(5 26 24 / 28%);
+  box-shadow: 0 2rem 6rem rgb(5 26 24 / 32%);
   animation: dialogEnter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .dialog[open] {
   display: grid;
 }
 .dialogWide {
-  width: min(54rem, calc(100% - 2rem));
+  width: min(44rem, calc(100% - 2rem));
+}
+.dialogTonePrimary {
+  --dialog-accent: var(--color-primary);
+  --dialog-accent-soft: var(--color-primary-soft);
+}
+.dialogToneSuccess {
+  --dialog-accent: var(--color-success);
+  --dialog-accent-soft: var(--color-success-soft);
+}
+.dialogToneWarning {
+  --dialog-accent: var(--color-warning);
+  --dialog-accent-soft: var(--color-warning-soft);
+}
+.dialogToneDanger {
+  --dialog-accent: var(--color-error);
+  --dialog-accent-soft: var(--color-error-soft);
+}
+.dialogToneInfo {
+  --dialog-accent: var(--color-info);
+  --dialog-accent-soft: var(--color-info-soft);
 }
 .dialog::backdrop {
-  background: var(--color-overlay);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--color-overlay) 88%, black 12%);
+  backdrop-filter: blur(8px) saturate(0.9);
 }
 .dialogHeader,
 .dialogBody,
@@ -202,30 +224,103 @@
   padding: var(--space-5);
 }
 .dialogHeader {
-  position: sticky;
+  position: relative;
   z-index: 1;
-  top: 0;
   display: flex;
+  min-height: 7.4rem;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-primary-soft));
+  overflow: hidden;
+  color: var(--color-text);
+  border-bottom: 1px solid color-mix(in srgb, var(--dialog-accent) 18%, var(--color-border));
+  background:
+    radial-gradient(circle at 82% 20%, color-mix(in srgb, var(--dialog-accent) 20%, transparent), transparent 28%),
+    linear-gradient(125deg, color-mix(in srgb, var(--dialog-accent-soft) 92%, var(--color-surface)), var(--color-surface) 76%);
+}
+.dialogHeader::after {
+  position: absolute;
+  right: -3rem;
+  bottom: -4.8rem;
+  width: 11rem;
+  height: 11rem;
+  content: '';
+  border: 1.25rem solid color-mix(in srgb, var(--dialog-accent) 8%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dialogHeaderContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-3);
+}
+.dialogIcon {
+  display: grid;
+  width: 3.35rem;
+  height: 3.35rem;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--dialog-accent);
+  border: 1px solid color-mix(in srgb, var(--dialog-accent) 24%, var(--color-border));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 82%, var(--dialog-accent-soft));
+  box-shadow: 0 0.6rem 1.6rem color-mix(in srgb, var(--dialog-accent) 13%, transparent);
+}
+.dialogHeading {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+.dialogEyebrow {
+  color: var(--dialog-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 .dialogHeader h2 {
   margin: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+  letter-spacing: -0.025em;
+}
+.dialogHeader > button {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--dialog-accent) 16%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  backdrop-filter: blur(8px);
+}
+.dialogWatermark {
+  position: absolute;
+  z-index: 0;
+  right: 2.8rem;
+  bottom: -3.6rem;
+  color: var(--dialog-accent);
+  opacity: 0.07;
+  pointer-events: none;
+  transform: rotate(-9deg);
 }
 .dialogBody {
   overflow-y: auto;
   color: var(--color-text);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary-soft) 18%, transparent), transparent 5rem);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--dialog-accent-soft) 20%, transparent), transparent 5rem),
+    var(--color-surface);
+}
+.dialogBody > :first-child {
+  margin-top: 0;
 }
 .dialogFooter {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
   border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 95%, var(--dialog-accent-soft));
 }
 .pageHeader,
 .sectionHeader {
@@ -361,18 +456,31 @@
     margin-block: 0;
   }
   .filterBody,
-  .dialogHeader,
   .dialogBody,
   .dialogFooter {
+    padding: var(--space-3);
+  }
+  .dialogHeader {
+    min-height: 6.2rem;
     padding: var(--space-3);
   }
   .dialog {
     width: calc(100% - var(--space-3));
     max-height: calc(100dvh - var(--space-3));
-    border-radius: var(--radius-medium);
+    border-radius: 1.15rem;
   }
   .dialogWide {
     width: calc(100% - var(--space-3));
+  }
+  .dialogIcon {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 0.85rem;
+  }
+  .dialogWatermark {
+    right: 1.5rem;
+    bottom: -4.5rem;
+    opacity: 0.055;
   }
   .dialogFooter {
     flex-wrap: wrap;
