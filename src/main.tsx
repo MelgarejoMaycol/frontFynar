@@ -5,12 +5,19 @@ import '@/config/env'
 import App from '@/App'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
+import { PwaPrompt } from '@/components/pwa/PwaPrompt'
 import '@/styles/globals.css'
 import { applyCachedTheme } from '@/features/workspace/theme'
 import { initializeObservability } from '@/services/observability/sentry'
 
 applyCachedTheme()
 initializeObservability()
+
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined)
+  })
+}
 
 const root = document.getElementById('root')
 
@@ -21,6 +28,7 @@ createRoot(root).render(
     <ErrorBoundary>
       <AppProviders>
         <App />
+        <PwaPrompt />
       </AppProviders>
     </ErrorBoundary>
   </StrictMode>,
