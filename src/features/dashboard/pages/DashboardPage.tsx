@@ -134,9 +134,9 @@ export function DashboardPage() {
             {canReadDebts && (
               <Button
                 variant="secondary"
-                onClick={() => navigate('/app/debts')}
+                onClick={() => navigate('/app/commitments')}
               >
-                Ver créditos y pagos
+                Ver créditos y deudas
               </Button>
             )}
           </div>
