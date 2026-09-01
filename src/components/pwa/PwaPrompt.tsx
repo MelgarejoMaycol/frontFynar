@@ -15,9 +15,15 @@ const isStandalone = () =>
 
 const isIos = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent)
 
+const shouldShowIosInstallHelp = () => {
+  if (typeof window === 'undefined') return false
+  const dismissed = window.localStorage.getItem(INSTALL_DISMISSED_KEY) === 'true'
+  return isIos() && !isStandalone() && !dismissed
+}
+
 export function PwaPrompt() {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null)
-  const [showIosHelp, setShowIosHelp] = useState(false)
+  const [showIosHelp, setShowIosHelp] = useState(shouldShowIosInstallHelp)
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null)
   const [updating, setUpdating] = useState(false)
 
@@ -54,9 +60,6 @@ export function PwaPrompt() {
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
     navigator.serviceWorker.ready.then(inspectRegistration).catch(() => undefined)
 
-    const dismissed = window.localStorage.getItem(INSTALL_DISMISSED_KEY) === 'true'
-    if (isIos() && !isStandalone() && !dismissed) setShowIosHelp(true)
-
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall)
       navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
@@ -85,12 +88,19 @@ export function PwaPrompt() {
   if (waitingWorker) {
     return (
       <aside className={styles.prompt} role="status" aria-live="polite">
-        <span className={styles.icon}><RefreshCw size={19} aria-hidden="true" /></span>
+        <span className={styles.icon}>
+          <RefreshCw size={19} aria-hidden="true" />
+        </span>
         <div className={styles.copy}>
           <strong>Nueva versión de Fynar disponible</strong>
           <span>Actualiza para usar las mejoras más recientes.</span>
         </div>
-        <button type="button" className={styles.primaryAction} onClick={update} disabled={updating}>
+        <button
+          type="button"
+          className={styles.primaryAction}
+          onClick={update}
+          disabled={updating}
+        >
           {updating ? 'Actualizando…' : 'Actualizar ahora'}
         </button>
       </aside>
@@ -100,7 +110,9 @@ export function PwaPrompt() {
   if (installPrompt && !isStandalone()) {
     return (
       <aside className={styles.prompt} role="status">
-        <span className={styles.icon}><Download size={19} aria-hidden="true" /></span>
+        <span className={styles.icon}>
+          <Download size={19} aria-hidden="true" />
+        </span>
         <div className={styles.copy}>
           <strong>Instala Fynar en tu teléfono</strong>
           <span>Ábrelo como una app y entra más rápido.</span>
@@ -108,7 +120,12 @@ export function PwaPrompt() {
         <button type="button" className={styles.primaryAction} onClick={() => void install()}>
           Instalar
         </button>
-        <button type="button" className={styles.close} onClick={dismissInstall} aria-label="Ocultar instalación">
+        <button
+          type="button"
+          className={styles.close}
+          onClick={dismissInstall}
+          aria-label="Ocultar instalación"
+        >
           <X size={17} aria-hidden="true" />
         </button>
       </aside>
@@ -118,12 +135,19 @@ export function PwaPrompt() {
   if (showIosHelp) {
     return (
       <aside className={styles.prompt} role="status">
-        <span className={styles.icon}><Share size={19} aria-hidden="true" /></span>
+        <span className={styles.icon}>
+          <Share size={19} aria-hidden="true" />
+        </span>
         <div className={styles.copy}>
           <strong>Instala Fynar en tu iPhone</strong>
           <span>En Safari toca Compartir y luego “Añadir a pantalla de inicio”.</span>
         </div>
-        <button type="button" className={styles.close} onClick={dismissInstall} aria-label="Ocultar instrucciones">
+        <button
+          type="button"
+          className={styles.close}
+          onClick={dismissInstall}
+          aria-label="Ocultar instrucciones"
+        >
           <X size={17} aria-hidden="true" />
         </button>
       </aside>
