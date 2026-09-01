@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" role="img" aria-label="Fynar loading logo">
+  <defs>
+    <linearGradient id="fynarStroke" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1b3a30"/>
+      <stop offset="58%" stop-color="#456856"/>
+      <stop offset="100%" stop-color="#8baa92"/>
+    </linearGradient>
+    <linearGradient id="fynarBar" x1="0" y1="1" x2="0.35" y2="0">
+      <stop offset="0%" stop-color="#456856"/>
+      <stop offset="100%" stop-color="#8baa92"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    :root { color-scheme: light dark; }
+    svg { overflow: visible; }
+
+    .outline {
+      fill: none;
+      stroke: url(#fynarStroke);
+      stroke-width: 15;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 670;
+      stroke-dashoffset: 670;
+      animation: outlineDraw 2.9s cubic-bezier(.62,0,.22,1) infinite;
+    }
+
+    .bar {
+      fill: url(#fynarBar);
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    .bar1 { animation: barGrow1 2.9s cubic-bezier(.17,.84,.28,1) infinite; }
+    .bar2 { animation: barGrow2 2.9s cubic-bezier(.17,.84,.28,1) infinite; }
+    .bar3 { animation: barGrow3 2.9s cubic-bezier(.17,.84,.28,1) infinite; }
+
+    .stem {
+      fill: none;
+      stroke: url(#fynarStroke);
+      stroke-width: 15;
+      stroke-linecap: round;
+      stroke-dasharray: 105;
+      stroke-dashoffset: 105;
+      animation: stemGrow 2.9s cubic-bezier(.2,.72,.25,1) infinite;
+    }
+
+    .leaf {
+      fill: url(#fynarBar);
+      transform-box: fill-box;
+      opacity: 0;
+    }
+    .leaf-left {
+      transform-origin: 92% 95%;
+      animation: leafLeft 2.9s cubic-bezier(.18,.84,.34,1) infinite;
+    }
+    .leaf-right {
+      transform-origin: 8% 95%;
+      animation: leafRight 2.9s cubic-bezier(.18,.84,.34,1) infinite;
+    }
+
+    @keyframes outlineDraw {
+      0%   { stroke-dashoffset:670; opacity:0; }
+      5%   { opacity:1; }
+      38%  { stroke-dashoffset:0; opacity:1; }
+      82%  { stroke-dashoffset:0; opacity:1; }
+      94%  { stroke-dashoffset:0; opacity:0; }
+      100% { stroke-dashoffset:670; opacity:0; }
+    }
+
+    @keyframes barGrow1 {
+      0%,18% { transform:scaleY(0); opacity:0; }
+      20% { opacity:1; }
+      35% { transform:scaleY(1.025); opacity:1; }
+      39%,82% { transform:scaleY(1); opacity:1; }
+      94%,100% { transform:scaleY(1); opacity:0; }
+    }
+    @keyframes barGrow2 {
+      0%,25% { transform:scaleY(0); opacity:0; }
+      27% { opacity:1; }
+      42% { transform:scaleY(1.025); opacity:1; }
+      46%,82% { transform:scaleY(1); opacity:1; }
+      94%,100% { transform:scaleY(1); opacity:0; }
+    }
+    @keyframes barGrow3 {
+      0%,32% { transform:scaleY(0); opacity:0; }
+      34% { opacity:1; }
+      49% { transform:scaleY(1.025); opacity:1; }
+      53%,82% { transform:scaleY(1); opacity:1; }
+      94%,100% { transform:scaleY(1); opacity:0; }
+    }
+
+    @keyframes stemGrow {
+      0%,39% { stroke-dashoffset:105; opacity:0; }
+      41% { opacity:1; }
+      58%,82% { stroke-dashoffset:0; opacity:1; }
+      94%,100% { stroke-dashoffset:0; opacity:0; }
+    }
+
+    @keyframes leafLeft {
+      0%,48% { transform:scale(.02) rotate(13deg); opacity:0; }
+      50% { opacity:1; }
+      63% { transform:scale(1.03) rotate(-1deg); opacity:1; }
+      67%,82% { transform:scale(1) rotate(0deg); opacity:1; }
+      94%,100% { transform:scale(1) rotate(0deg); opacity:0; }
+    }
+    @keyframes leafRight {
+      0%,52% { transform:scale(.02) rotate(-13deg); opacity:0; }
+      54% { opacity:1; }
+      67% { transform:scale(1.03) rotate(1deg); opacity:1; }
+      71%,82% { transform:scale(1) rotate(0deg); opacity:1; }
+      94%,100% { transform:scale(1) rotate(0deg); opacity:0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation:none!important; }
+      .outline,.stem { stroke-dashoffset:0!important; opacity:1!important; }
+      .bar,.leaf { transform:none!important; opacity:1!important; }
+    }
+  </style>
+
+  <!-- Rounded outer contour -->
+  <path class="outline"
+    d="M118 34
+       H73
+       C43 34 26 54 26 84
+       V177
+       C26 211 48 232 82 232
+       H171
+       C203 232 226 211 226 177
+       V112" />
+
+  <!-- Ascending bars -->
+  <rect class="bar bar1" x="68" y="158" width="25" height="55" rx="12.5"/>
+  <rect class="bar bar2" x="110" y="131" width="25" height="82" rx="12.5"/>
+  <rect class="bar bar3" x="152" y="101" width="25" height="112" rx="12.5"/>
+
+  <!-- Plant stem -->
+  <path class="stem" d="M226 177 V104"/>
+
+  <!-- Leaves -->
+  <path class="leaf leaf-left"
+    d="M222 105
+       C198 101 184 85 183 62
+       C207 64 224 78 228 99
+       C228 102 226 104 222 105Z"/>
+  <path class="leaf leaf-right"
+    d="M229 104
+       C232 69 249 46 258 43
+       C259 76 247 99 232 108
+       C230 108 229 106 229 104Z"/>
+</svg>
