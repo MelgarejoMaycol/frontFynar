@@ -28,6 +28,15 @@ export const settingsNavigation = {
 
 export const appNavigation = [...mainNavigation, settingsNavigation]
 
+const commitmentsNavigation = mainNavigation.find(
+  (item) => item.to === '/app/commitments',
+)!
+const commitmentsAliases = [
+  '/app/debts',
+  '/app/lending',
+  '/app/personal-balances',
+]
+
 const normalizePath = (pathname: string) => {
   const path = pathname.trim().split(/[?#]/, 1)[0] ?? ''
   const withLeadingSlash = path.startsWith('/') ? path : `/${path}`
@@ -45,6 +54,15 @@ export function getRouteNavigation(
   const normalizedPath = normalizePath(pathname)
   const exactMatch = appNavigation.find((item) => item.to === normalizedPath)
   if (exactMatch) return exactMatch
+
+  if (
+    commitmentsAliases.some(
+      (alias) =>
+        normalizedPath === alias || normalizedPath.startsWith(`${alias}/`),
+    )
+  ) {
+    return commitmentsNavigation
+  }
 
   const parentMatch = [...appNavigation]
     .sort((first, second) => second.to.length - first.to.length)
