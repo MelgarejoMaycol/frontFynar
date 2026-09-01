@@ -210,6 +210,7 @@ export function TransactionsPage() {
           current.status === 'CONFIRMED' &&
           current.type !== 'ADJUSTMENT' &&
           current.type !== 'DEBT_PAYMENT' &&
+          current.metadata?.obligationOccurrenceId == null &&
           current.metadata?.cardCashAdvance !== true ? (
             <>
               <Button variant="secondary" onClick={() => setEditing(true)}>
@@ -286,6 +287,18 @@ export function TransactionsPage() {
                   {current.metadata?.strategy != null && <div><dt>Estrategia</dt><dd>{current.metadata.strategy === 'REDUCE_PAYMENT' ? 'Reducir cuota' : 'Reducir plazo'}</dd></div>}
                   {current.metadata?.debtId != null && <div><dt>Navegación</dt><dd><Link to={`/app/debts/${String(current.metadata.debtId)}`}>Ver crédito</Link></dd></div>}
                 </>
+              )}
+              {current.metadata?.obligationOccurrenceId != null && (
+                <div>
+                  <dt>Movimiento protegido</dt>
+                  <dd>
+                    Este movimiento fue generado por un pago recurrente. Para
+                    modificarlo o revertirlo, usa el detalle de la obligación.
+                    {current.metadata?.obligationId != null ? (
+                      <> <Link to={`/app/debts/obligations/${String(current.metadata.obligationId)}`}>Ver obligación</Link></>
+                    ) : null}
+                  </dd>
+                </div>
               )}
               <div>
                 <dt>Descripción</dt>

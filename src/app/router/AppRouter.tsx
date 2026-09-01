@@ -127,6 +127,11 @@ const PersonalBalancesPage = lazy(() =>
     default: module.PersonalBalancesPage,
   })),
 )
+const LendingPage = lazy(() =>
+  import('@/features/lending').then((module) => ({
+    default: module.LendingPage,
+  })),
+)
 const pending = (page: ReactNode) => (
   <Suspense fallback={<PageLoader />}>{page}</Suspense>
 )
@@ -202,6 +207,7 @@ export function AppRoutes() {
               path="personal-balances"
               element={pending(<PersonalBalancesPage />)}
             />
+            <Route path="lending" element={pending(<LendingPage />)} />
           </Route>
           <Route path="settings" element={pending(<SettingsPage />)} />
         </Route>

@@ -18,6 +18,7 @@ import type {
   LiabilitiesSummary,
   Obligation,
   ObligationInput,
+  ObligationPayment,
   PrepaymentSimulation,
   Statement,
   Upcoming,
@@ -134,6 +135,26 @@ export const liabilitiesApi = {
     httpClient.post<ApiSuccess<unknown>, Record<string, unknown>>(
       `${b(w)}/obligations/${o}/occurrences/${id}/payments`,
       i,
+    ),
+  updateOccurrencePayment: (
+    w: string,
+    obligationId: string,
+    paymentId: string,
+    input: Record<string, unknown>,
+  ) =>
+    httpClient.patch<ApiSuccess<ObligationPayment>, Record<string, unknown>>(
+      `${b(w)}/obligations/${obligationId}/payments/${paymentId}`,
+      input,
+    ),
+  reverseOccurrencePayment: (
+    w: string,
+    obligationId: string,
+    paymentId: string,
+    input: { reason: string; version: number },
+  ) =>
+    httpClient.post<ApiSuccess<unknown>, typeof input>(
+      `${b(w)}/obligations/${obligationId}/payments/${paymentId}/reverse`,
+      input,
     ),
   cards: (w: string, s?: AbortSignal) =>
     httpClient.get<ApiSuccess<Card[]>>(`${b(w)}/cards`, s),

@@ -58,6 +58,7 @@ import type {
   DebtPayment,
   DebtPaymentInput,
   Obligation,
+  ObligationPayment,
   Occurrence,
   Statement,
 } from './types'
@@ -2003,8 +2004,12 @@ export function ObligationDetailPage() {
   const restore = useLiabilityMutation<Record<string, never>>(w!.id, () =>
     liabilitiesApi.restoreObligation(w!.id, obligationId),
   )
-  const [mode, setMode] = useState<'edit' | 'occurrence' | 'pay' | null>(null)
+  const [mode, setMode] = useState<
+    'edit' | 'occurrence' | 'pay' | 'editPayment' | 'reversePayment' | null
+  >(null)
   const [selected, setSelected] = useState<Occurrence | null>(null)
+  const [selectedPayment, setSelectedPayment] =
+    useState<ObligationPayment | null>(null)
   const action = searchParams.get('action')
   const isArchived = Boolean(o?.deletedAt)
   const requestedOccurrence = o
@@ -2026,6 +2031,7 @@ export function ObligationDetailPage() {
   const closeMode = () => {
     setMode(null)
     setSelected(null)
+    setSelectedPayment(null)
     setSearchParams({}, { replace: true })
   }
   if (q.isPending) return <PageLoader />
@@ -2103,6 +2109,44 @@ export function ObligationDetailPage() {
                     </Button>
                   )}
                 </div>
+                {x.payments?.length ? (
+                  <div className={styles.paymentHistory}>
+                    {x.payments.map((payment) => (
+                      <div key={payment.id} className={styles.paymentHistoryItem}>
+                        <span>
+                          {money(payment.amount, o.currency)} · {payment.account.name}
+                          {payment.reversedAt ? ' · Revertido' : ''}
+                        </span>
+                        {!payment.reversedAt && canWrite && !isArchived ? (
+                          <div className={styles.inlineActions}>
+                            <Button
+                              size="small"
+                              variant="secondary"
+                              onClick={() => {
+                                setSelected(x)
+                                setSelectedPayment(payment)
+                                setMode('editPayment')
+                              }}
+                            >
+                              Editar pago
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="danger"
+                              onClick={() => {
+                                setSelected(x)
+                                setSelectedPayment(payment)
+                                setMode('reversePayment')
+                              }}
+                            >
+                              Revertir pago
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </Card>
             ))}
           </div>
@@ -2145,6 +2189,36 @@ export function ObligationDetailPage() {
             close={closeMode}
           />
         )}
+      </Dialog>
+      <Dialog
+        open={activeMode === 'editPayment'}
+        title="Editar pago"
+        onClose={closeMode}
+      >
+        {selectedPayment && activeOccurrence ? (
+          <EditOccurrencePaymentForm
+            w={w!.id}
+            timezone={w!.timezone}
+            obligation={o}
+            occurrence={activeOccurrence}
+            payment={selectedPayment}
+            close={closeMode}
+          />
+        ) : null}
+      </Dialog>
+      <Dialog
+        open={activeMode === 'reversePayment'}
+        title="Revertir pago"
+        onClose={closeMode}
+      >
+        {selectedPayment ? (
+          <ReverseOccurrencePaymentForm
+            w={w!.id}
+            obligation={o}
+            payment={selectedPayment}
+            close={closeMode}
+          />
+        ) : null}
       </Dialog>
     </div>
   )
@@ -2357,6 +2431,192 @@ function OccurrencePaymentForm({
         />
       </FormField>
     </SimpleForm>
+  )
+}
+function EditOccurrencePaymentForm({
+  w,
+  timezone,
+  obligation,
+  occurrence,
+  payment,
+  close,
+}: {
+  w: string
+  timezone: string
+  obligation: Obligation
+  occurrence: Occurrence
+  payment: ObligationPayment
+  close: () => void
+}) {
+  const accounts = useAccounts(w)
+  const [accountId, setAccountId] = useState(payment.accountId)
+  const [amount, setAmount] = useState(payment.amount)
+  const mutate = useLiabilityMutation(
+    w,
+    (input: Record<string, unknown>) =>
+      liabilitiesApi.updateOccurrencePayment(
+        w,
+        obligation.id,
+        payment.id,
+        input,
+      ),
+    liabilityKeys.obligation(w, obligation.id),
+  )
+  const newAccount = accounts.data?.find((account) => account.id === accountId)
+  const otherPaid = (occurrence.payments ?? [])
+    .filter((item) => item.id !== payment.id && !item.reversedAt)
+    .reduce((sum, item) => sum + Number(item.amount), 0)
+  const projectedPending = Math.max(
+    0,
+    Number(occurrence.amount) - otherPaid - Number(amount || 0),
+  )
+  return (
+    <form
+      className={styles.form}
+      onSubmit={(event) => {
+        event.preventDefault()
+        const data = new FormData(event.currentTarget)
+        mutate.mutate(
+          {
+            accountId,
+            amount,
+            occurredAt: workspaceDateTimeToIso(
+              String(data.get('occurredAt')),
+              timezone,
+            ),
+            note: String(data.get('note') || '') || null,
+            version: payment.version,
+          },
+          { onSuccess: close },
+        )
+      }}
+    >
+      <FormField label="Cuenta pagadora" htmlFor="edit-op-account">
+        <Select
+          id="edit-op-account"
+          name="accountId"
+          value={accountId}
+          onChange={(event) => setAccountId(event.target.value)}
+          required
+        >
+          {accounts.data
+            ?.filter(
+              (account) =>
+                account.nature === 'ASSET' &&
+                account.currency === obligation.currency &&
+                account.isActive,
+            )
+            .map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} · {money(account.currentBalance, account.currency)}
+              </option>
+            ))}
+        </Select>
+      </FormField>
+      <FormField label="Monto" htmlFor="edit-op-amount">
+        <MoneyInput
+          id="edit-op-amount"
+          name="amount"
+          minorUnits
+          value={amount}
+          onValueChange={setAmount}
+          required
+        />
+      </FormField>
+      <FormField label="Fecha" htmlFor="edit-op-date">
+        <Input
+          id="edit-op-date"
+          name="occurredAt"
+          type="datetime-local"
+          defaultValue={isoToWorkspaceDateTimeValue(payment.paidAt, timezone)}
+          required
+        />
+      </FormField>
+      <FormField label="Nota (opcional)" htmlFor="edit-op-note">
+        <Textarea
+          id="edit-op-note"
+          name="note"
+          defaultValue={payment.note ?? ''}
+          maxLength={500}
+        />
+      </FormField>
+      <Card className={styles.comparison}>
+        <div>
+          <strong>Antes</strong>
+          <span>Cuenta: {payment.account.name}</span>
+          <span>Monto: {money(payment.amount, obligation.currency)}</span>
+        </div>
+        <div>
+          <strong>Después</strong>
+          <span>Cuenta: {newAccount?.name ?? 'Selecciona una cuenta'}</span>
+          <span>Monto: {money(amount || '0', obligation.currency)}</span>
+          <span>
+            Pendiente: {money(projectedPending.toFixed(2), obligation.currency)}
+          </span>
+        </div>
+      </Card>
+      <p className={styles.hint} role="status">
+        {payment.account.name} recuperará {money(payment.amount, obligation.currency)} y{' '}
+        {newAccount?.name ?? 'la nueva cuenta'} disminuirá{' '}
+        {money(amount || '0', obligation.currency)}. La operación será atómica.
+      </p>
+      <MutationActions mutation={mutate} close={close} label="Guardar corrección" />
+    </form>
+  )
+}
+
+function ReverseOccurrencePaymentForm({
+  w,
+  obligation,
+  payment,
+  close,
+}: {
+  w: string
+  obligation: Obligation
+  payment: ObligationPayment
+  close: () => void
+}) {
+  const mutate = useLiabilityMutation(
+    w,
+    (input: { reason: string; version: number }) =>
+      liabilitiesApi.reverseOccurrencePayment(
+        w,
+        obligation.id,
+        payment.id,
+        input,
+      ),
+    liabilityKeys.obligation(w, obligation.id),
+  )
+  return (
+    <form
+      className={styles.form}
+      onSubmit={(event) => {
+        event.preventDefault()
+        mutate.mutate(
+          {
+            reason: String(new FormData(event.currentTarget).get('reason')),
+            version: payment.version,
+          },
+          { onSuccess: close },
+        )
+      }}
+    >
+      <p>
+        {payment.account.name} recuperará{' '}
+        {money(payment.amount, obligation.currency)}. El movimiento se cancelará,
+        el pago quedará en el historial y el periodo se recalculará.
+      </p>
+      <FormField label="Motivo" htmlFor="reverse-op-reason">
+        <Textarea
+          id="reverse-op-reason"
+          name="reason"
+          minLength={3}
+          maxLength={500}
+          required
+        />
+      </FormField>
+      <MutationActions mutation={mutate} close={close} label="Confirmar reversión" />
+    </form>
   )
 }
 function SimpleForm<T>({

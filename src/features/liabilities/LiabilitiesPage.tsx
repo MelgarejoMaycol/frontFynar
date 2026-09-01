@@ -230,7 +230,7 @@ export function LiabilitiesPage() {
               onRetry={() => void upcoming.refetch()}
             />
           ) : (
-            <UpcomingPayments upcoming={upcoming.data!} workspaceId={w!.id} />
+            <UpcomingPayments upcoming={upcoming.data!} workspaceId={w!.id} timezone={w!.timezone} />
           )}
         </>
       )}{' '}
@@ -436,11 +436,13 @@ function Summary({
 function UpcomingPayments({
   upcoming,
   workspaceId,
+  timezone,
 }: {
   upcoming: NonNullable<ReturnType<typeof useUpcoming>['data']>
   workspaceId: string
+  timezone: string
 }) {
-  return <UpcomingPaymentsView upcoming={upcoming} workspaceId={workspaceId} />
+  return <UpcomingPaymentsView upcoming={upcoming} workspaceId={workspaceId} timezone={timezone} />
 }
 function Metric({
   label,

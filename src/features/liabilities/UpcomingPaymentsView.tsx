@@ -26,14 +26,23 @@ const monthTitle = (date: Date) =>
 export function UpcomingPaymentsView({
   upcoming,
   workspaceId,
+  timezone,
 }: {
   upcoming: Upcoming[]
   workspaceId: string
+  timezone: string
 }) {
   const [view, setView] = useState<'cards' | 'calendar'>('cards')
   const [month, setMonth] = useState(() => {
     const now = new Date()
-    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: 'numeric',
+    }).formatToParts(now)
+    const year = Number(parts.find((part) => part.type === 'year')?.value)
+    const monthIndex = Number(parts.find((part) => part.type === 'month')?.value) - 1
+    return new Date(Date.UTC(year, monthIndex, 1))
   })
   const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1))
   const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 12, 0))
@@ -134,7 +143,7 @@ export function UpcomingPaymentsView({
       ) : calendar.isPending ? (
         <p>Cargando calendario…</p>
       ) : (
-        <PaymentCalendar items={calendar.data ?? []} month={month} onMonth={setMonth} />
+        <PaymentCalendar items={calendar.data ?? []} month={month} onMonth={setMonth} timezone={timezone} />
       )}
     </section>
   )
@@ -178,10 +187,12 @@ function PaymentCalendar({
   items,
   month,
   onMonth,
+  timezone,
 }: {
   items: Upcoming[]
   month: Date
   onMonth: (value: Date) => void
+  timezone: string
 }) {
   const year = month.getUTCFullYear(),
     monthIndex = month.getUTCMonth()
@@ -203,7 +214,14 @@ function PaymentCalendar({
     onMonth(new Date(Date.UTC(year, monthIndex + amount, 1)))
   const today = () => {
     const now = new Date()
-    onMonth(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)))
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: 'numeric',
+    }).formatToParts(now)
+    const year = Number(parts.find((part) => part.type === 'year')?.value)
+    const monthIndex = Number(parts.find((part) => part.type === 'month')?.value) - 1
+    onMonth(new Date(Date.UTC(year, monthIndex, 1)))
   }
   return (
     <div className={styles.calendarPanel}>

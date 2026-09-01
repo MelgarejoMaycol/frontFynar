@@ -174,6 +174,20 @@ export interface Occurrence {
   paidAmount: string
   status: InstallmentStatus
   paidAt: string | null
+  payments: ObligationPayment[]
+}
+export interface ObligationPayment {
+  id: string
+  occurrenceId: string
+  accountId: string
+  transactionId: string
+  amount: string
+  paidAt: string
+  note: string | null
+  reversedAt: string | null
+  reversalReason: string | null
+  version: number
+  account: { id: string; name: string; isActive: boolean }
 }
 export interface RecurrenceRule {
   frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
