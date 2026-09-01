@@ -163,8 +163,62 @@
   border-radius: inherit;
   background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
 }
-.toolbar input {
+.toolbar {
+  align-items: stretch;
+}
+.searchField {
+  position: relative;
+  flex: 1;
+  max-width: 27rem;
+}
+.searchField > svg {
+  position: absolute;
+  top: 50%;
+  left: 0.85rem;
+  z-index: 1;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.searchField input {
+  width: 100%;
   min-width: 16rem;
+  padding-left: 2.55rem;
+}
+.filterField {
+  position: relative;
+  min-width: 12rem;
+}
+.filterField > svg {
+  position: absolute;
+  top: 50%;
+  right: 0.8rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.filterSelect {
+  width: 100%;
+  min-height: var(--control-height-md);
+  padding: 0 2.35rem 0 0.9rem;
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  outline: none;
+  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-primary-soft));
+  box-shadow: 0 0.2rem 0.7rem rgb(13 43 40 / 4%);
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-fast);
+}
+.filterSelect:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 38%, var(--color-border-strong));
+  background: var(--color-surface);
+}
+.filterSelect:focus-visible {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 18%, transparent);
 }
 .form {
   display: grid;
@@ -192,6 +246,17 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+}
+.personCreator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+.addPersonButton {
+  min-height: var(--control-height-md);
+  padding-inline: 0.85rem;
+  white-space: nowrap;
 }
 .hint {
   margin: 0;
@@ -289,15 +354,25 @@
   .grid,
   .loans,
   .cols,
-  .simForm {
+  .simForm,
+  .personCreator {
     grid-template-columns: 1fr;
   }
   .toolbar {
     align-items: stretch;
     flex-direction: column;
   }
-  .toolbar input {
+  .searchField,
+  .filterField {
+    width: 100%;
+    max-width: none;
+  }
+  .searchField input {
     min-width: 0;
+  }
+  .addPersonButton {
+    width: max-content;
+    justify-self: end;
   }
   .card,
   .section {
