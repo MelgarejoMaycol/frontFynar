@@ -39,18 +39,22 @@ export function Dialog({
 
       document.body.style.overflow = 'hidden'
 
-      if (
-        typeof dialog.animate === 'function' &&
-        !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ) {
+      if (typeof dialog.animate === 'function') {
+        dialog.getAnimations().forEach((animation) => animation.cancel())
         dialog.animate(
           [
-            { opacity: 0, transform: 'translateY(3rem) scale(0.985)' },
-            { opacity: 1, transform: 'translateY(0) scale(1)' },
+            {
+              opacity: 0,
+              transform: 'translateY(min(18vh, 8rem)) scale(0.97)',
+            },
+            {
+              opacity: 1,
+              transform: 'translateY(0) scale(1)',
+            },
           ],
           {
-            duration: 280,
-            easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+            duration: 420,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
             fill: 'both',
           },
         )
