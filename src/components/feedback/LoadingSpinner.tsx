@@ -1,3 +1,4 @@
+import { useEffect, useState, type CSSProperties } from 'react'
 import styles from './feedback.module.css'
 
 interface LoadingSpinnerProps {
@@ -11,12 +12,49 @@ const sizeClass = {
   large: styles.loaderLogoLarge,
 }
 
-const cycle = '1.35s'
+const STEP_MS = 115
+const LAST_PHASE = 8
+
+const transition = `opacity ${STEP_MS}ms ease, transform ${STEP_MS * 1.35}ms cubic-bezier(.2,.8,.2,1)`
+
+function animatedStyle(active: boolean, transform: string, hiddenTransform: string): CSSProperties {
+  return {
+    opacity: active ? 1 : 0.08,
+    transform: active ? transform : hiddenTransform,
+    transformOrigin: 'center',
+    transition,
+  }
+}
 
 export function LoadingSpinner({
   label = 'Cargando',
   size = 'medium',
 }: LoadingSpinnerProps) {
+  const [phase, setPhase] = useState(0)
+
+  useEffect(() => {
+    let timer: number | undefined
+    let frame = window.requestAnimationFrame(() => setPhase(1))
+
+    timer = window.setInterval(() => {
+      setPhase((current) => (current >= LAST_PHASE ? 1 : current + 1))
+    }, STEP_MS)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      if (timer !== undefined) window.clearInterval(timer)
+    }
+  }, [])
+
+  const frameVisible = phase >= 1
+  const bar1Visible = phase >= 2
+  const bar2Visible = phase >= 3
+  const bar3Visible = phase >= 4
+  const stemVisible = phase >= 5
+  const leftLeafVisible = phase >= 6
+  const rightLeafVisible = phase >= 7
+  const complete = phase >= 7
+
   return (
     <span
       className={`${styles.logoLoader} ${sizeClass[size]}`}
@@ -29,7 +67,30 @@ export function LoadingSpinner({
         viewBox="0 0 260 260"
         aria-hidden="true"
         focusable="false"
+        style={{
+          transform: complete ? 'scale(1.035)' : 'scale(1)',
+          transformOrigin: 'center',
+          transition: `transform ${STEP_MS * 1.6}ms ease`,
+        }}
       >
+        {/* Fallback permanente: incluso si una animación del navegador falla, el logo nunca desaparece. */}
+        <g opacity="0.16">
+          <path
+            d="M118 34 H73 C43 34 26 54 26 84 V177 C26 211 48 232 82 232 H171 C203 232 226 211 226 177 V112"
+            fill="none"
+            stroke="#1b3a30"
+            strokeWidth="15"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect x="68" y="158" width="25" height="55" rx="12.5" fill="#456856" />
+          <rect x="110" y="131" width="25" height="82" rx="12.5" fill="#5d8c74" />
+          <rect x="152" y="101" width="25" height="112" rx="12.5" fill="#8baa92" />
+          <path d="M226 177 V104" fill="none" stroke="#456856" strokeWidth="15" strokeLinecap="round" />
+          <path d="M222 105 C198 101 184 85 183 62 C207 64 224 78 228 99 C228 102 226 104 222 105Z" fill="#5d8c74" />
+          <path d="M229 104 C232 69 249 46 258 43 C259 76 247 99 232 108 C230 108 229 106 229 104Z" fill="#8baa92" />
+        </g>
+
         <path
           d="M118 34 H73 C43 34 26 54 26 84 V177 C26 211 48 232 82 232 H171 C203 232 226 211 226 177 V112"
           fill="none"
@@ -37,44 +98,45 @@ export function LoadingSpinner({
           strokeWidth="15"
           strokeLinecap="round"
           strokeLinejoin="round"
-          pathLength="100"
-          strokeDasharray="100"
-        >
-          <animate
-            attributeName="stroke-dashoffset"
-            values="100;0;0;100"
-            keyTimes="0;0.24;0.82;1"
-            dur={cycle}
-            repeatCount="indefinite"
-            begin="0s"
-          />
-          <animate
-            attributeName="opacity"
-            values="1;1;1;0"
-            keyTimes="0;0.24;0.86;1"
-            dur={cycle}
-            repeatCount="indefinite"
-            begin="0s"
-          />
-        </path>
+          style={animatedStyle(frameVisible, 'scale(1)', 'scale(.94)')}
+        />
 
-        <rect x="68" y="158" width="25" height="55" rx="12.5" fill="#456856" opacity="0">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="y" values="213;158;158;213" keyTimes="0;0.24;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="height" values="0;55;55;0" keyTimes="0;0.24;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </rect>
-
-        <rect x="110" y="131" width="25" height="82" rx="12.5" fill="#5d8c74" opacity="0">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.13;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="y" values="213;131;131;213" keyTimes="0;0.30;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="height" values="0;82;82;0" keyTimes="0;0.30;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </rect>
-
-        <rect x="152" y="101" width="25" height="112" rx="12.5" fill="#8baa92" opacity="0">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="y" values="213;101;101;213" keyTimes="0;0.36;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="height" values="0;112;112;0" keyTimes="0;0.36;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </rect>
+        <rect
+          x="68"
+          y="158"
+          width="25"
+          height="55"
+          rx="12.5"
+          fill="#456856"
+          style={{
+            ...animatedStyle(bar1Visible, 'scaleY(1)', 'scaleY(.08)'),
+            transformOrigin: '80.5px 213px',
+          }}
+        />
+        <rect
+          x="110"
+          y="131"
+          width="25"
+          height="82"
+          rx="12.5"
+          fill="#5d8c74"
+          style={{
+            ...animatedStyle(bar2Visible, 'scaleY(1)', 'scaleY(.08)'),
+            transformOrigin: '122.5px 213px',
+          }}
+        />
+        <rect
+          x="152"
+          y="101"
+          width="25"
+          height="112"
+          rx="12.5"
+          fill="#8baa92"
+          style={{
+            ...animatedStyle(bar3Visible, 'scaleY(1)', 'scaleY(.08)'),
+            transformOrigin: '164.5px 213px',
+          }}
+        />
 
         <path
           d="M226 177 V104"
@@ -82,28 +144,27 @@ export function LoadingSpinner({
           stroke="#456856"
           strokeWidth="15"
           strokeLinecap="round"
-          pathLength="100"
-          strokeDasharray="100"
-        >
-          <animate attributeName="stroke-dashoffset" values="100;100;0;0;100" keyTimes="0;0.22;0.44;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.22;0.28;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </path>
-
+          style={{
+            ...animatedStyle(stemVisible, 'scaleY(1)', 'scaleY(.08)'),
+            transformOrigin: '226px 177px',
+          }}
+        />
         <path
           d="M222 105 C198 101 184 85 183 62 C207 64 224 78 228 99 C228 102 226 104 222 105Z"
           fill="#5d8c74"
-          opacity="0"
-        >
-          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.34;0.44;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </path>
-
+          style={{
+            ...animatedStyle(leftLeafVisible, 'scale(1) rotate(0deg)', 'scale(.08) rotate(10deg)'),
+            transformOrigin: '224px 103px',
+          }}
+        />
         <path
           d="M229 104 C232 69 249 46 258 43 C259 76 247 99 232 108 C230 108 229 106 229 104Z"
           fill="#8baa92"
-          opacity="0"
-        >
-          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.39;0.49;0.86;1" dur={cycle} repeatCount="indefinite" begin="0s" />
-        </path>
+          style={{
+            ...animatedStyle(rightLeafVisible, 'scale(1) rotate(0deg)', 'scale(.08) rotate(-10deg)'),
+            transformOrigin: '231px 104px',
+          }}
+        />
       </svg>
     </span>
   )
