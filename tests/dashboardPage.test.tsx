@@ -199,7 +199,7 @@ describe('DashboardPage', () => {
     expect(
       screen.getByRole('button', { name: 'Nuevo movimiento' }),
     ).toBeVisible()
-    expect(screen.getByText('Cuenta de ahorros')).toBeVisible()
+    expect(screen.getAllByText('Cuenta de ahorros')[0]).toBeVisible()
     expect(
       screen.getByRole('link', { name: /Bancolombia\s*Cuenta favorita/i }),
     ).toHaveAttribute('href', '/app/accounts/a')
