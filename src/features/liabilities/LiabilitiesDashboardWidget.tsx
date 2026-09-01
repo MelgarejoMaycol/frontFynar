@@ -19,14 +19,14 @@ function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
   if (upcoming.isPending) {
     return (
       <section className={styles.dashboardWidget} aria-busy="true">
-        Cargando créditos y pagos…
+        Cargando compromisos financieros…
       </section>
     )
   }
   if (upcoming.isError) {
     return (
       <ErrorState
-        title="No pudimos cargar créditos y pagos"
+        title="No pudimos cargar tus compromisos"
         message="Puedes seguir usando el dashboard e intentarlo nuevamente."
         onRetry={() => void upcoming.refetch()}
       />
@@ -51,7 +51,7 @@ function LiabilitiesDashboardData({ workspaceId }: { workspaceId: string }) {
     >
       <div className={styles.dashboardWidgetHeader}>
         <h2 id="liabilities-dashboard-title">Por pagar</h2>
-        <Link to="/app/debts#upcoming">Ver todos</Link>
+        <Link to="/app/commitments">Ver todos</Link>
       </div>
       {nextItems.length === 0 ? (
         <EmptyState
