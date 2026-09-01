@@ -52,7 +52,7 @@ export function PreferencesForm({
     resolver: zodResolver(preferencesSchema),
     defaultValues: {
       ...preferences,
-      language: 'es-CO',
+      language: preferences.language === 'en-US' ? 'en-US' : 'es-CO',
       financialCycleStartDay: preferences.financialCycleStartDay ?? null,
     },
   })
@@ -135,6 +135,7 @@ export function PreferencesForm({
         >
           <Select id="preferences-language" {...register('language')}>
             <option value="es-CO">Español</option>
+            <option value="en-US">English</option>
           </Select>
         </FormField>
         <FormField
