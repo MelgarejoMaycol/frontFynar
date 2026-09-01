@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { ReportsPage } from '@/features/reports/pages/ReportsPage'
 const mocks = vi.hoisted(() => ({
@@ -158,11 +158,16 @@ describe('ReportsPage', () => {
       </MemoryRouter>,
     )
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-08-15T12:00:00Z'))
     mocks.read = true
     mocks.mode = 'data'
     mocks.enabled = []
     mocks.cashParams = []
     mocks.retry.mockClear()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
   })
   it('restringe acceso y deshabilita todas las queries', () => {
     mocks.read = false
