@@ -49,3 +49,63 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fynar_test
+          POSTGRES_PASSWORD: fynar_test_password
+          POSTGRES_DB: fynar_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U fynar_test -d fynar_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      VITE_API_BASE_URL: http://127.0.0.1:3000/api/v1
+      JWT_ACCESS_SECRET: ci-only-secret-with-at-least-32-characters
+
+    steps:
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          path: frontFynar
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: MelgarejoMaycol/BackFynar
+          path: BackFynar
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install backend dependencies
+        working-directory: BackFynar
+        run: npm ci
+
+      - name: Prepare QA database
+        working-directory: BackFynar
+        run: |
+          npm run qa:migrate
+          npm run qa:e2e:seed
+
+      - name: Install frontend dependencies
+        working-directory: frontFynar
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: frontFynar
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end MVP suite
+        working-directory: frontFynar
+        run: npm run e2e
