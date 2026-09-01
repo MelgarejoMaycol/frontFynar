@@ -100,14 +100,29 @@ export function AccountsPage() {
             title="Cuentas"
             description="Administra dónde tienes y manejas tu dinero con una vista clara de cada saldo."
           />
-          <div className={styles.heroFooter}>
+          <div
+            className={styles.heroFooter}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              marginTop: '0.5rem',
+            }}
+          >
             <div className={styles.heroHighlights} aria-label="Tipos de cuenta">
               <span>Efectivo</span>
               <span>Bancos</span>
               <span>Billeteras digitales</span>
             </div>
             {canWrite && (
-              <Button className={styles.createAccountButton} size="large" onClick={openCreate}>
+              <Button
+                className={styles.createAccountButton}
+                size="large"
+                onClick={openCreate}
+                style={{ marginLeft: 'auto', minWidth: '11.5rem' }}
+              >
                 <Plus size={20} aria-hidden="true" />
                 Nueva cuenta
               </Button>
