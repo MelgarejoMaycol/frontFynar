@@ -9,6 +9,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -184,6 +186,15 @@ progress {
 @media (max-width: 47.99rem) {
   :root {
     font-size: 15px;
+  }
+
+  /* iOS Safari hace zoom automático al enfocar controles con texto menor a 16 px.
+     Mantener 16 px en campos evita el salto de escala al abrir/cerrar el teclado
+     sin deshabilitar el zoom manual de accesibilidad del usuario. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+  select,
+  textarea {
+    font-size: 16px;
   }
 
   h1 {
