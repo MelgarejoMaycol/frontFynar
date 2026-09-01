@@ -1,8 +1,9 @@
 import { X } from 'lucide-react'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import clsx from 'clsx'
 import { BrandLogo, IconButton } from '@/components/ui'
 import {
+  getRouteNavigation,
   mainNavigation,
   settingsNavigation,
   type NavigationItem,
@@ -16,12 +17,16 @@ function Item({
   onNavigate: () => void
 }) {
   const Icon = item.icon
+  const pathname = useLocation().pathname
+  const currentNavigation = getRouteNavigation(pathname)
+  const isCurrent = currentNavigation?.to === item.to
+
   return (
     <NavLink
       to={item.to}
       onClick={onNavigate}
       className={({ isActive }) =>
-        clsx(styles.navLink, isActive && styles.navLinkActive)
+        clsx(styles.navLink, (isCurrent || isActive) && styles.navLinkActive)
       }
     >
       <Icon size={19} aria-hidden="true" />
