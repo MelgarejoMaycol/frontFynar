@@ -1,0 +1,27 @@
+{
+  "name": "Fynar",
+  "short_name": "Fynar",
+  "description": "Organiza y comprende tus finanzas personales desde una sola aplicación.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7faf8",
+  "theme_color": "#154b45",
+  "lang": "es-CO",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/fynar-symbol.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/fynar-symbol.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
