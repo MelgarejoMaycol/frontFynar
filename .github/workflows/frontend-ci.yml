@@ -96,6 +96,7 @@ jobs:
         working-directory: BackFynar
         run: |
           npm run qa:migrate
+          npm run qa:seed
           npm run qa:e2e:seed
 
       - name: Install frontend dependencies
