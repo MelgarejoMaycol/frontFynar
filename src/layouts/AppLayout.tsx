@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import styles from './layouts.module.css'
 import { usePreferences } from '@/features/workspace'
 export function AppLayout() {
   usePreferences()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -37,7 +38,9 @@ export function AppLayout() {
           menuButtonRef={menuButtonRef}
         />
         <main id="main-content" className={styles.main} tabIndex={-1}>
-          <Outlet />
+          <div key={location.pathname} className={styles.routeTransition}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
