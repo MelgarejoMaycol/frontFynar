@@ -366,6 +366,30 @@ export function CommitmentsPage() {
         </div>
       ) : null}
 
+      <section className={styles.manageSection} aria-label="Accesos rápidos a herramientas">
+        <div>
+          <h2>Herramientas</h2>
+          <p>Accesos rápidos a cada módulo para entrar sin recorrer toda la página.</p>
+        </div>
+        <div className={styles.manageGrid}>
+          <button type="button" onClick={() => navigate('/app/debts')}>
+            <CreditCard size={18} aria-hidden="true" />
+            <span><strong>Créditos y pagos</strong><small>Créditos, tarjetas y pagos recurrentes</small></span>
+            <ChevronRight size={17} aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => navigate('/app/lending')}>
+            <HandCoins size={18} aria-hidden="true" />
+            <span><strong>Préstamos</strong><small>Simulador, intereses y cobro de cuotas</small></span>
+            <ChevronRight size={17} aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => navigate('/app/personal-balances')}>
+            <UsersRound size={18} aria-hidden="true" />
+            <span><strong>Préstamos informales</strong><small>Deudas y cobros entre personas, sin cuotas ni intereses</small></span>
+            <ChevronRight size={17} aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
       <section className={styles.hero} aria-label="Posición de créditos y deudas">
         <div className={styles.heroCopy}>
           <span className={styles.eyebrow}>Tu posición</span>
@@ -470,30 +494,6 @@ export function CommitmentsPage() {
             <span>Prueba otra búsqueda o cambia entre por pagar y por cobrar.</span>
           </div>
         )}
-      </section>
-
-      <section className={styles.manageSection} aria-label="Herramientas especializadas">
-        <div>
-          <h2>Herramientas</h2>
-          <p>Las funciones avanzadas siguen disponibles sin llenar el menú principal.</p>
-        </div>
-        <div className={styles.manageGrid}>
-          <button type="button" onClick={() => navigate('/app/debts')}>
-            <CreditCard size={18} aria-hidden="true" />
-            <span><strong>Créditos y tarjetas</strong><small>Cuotas, estados de cuenta y pagos recurrentes</small></span>
-            <ChevronRight size={17} aria-hidden="true" />
-          </button>
-          <button type="button" onClick={() => navigate('/app/lending')}>
-            <HandCoins size={18} aria-hidden="true" />
-            <span><strong>Préstamos</strong><small>Simulador, intereses y cobro de cuotas</small></span>
-            <ChevronRight size={17} aria-hidden="true" />
-          </button>
-          <button type="button" onClick={() => navigate('/app/personal-balances')}>
-            <UsersRound size={18} aria-hidden="true" />
-            <span><strong>Personas</strong><small>Deudas y cobros informales</small></span>
-            <ChevronRight size={17} aria-hidden="true" />
-          </button>
-        </div>
       </section>
     </div>
   )
