@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import {
   Button,
   ConfirmDeleteDialog,
@@ -88,12 +89,13 @@ export function AccountsPage() {
           <PageHeader
             title="Cuentas"
             description="Administra dónde tienes y manejas tu dinero con una vista clara de cada saldo."
-            actions={
-              canWrite ? (
-                <Button onClick={openCreate}>Nueva cuenta</Button>
-              ) : undefined
-            }
           />
+          {canWrite && (
+            <Button size="large" onClick={openCreate}>
+              <Plus size={20} aria-hidden="true" />
+              Nueva cuenta
+            </Button>
+          )}
           <div className={styles.heroHighlights} aria-label="Tipos de cuenta">
             <span>Efectivo</span>
             <span>Bancos</span>
