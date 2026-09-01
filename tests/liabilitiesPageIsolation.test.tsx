@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LiabilitiesPage } from '@/features/liabilities/LiabilitiesPage'
 
 const mocks = vi.hoisted(() => ({
@@ -58,6 +58,8 @@ const failed = () => ({
 
 describe('aislamiento de consultas en Créditos y pagos', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-08-26T12:00:00Z'))
     vi.clearAllMocks()
     mocks.summary.mockReturnValue(
       ok({ summariesByCurrency: [], nextPayment: null }),
@@ -68,6 +70,10 @@ describe('aislamiento de consultas en Créditos y pagos', () => {
     mocks.obligations.mockReturnValue(ok([]))
     mocks.cards.mockReturnValue(ok([]))
     mocks.canWrite.mockReturnValue(false)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('mantiene disponible Tarjetas aunque falle el resumen', () => {
