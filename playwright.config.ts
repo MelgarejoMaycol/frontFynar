@@ -9,14 +9,14 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: 'npm.cmd run qa:server',
+      command: 'npm run qa:server',
       cwd: '../BackFynar',
       url: 'http://127.0.0.1:3000/api/v1/health/live',
       reuseExistingServer: true,
       timeout: 60_000,
     },
     {
-      command: 'npm.cmd run dev:front',
+      command: 'npm run dev:front',
       cwd: '.',
       url: 'http://localhost:5173',
       reuseExistingServer: true,
