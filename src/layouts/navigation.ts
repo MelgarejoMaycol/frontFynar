@@ -8,7 +8,6 @@ import {
   Settings,
   WalletCards,
   HandCoins,
-  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 export type NavigationItem = { to: string; label: string; icon: LucideIcon }
@@ -18,9 +17,7 @@ export const mainNavigation: NavigationItem[] = [
   { to: '/app/categories', label: 'Categorías', icon: FolderTree },
   { to: '/app/transactions', label: 'Movimientos', icon: CircleDollarSign },
   { to: '/app/budgets', label: 'Presupuestos', icon: WalletCards },
-  { to: '/app/debts', label: 'Créditos y pagos', icon: HandCoins },
-  { to: '/app/lending', label: 'Préstamos', icon: HandCoins },
-  { to: '/app/personal-balances', label: 'Deudas y cobros', icon: UsersRound },
+  { to: '/app/commitments', label: 'Créditos y deudas', icon: HandCoins },
   { to: '/app/reports', label: 'Reportes', icon: ChartNoAxesCombined },
 ]
 export const settingsNavigation = {
