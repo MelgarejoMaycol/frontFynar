@@ -74,15 +74,23 @@
   display: grid;
   gap: var(--space-3);
 }
+.avatarHeader,
 .avatarIdentity,
 .avatarActions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
+.avatarHeader {
+  justify-content: space-between;
+}
+.avatarIdentity {
+  min-width: 0;
+}
 .avatarIdentity > span {
   width: 4.5rem;
   height: 4.5rem;
+  flex: 0 0 auto;
   font-size: var(--font-size-lg);
 }
 .avatarIdentity h3,
@@ -93,21 +101,46 @@
 .avatarActions span {
   color: var(--color-text-secondary);
 }
-.dropzone {
+.avatarEditButton {
+  flex: 0 0 auto;
+  min-height: 2.35rem;
+  padding-inline: 0.8rem;
+}
+.avatarEditor {
   display: grid;
-  min-height: 13rem;
-  padding: var(--space-5);
-  place-items: center;
-  align-content: center;
-  gap: var(--space-2);
-  text-align: center;
-  color: var(--color-text-secondary);
-  border: 2px dashed var(--color-border-strong);
+  gap: var(--space-3);
+  max-width: 42rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
-  background: var(--color-surface-muted);
+  background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-surface));
+}
+.dropzone {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 5.25rem;
+  padding: var(--space-3);
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
   transition:
     border-color var(--duration-fast),
     background var(--duration-fast);
+}
+.dropzone > div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.dropzone strong {
+  color: var(--color-text);
+}
+.dropzone small {
+  color: var(--color-text-secondary);
 }
 .dropzoneActive {
   border-style: solid;
@@ -123,10 +156,11 @@
   clip-path: inset(50%);
 }
 .fileButton {
-  min-height: var(--control-height-md);
-  padding: 0 var(--space-4);
+  min-height: 2.35rem;
+  padding: 0 var(--space-3);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   color: var(--color-on-primary);
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-small);
@@ -139,6 +173,13 @@
 }
 .avatarActions {
   justify-content: space-between;
+  padding-top: var(--space-1);
+}
+.avatarActions span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .avatarSaveButton,
 .avatarSaveButton:disabled {
@@ -180,13 +221,33 @@
   .formGrid {
     gap: var(--space-3);
   }
-  .dropzone {
-    min-height: 9rem;
-    padding: var(--space-3);
+  .avatarHeader {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .avatarIdentity > span {
     width: 3.5rem;
     height: 3.5rem;
+  }
+  .avatarEditButton {
+    align-self: flex-end;
+  }
+  .avatarEditor {
+    padding: var(--space-2);
+  }
+  .dropzone {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .fileButton {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .avatarActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .avatarActions button {
+    width: 100%;
   }
   .actions {
     align-items: stretch;
