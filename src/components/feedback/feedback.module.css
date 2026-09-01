@@ -28,9 +28,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  overflow: visible;
   user-select: none;
-  -webkit-user-drag: none;
 }
 
 .loaderLogoSmall {
@@ -46,6 +45,119 @@
 .loaderLogoLarge {
   width: clamp(5.5rem, 12vw, 7.5rem);
   height: clamp(5.5rem, 12vw, 7.5rem);
+}
+
+.loaderOutline,
+.loaderStem {
+  fill: none;
+  stroke: url(#fynar-loader-stroke);
+  stroke-width: 15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loaderOutline {
+  stroke-dasharray: 670;
+  stroke-dashoffset: 670;
+  animation: loaderOutlineDraw 1.65s cubic-bezier(.45, 0, .2, 1) infinite;
+}
+
+.loaderStem {
+  stroke-dasharray: 105;
+  stroke-dashoffset: 105;
+  animation: loaderStemGrow 1.65s cubic-bezier(.2, .72, .25, 1) infinite;
+}
+
+.loaderBar,
+.loaderLeaf {
+  fill: url(#fynar-loader-fill);
+  transform-box: fill-box;
+}
+
+.loaderBar {
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  opacity: 0;
+}
+
+.loaderBar1 {
+  animation: loaderBarGrow1 1.65s cubic-bezier(.17, .84, .28, 1) infinite;
+}
+
+.loaderBar2 {
+  animation: loaderBarGrow2 1.65s cubic-bezier(.17, .84, .28, 1) infinite;
+}
+
+.loaderBar3 {
+  animation: loaderBarGrow3 1.65s cubic-bezier(.17, .84, .28, 1) infinite;
+}
+
+.loaderLeaf {
+  opacity: 0;
+}
+
+.loaderLeafLeft {
+  transform-origin: 92% 95%;
+  animation: loaderLeafLeftGrow 1.65s cubic-bezier(.18, .84, .34, 1) infinite;
+}
+
+.loaderLeafRight {
+  transform-origin: 8% 95%;
+  animation: loaderLeafRightGrow 1.65s cubic-bezier(.18, .84, .34, 1) infinite;
+}
+
+@keyframes loaderOutlineDraw {
+  0% { stroke-dashoffset: 670; opacity: 1; }
+  28% { stroke-dashoffset: 0; opacity: 1; }
+  78% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes loaderBarGrow1 {
+  0%, 8% { transform: scaleY(0); opacity: 0; }
+  10% { opacity: 1; }
+  27% { transform: scaleY(1.02); opacity: 1; }
+  31%, 78% { transform: scaleY(1); opacity: 1; }
+  94%, 100% { transform: scaleY(1); opacity: 0; }
+}
+
+@keyframes loaderBarGrow2 {
+  0%, 14% { transform: scaleY(0); opacity: 0; }
+  16% { opacity: 1; }
+  33% { transform: scaleY(1.02); opacity: 1; }
+  37%, 78% { transform: scaleY(1); opacity: 1; }
+  94%, 100% { transform: scaleY(1); opacity: 0; }
+}
+
+@keyframes loaderBarGrow3 {
+  0%, 20% { transform: scaleY(0); opacity: 0; }
+  22% { opacity: 1; }
+  39% { transform: scaleY(1.02); opacity: 1; }
+  43%, 78% { transform: scaleY(1); opacity: 1; }
+  94%, 100% { transform: scaleY(1); opacity: 0; }
+}
+
+@keyframes loaderStemGrow {
+  0%, 26% { stroke-dashoffset: 105; opacity: 0; }
+  28% { opacity: 1; }
+  47%, 78% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes loaderLeafLeftGrow {
+  0%, 34% { transform: scale(.02) rotate(13deg); opacity: 0; }
+  36% { opacity: 1; }
+  52% { transform: scale(1.03) rotate(-1deg); opacity: 1; }
+  56%, 78% { transform: scale(1) rotate(0deg); opacity: 1; }
+  94%, 100% { transform: scale(1) rotate(0deg); opacity: 0; }
+}
+
+@keyframes loaderLeafRightGrow {
+  0%, 39% { transform: scale(.02) rotate(-13deg); opacity: 0; }
+  41% { opacity: 1; }
+  57% { transform: scale(1.03) rotate(1deg); opacity: 1; }
+  61%, 78% { transform: scale(1) rotate(0deg); opacity: 1; }
+  94%, 100% { transform: scale(1) rotate(0deg); opacity: 0; }
 }
 
 .panel {
