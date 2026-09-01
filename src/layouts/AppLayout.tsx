@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import styles from './layouts.module.css'
+import './final-modules.css'
 import { usePreferences } from '@/features/workspace'
 
 export function AppLayout() {
@@ -72,6 +73,7 @@ export function AppLayout() {
             ref={routeRef}
             key={location.pathname}
             className={styles.routeTransition}
+            data-route={location.pathname}
           >
             <Outlet />
           </div>
