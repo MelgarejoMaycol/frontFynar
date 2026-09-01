@@ -8,9 +8,12 @@ const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 45_000,
-        gcTime: 20 * 60_000,
-        refetchOnMount: true,
+        // Mantiene datos recientes disponibles al navegar entre pantallas para evitar
+        // solicitudes repetidas y loaders innecesarios. Las mutaciones existentes
+        // siguen invalidando sus queries cuando cambian datos financieros.
+        staleTime: 2 * 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnMount: false,
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         placeholderData: (previousData: unknown) => previousData,
