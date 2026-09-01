@@ -83,8 +83,18 @@ export function AccountsPage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.accountsHero}>
-        <div className={styles.accountsHeroContent}>
+      <section
+        className={styles.accountsHero}
+        style={{
+          gridTemplateColumns: 'minmax(0, 1fr)',
+          backgroundImage:
+            "linear-gradient(90deg, rgba(246,248,247,.98) 0%, rgba(246,248,247,.94) 42%, rgba(246,248,247,.72) 68%, rgba(246,248,247,.38) 100%), url('/illustrations/accounts-hero.svg')",
+          backgroundPosition: 'center, right center',
+          backgroundRepeat: 'no-repeat, no-repeat',
+          backgroundSize: 'cover, auto 122%',
+        }}
+      >
+        <div className={styles.accountsHeroContent} style={{ maxWidth: '44rem' }}>
           <span className={styles.accountsEyebrow}>Tu dinero, en un solo lugar</span>
           <PageHeader
             title="Cuentas"
@@ -101,9 +111,6 @@ export function AccountsPage() {
             <span>Bancos</span>
             <span>Billeteras digitales</span>
           </div>
-        </div>
-        <div className={styles.accountsHeroVisual} aria-hidden="true">
-          <img src="/illustrations/accounts-hero.svg" alt="" />
         </div>
       </section>
 
