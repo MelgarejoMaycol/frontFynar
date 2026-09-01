@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { Calculator, HandCoins, Plus, Search } from 'lucide-react'
+import { Calculator, ChevronDown, HandCoins, Plus, Search } from 'lucide-react'
 import { Button, Dialog, Input, MoneyInput, PageHeader, Textarea } from '@/components/ui'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
@@ -30,22 +30,36 @@ function LoanCard({ loan, onOpen }: { loan: LoanListItem; onOpen: () => void }) 
 
 function Simulator({ workspaceId, currency, onUse }: { workspaceId: string; currency: string; onUse: (input: SimulationInput) => void }) {
   const mutation = useSimulation(workspaceId)
-  const [input, setInput] = useState<SimulationInput>({ principal: '2000000', ratePercent: 2, termCount: 12, method: 'FIXED_PAYMENT', frequency: 'MONTHLY', firstPaymentDate: nextMonth() })
+  const [principal, setPrincipal] = useState('')
+  const [rate, setRate] = useState('')
+  const [term, setTerm] = useState('')
+  const [method, setMethod] = useState<LendingMethod>('FIXED_PAYMENT')
+  const [frequency, setFrequency] = useState<LendingFrequency>('MONTHLY')
+  const [firstPaymentDate, setFirstPaymentDate] = useState('')
   const result = mutation.data?.data
-  const submit = (event: FormEvent) => { event.preventDefault(); mutation.mutate(input) }
+  const buildInput = (): SimulationInput => ({
+    principal,
+    ratePercent: Number(rate),
+    termCount: Number(term),
+    method,
+    frequency,
+    ...(firstPaymentDate ? { firstPaymentDate } : {}),
+  })
+  const canCalculate = Number(principal) > 0 && rate !== '' && Number(rate) >= 0 && Number(term) > 0
+  const submit = (event: FormEvent) => { event.preventDefault(); if (canCalculate) mutation.mutate(buildInput()) }
   return <section className={styles.section}>
     <div className={styles.sectionHead}><div><h2>Simulador</h2><p>Es de solo lectura: no crea movimientos ni altera cuentas.</p></div><Calculator /></div>
     <form className={styles.simForm} onSubmit={submit}>
-      <label><span>Capital</span><MoneyInput value={input.principal} onValueChange={(principal) => setInput((current) => ({ ...current, principal }))} currency={currency} minorUnits /></label>
-      <label><span>Interés por {frequencyLabel[input.frequency].toLowerCase()} (%)</span><Input type="number" min="0" max="100" step="0.01" value={input.ratePercent} onChange={(e) => setInput((current) => ({ ...current, ratePercent: Number(e.target.value) }))} /></label>
-      <label><span>Número de cuotas</span><Input type="number" min="1" max="600" value={input.termCount} onChange={(e) => setInput((current) => ({ ...current, termCount: Number(e.target.value) }))} /></label>
-      <label><span>Amortización</span><select value={input.method} onChange={(e) => setInput((current) => ({ ...current, method: e.target.value as LendingMethod }))}>{Object.entries(methodLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-      <label><span>Frecuencia</span><select value={input.frequency} onChange={(e) => setInput((current) => ({ ...current, frequency: e.target.value as LendingFrequency }))}>{Object.entries(frequencyLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-      <label><span>Primera cuota</span><Input type="date" value={input.firstPaymentDate} onChange={(e) => setInput((current) => ({ ...current, firstPaymentDate: e.target.value }))} /></label>
-      <Button type="submit" loading={mutation.isPending}>Calcular</Button>
+      <label><span>Capital</span><MoneyInput value={principal} onValueChange={setPrincipal} currency={currency} minorUnits /></label>
+      <label><span>Interés por {frequencyLabel[frequency].toLowerCase()} (%)</span><Input type="number" min="0" max="100" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Ej. 2" /></label>
+      <label><span>Número de cuotas</span><Input type="number" min="1" max="600" value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Ej. 12" /></label>
+      <label><span>Amortización</span><select value={method} onChange={(e) => setMethod(e.target.value as LendingMethod)}>{Object.entries(methodLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <label><span>Frecuencia</span><select value={frequency} onChange={(e) => setFrequency(e.target.value as LendingFrequency)}>{Object.entries(frequencyLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <label><span>Primera cuota</span><Input type="date" value={firstPaymentDate} onChange={(e) => setFirstPaymentDate(e.target.value)} /></label>
+      <Button type="submit" disabled={!canCalculate} loading={mutation.isPending}>Calcular</Button>
     </form>
     {mutation.isError ? <p className={styles.error}>{mutation.error.message}</p> : null}
-    {result ? <SimulationTable result={result} currency={currency} onUse={() => onUse(input)} /> : null}
+    {result ? <SimulationTable result={result} currency={currency} onUse={() => onUse(buildInput())} /> : null}
   </section>
 }
 
@@ -68,7 +82,7 @@ function CreateDialog({ open, workspaceId, currency, preset, onClose }: { open: 
   const submit = (event: FormEvent) => { event.preventDefault(); create.mutate({ personId, principal, ratePercent: rate, termCount: term, method, frequency, currency, sourceAccountId: sourceAccountId || null, disbursementDate: disbursement, firstPaymentDate: first, notes: notes || null }, { onSuccess: onClose }) }
   return <Dialog open title="Registrar préstamo" onClose={onClose}><form className={styles.form} onSubmit={submit}>
     <label><span>Persona</span><select required value={personId} onChange={(e) => setPersonId(e.target.value)}><option value="">Selecciona una persona</option>{people.data?.map((person) => <option key={person.id} value={person.id}>{person.name}{person.relationship ? ` · ${person.relationship}` : ''}</option>)}</select></label>
-    <div className={styles.cols}><label><span>Crear persona sin perder el formulario</span><Input value={newPerson} onChange={(e) => setNewPerson(e.target.value)} placeholder="Nombre" /></label><Button type="button" variant="secondary" disabled={!newPerson.trim()} loading={createPerson.isPending} onClick={addPerson}>Agregar persona</Button></div>
+    <div className={styles.personCreator}><label><span>Crear persona sin perder el formulario</span><Input value={newPerson} onChange={(e) => setNewPerson(e.target.value)} placeholder="Nombre" /></label><Button className={styles.addPersonButton} type="button" variant="secondary" disabled={!newPerson.trim()} loading={createPerson.isPending} onClick={addPerson}><Plus size={15} aria-hidden="true" /> Agregar persona</Button></div>
     <div className={styles.cols}><label><span>Capital</span><MoneyInput value={principal} onValueChange={setPrincipal} currency={currency} minorUnits /></label><label><span>Interés por {frequencyLabel[frequency].toLowerCase()} (%)</span><Input type="number" min="0" max="100" step="0.01" value={rate} onChange={(e) => setRate(Number(e.target.value))} /></label></div>
     <div className={styles.cols}><label><span>Cuotas</span><Input type="number" min="1" max="600" value={term} onChange={(e) => setTerm(Number(e.target.value))} /></label><label><span>Frecuencia</span><select value={frequency} onChange={(e) => setFrequency(e.target.value as LendingFrequency)}>{Object.entries(frequencyLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label></div>
     <label><span>Amortización</span><select value={method} onChange={(e) => setMethod(e.target.value as LendingMethod)}>{Object.entries(methodLabel).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
@@ -104,7 +118,7 @@ export function LendingPage() {
   return <div className={styles.page}><PageHeader title="Préstamos" description="Administra el dinero que prestas, sus cuotas, cobros e intereses." actions={canWrite ? <Button onClick={() => openCreate()}><Plus size={17} /> Nuevo préstamo</Button> : undefined} />
     <div className={styles.tabs} role="tablist">{([['summary', 'Resumen'], ['loans', 'Préstamos'], ['simulator', 'Simulador']] as const).map(([key, label]) => <button type="button" role="tab" aria-selected={tab === key} className={tab === key ? styles.active : ''} key={key} onClick={() => setTab(key)}>{label}</button>)}</div>
     {tab === 'summary' ? <><div className={styles.grid}><article className={styles.card}><span>Capital pendiente</span><strong>{money(totals?.principalPending ?? 0, totals?.currency ?? currency)}</strong><small>{totals?.activeCount ?? 0} activos</small></article><article className={styles.card}><span>Interés pendiente</span><strong>{money(totals?.interestPending ?? 0, totals?.currency ?? currency)}</strong></article><article className={styles.card}><span>Interés recibido</span><strong>{money(totals?.interestReceived ?? 0, totals?.currency ?? currency)}</strong></article><article className={styles.card}><span>Próximo cobro</span><strong>{summary.data?.upcoming[0] ? money(summary.data.upcoming[0].amount, summary.data.upcoming[0].currency) : money(0, currency)}</strong><small>{summary.data?.upcoming[0]?.personName ?? 'Sin cobros pendientes'}</small></article></div><section className={styles.section}><div className={styles.sectionHead}><div><h2>Préstamos activos</h2><p>Ordenados por vencimiento y mora.</p></div><HandCoins /></div>{active.length ? <div className={styles.loans}>{active.map((loan) => <LoanCard key={loan.id} loan={loan} onOpen={() => setDetailId(loan.id)} />)}</div> : <EmptyState title="Aún no hay préstamos activos" description="Registra uno nuevo o prepara una propuesta en el simulador." />}</section></> : null}
-    {tab === 'loans' ? <section className={styles.section}><div className={styles.toolbar}><div><Search size={16} /> <Input aria-label="Buscar persona" placeholder="Buscar persona" value={search} onChange={(e) => setSearch(e.target.value)} /></div><select aria-label="Filtrar estado" value={status} onChange={(e) => setStatus(e.target.value as LendingStatus | 'ALL')}><option value="ACTIVE">Activos y vencidos</option><option value="PAID">Pagados</option><option value="ARCHIVED">Archivados</option><option value="ALL">Todos</option></select></div>{loans.data?.length ? <div className={styles.loans}>{loans.data.map((loan) => <LoanCard key={loan.id} loan={loan} onOpen={() => setDetailId(loan.id)} />)}</div> : <EmptyState title="Sin resultados" description="No hay préstamos con estos filtros." />}</section> : null}
+    {tab === 'loans' ? <section className={styles.section}><div className={styles.toolbar}><div className={styles.searchField}><Search size={17} aria-hidden="true" /><Input aria-label="Buscar persona" placeholder="Buscar persona" value={search} onChange={(e) => setSearch(e.target.value)} /></div><div className={styles.filterField}><select className={styles.filterSelect} aria-label="Filtrar estado" value={status} onChange={(e) => setStatus(e.target.value as LendingStatus | 'ALL')}><option value="ACTIVE">Activos y vencidos</option><option value="PAID">Pagados</option><option value="ARCHIVED">Archivados</option><option value="ALL">Todos</option></select><ChevronDown size={16} aria-hidden="true" /></div></div>{loans.data?.length ? <div className={styles.loans}>{loans.data.map((loan) => <LoanCard key={loan.id} loan={loan} onOpen={() => setDetailId(loan.id)} />)}</div> : <EmptyState title="Sin resultados" description="No hay préstamos con estos filtros." />}</section> : null}
     {tab === 'simulator' ? <Simulator workspaceId={workspaceId} currency={currency} onUse={openCreate} /> : null}
     {detailId ? <Dialog open title="Detalle del préstamo" onClose={() => setDetailId('')}>{detail.isPending ? <PageLoader /> : detail.data ? <div className={styles.detail}><div className={styles.sectionHead}><div><h2>{detail.data.personName}</h2><p>{money(detail.data.currentPrincipal, detail.data.currency)} pendiente · {Number(detail.data.ratePercent)} % por {frequencyLabel[detail.data.frequency].toLowerCase()}</p></div><span className={styles.status}>{detail.data.status}</span></div><div className={styles.table}><table><thead><tr><th>#</th><th>Fecha</th><th>Capital</th><th>Interés</th><th>Pendiente</th><th>Estado</th><th /></tr></thead><tbody>{detail.data.installments.map((row) => <tr key={row.id}><td>{row.installmentNumber}</td><td>{date(row.dueDate)}</td><td>{money(row.principalAmount, detail.data!.currency)}</td><td>{money(row.interestAmount, detail.data!.currency)}</td><td>{money(Number(row.totalAmount) - Number(row.totalPaid), detail.data!.currency)}</td><td>{row.status}</td><td>{canWrite && row.status !== 'PAID' ? <Button type="button" variant="secondary" onClick={() => setPayment(row)}>Cobrar</Button> : null}</td></tr>)}</tbody></table></div><div className={styles.payments}><h3>Cobros</h3>{detail.data.payments.length ? detail.data.payments.map((row) => <div className={styles.payment} key={row.id}><p><strong>{money(row.totalReceived, detail.data!.currency)}</strong><br /><small>Capital {money(row.principalReceived, detail.data!.currency)} · interés {money(row.interestReceived, detail.data!.currency)}</small></p>{row.reversedAt ? <span className={styles.status}>Revertido</span> : canWrite ? <Button type="button" variant="secondary" loading={reverse.isPending} onClick={() => { const reason = window.prompt('Motivo de la reversión'); if (reason) reverse.mutate({ paymentId: row.id, reason }) }}>Revertir</Button> : null}</div>) : <p className={styles.hint}>Aún no hay cobros.</p>}</div>{canWrite && detail.data.status === 'PAID' ? <div className={styles.actions}><Button type="button" variant="secondary" loading={archive.isPending} onClick={() => archive.mutate(detail.data!.id, { onSuccess: () => setDetailId('') })}>Archivar préstamo</Button></div> : null}</div> : <p>No se pudo cargar el detalle.</p>}</Dialog> : null}
     {payment && detail.data ? <PaymentDialog workspaceId={workspaceId} loanId={detail.data.id} currency={detail.data.currency} installment={payment} onClose={() => setPayment(null)} /> : null}
