@@ -1,5 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
-import { CalendarClock, CreditCard, HandCoins, Landmark } from 'lucide-react'
+import { ArrowLeft, CalendarClock, CreditCard, HandCoins, Landmark } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router'
+import { Button } from '@/components/ui'
 import styles from './liabilities.module.css'
 import './liabilities-redesign.css'
 import './liabilities-cards.css'
@@ -211,6 +213,9 @@ export function ModulePageHeader({
 }) {
   const supportingText = subtitle ?? description
   const visualIcon = icon ?? defaultHeaderIcon(title)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isCommitmentTool = location.pathname.replace(/\/$/, '') === '/app/debts'
 
   useEffect(() => {
     if (window.location.pathname.replace(/\/$/, '') !== '/app/debts') return
@@ -229,6 +234,16 @@ export function ModulePageHeader({
           {visualIcon}
         </span>
         <div>
+          {isCommitmentTool ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="small"
+              onClick={() => navigate('/app/commitments')}
+            >
+              <ArrowLeft size={15} aria-hidden="true" /> Volver a créditos, deudas y cobros
+            </Button>
+          ) : null}
           <h1>{title}</h1>
           {supportingText && <p>{supportingText}</p>}
         </div>
