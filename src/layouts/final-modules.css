@@ -1,0 +1,353 @@
+/* Premium visual pass for the final four application modules. */
+
+[data-route='/app/lending'],
+[data-route='/app/personal-balances'],
+[data-route='/app/reports'],
+[data-route='/app/settings'] {
+  --module-accent: var(--color-primary);
+  --module-accent-soft: color-mix(in srgb, var(--module-accent) 10%, var(--color-surface));
+}
+
+[data-route='/app/lending'] { --module-accent: #a86c12; }
+[data-route='/app/personal-balances'] { --module-accent: #287ca3; }
+[data-route='/app/reports'] { --module-accent: #6d5aa8; }
+[data-route='/app/settings'] { --module-accent: #4e675f; }
+
+[data-route='/app/lending'] > div > header:first-child,
+[data-route='/app/personal-balances'] > div > header:first-child,
+[data-route='/app/settings'] > div > header:first-child,
+[data-route='/app/reports'] > div > [class*='_screenOnly_']:first-child > header {
+  position: relative;
+  isolation: isolate;
+  min-height: 11.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem) !important;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 22%, var(--color-border));
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--module-accent) 12%, transparent) 0 6rem, transparent 6.1rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--module-accent-soft) 72%, var(--color-surface)) 0%, var(--color-surface) 56%, color-mix(in srgb, var(--module-accent-soft) 42%, var(--color-surface)) 100%);
+  box-shadow: 0 1rem 2.8rem rgb(13 43 40 / 9%);
+}
+
+[data-route='/app/lending'] > div > header:first-child::after,
+[data-route='/app/personal-balances'] > div > header:first-child::after,
+[data-route='/app/settings'] > div > header:first-child::after,
+[data-route='/app/reports'] > div > [class*='_screenOnly_']:first-child > header::after {
+  position: absolute;
+  z-index: -1;
+  right: 2rem;
+  bottom: -4.5rem;
+  width: 12rem;
+  height: 12rem;
+  border: 1.4rem solid color-mix(in srgb, var(--module-accent) 7%, transparent);
+  border-radius: 50%;
+  content: '';
+}
+
+[data-route='/app/lending'] > div > header:first-child h1,
+[data-route='/app/personal-balances'] > div > header:first-child h1,
+[data-route='/app/settings'] > div > header:first-child h1,
+[data-route='/app/reports'] > div > [class*='_screenOnly_']:first-child > header h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -.045em;
+}
+
+[data-route='/app/lending'] > div > header:first-child p,
+[data-route='/app/personal-balances'] > div > header:first-child p,
+[data-route='/app/settings'] > div > header:first-child p,
+[data-route='/app/reports'] > div > [class*='_screenOnly_']:first-child > header p {
+  max-width: 42rem;
+  line-height: 1.55;
+}
+
+/* Lending */
+[data-route='/app/lending'] [role='tablist'] {
+  width: fit-content;
+  max-width: 100%;
+  padding: .35rem !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 1rem !important;
+  background: color-mix(in srgb, var(--color-surface) 93%, var(--module-accent-soft)) !important;
+  box-shadow: 0 .35rem 1rem rgb(13 43 40 / 5%);
+}
+
+[data-route='/app/lending'] [role='tablist'] button {
+  min-height: 2.6rem;
+  border-radius: .75rem !important;
+}
+
+[data-route='/app/lending'] [class*='_section_'] {
+  border-color: color-mix(in srgb, var(--module-accent) 14%, var(--color-border)) !important;
+  border-radius: 1.35rem !important;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--module-accent-soft) 34%, var(--color-surface)), var(--color-surface) 38%) !important;
+  box-shadow: 0 .7rem 1.8rem rgb(13 43 40 / 6%) !important;
+}
+
+[data-route='/app/lending'] [class*='_grid_'] [class*='_card_'] {
+  min-height: 8.5rem;
+  border-color: color-mix(in srgb, var(--module-accent) 15%, var(--color-border));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--module-accent-soft) 52%, var(--color-surface)), var(--color-surface) 62%);
+}
+
+[data-route='/app/lending'] [class*='_loan_'] {
+  position: relative;
+  isolation: isolate;
+  min-height: 13.5rem !important;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--module-accent) 20%, var(--color-border)) !important;
+  border-radius: 1.2rem !important;
+  background:
+    radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--module-accent) 10%, transparent) 0 3.8rem, transparent 3.9rem),
+    linear-gradient(150deg, color-mix(in srgb, var(--module-accent-soft) 76%, var(--color-surface)), var(--color-surface) 48%) !important;
+  box-shadow: 0 .5rem 1.35rem rgb(13 43 40 / 7%) !important;
+}
+
+[data-route='/app/lending'] [class*='_loan_']::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: .28rem;
+  content: '';
+  background: linear-gradient(180deg, var(--module-accent), color-mix(in srgb, var(--module-accent) 35%, transparent));
+}
+
+[data-route='/app/lending'] [class*='_loan_']:hover {
+  border-color: color-mix(in srgb, var(--module-accent) 42%, var(--color-border)) !important;
+  box-shadow: 0 1rem 2.3rem rgb(13 43 40 / 11%) !important;
+  transform: translateY(-4px) !important;
+}
+
+[data-route='/app/lending'] [class*='_loan_'] h3 {
+  margin: .2rem 0 0;
+  font-size: clamp(1.45rem, 2.7vw, 2rem);
+  letter-spacing: -.035em;
+}
+
+[data-route='/app/lending'] [class*='_progress_'] {
+  height: .55rem !important;
+  background: color-mix(in srgb, var(--color-border) 70%, transparent) !important;
+}
+
+[data-route='/app/lending'] [class*='_progress_'] i {
+  background: linear-gradient(90deg, var(--module-accent), color-mix(in srgb, var(--module-accent) 58%, white)) !important;
+}
+
+[data-route='/app/lending'] [class*='_table_'] {
+  border-radius: 1rem !important;
+  box-shadow: 0 .35rem 1rem rgb(13 43 40 / 4%);
+}
+
+/* Personal balances */
+[data-route='/app/personal-balances'] [class*='_summaryGrid_'] {
+  gap: .9rem !important;
+}
+
+[data-route='/app/personal-balances'] [class*='_summaryCard_'] {
+  position: relative;
+  min-height: 7.75rem;
+  padding: 1rem 1.1rem !important;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--module-accent) 14%, var(--color-border)) !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--module-accent-soft) 48%, var(--color-surface)), var(--color-surface) 62%) !important;
+  box-shadow: 0 .45rem 1.25rem rgb(13 43 40 / 6%);
+}
+
+[data-route='/app/personal-balances'] [class*='_summaryCard_']::after {
+  position: absolute;
+  right: -1.2rem;
+  bottom: -1.5rem;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 50%;
+  content: '';
+  background: color-mix(in srgb, var(--module-accent) 7%, transparent);
+}
+
+[data-route='/app/personal-balances'] [class*='_summaryCard_'] strong {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.15rem, 2.3vw, 1.6rem) !important;
+}
+
+[data-route='/app/personal-balances'] [class*='_toolbar_'] {
+  padding: .75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 94%, var(--module-accent-soft));
+}
+
+[data-route='/app/personal-balances'] [class*='_balanceCard_'] {
+  border-color: color-mix(in srgb, var(--module-accent) 14%, var(--color-border)) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 .3rem 1rem rgb(13 43 40 / 5%);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+[data-route='/app/personal-balances'] [class*='_balanceCard_']:hover {
+  border-color: color-mix(in srgb, var(--module-accent) 34%, var(--color-border)) !important;
+  box-shadow: 0 .8rem 1.8rem rgb(13 43 40 / 9%);
+  transform: translateY(-2px);
+}
+
+[data-route='/app/personal-balances'] [class*='_avatar_'] {
+  width: 2.7rem !important;
+  height: 2.7rem !important;
+  border-radius: .85rem !important;
+  background: color-mix(in srgb, var(--module-accent) 12%, var(--color-surface)) !important;
+  color: var(--module-accent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--module-accent) 14%, transparent);
+}
+
+[data-route='/app/personal-balances'] [class*='_quickActions_'] {
+  padding-top: .2rem;
+}
+
+[data-route='/app/personal-balances'] [class*='_personCard_'] {
+  border-color: color-mix(in srgb, var(--module-accent) 14%, var(--color-border)) !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--module-accent-soft) 30%, var(--color-surface)), var(--color-surface) 55%) !important;
+  box-shadow: 0 .35rem 1rem rgb(13 43 40 / 5%);
+}
+
+/* Reports */
+[data-route='/app/reports'] [class*='_filters_'] {
+  justify-content: space-between;
+  padding: .8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 95%, var(--module-accent-soft));
+  box-shadow: 0 .3rem 1rem rgb(13 43 40 / 4%);
+}
+
+[data-route='/app/reports'] [class*='_section_'] {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.4rem) !important;
+  border-color: color-mix(in srgb, var(--module-accent) 14%, var(--color-border)) !important;
+  border-radius: 1.25rem !important;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--module-accent-soft) 28%, var(--color-surface)), var(--color-surface) 44%) !important;
+  box-shadow: 0 .55rem 1.5rem rgb(13 43 40 / 6%);
+}
+
+[data-route='/app/reports'] [class*='_sectionHeader_'] {
+  padding-bottom: .8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--module-accent) 12%, var(--color-border));
+}
+
+[data-route='/app/reports'] [class*='_sectionHeader_'] h2 {
+  font-size: 1.15rem;
+  letter-spacing: -.015em;
+}
+
+[data-route='/app/reports'] [class*='_currencyCard_'],
+[data-route='/app/reports'] [class*='_account_'],
+[data-route='/app/reports'] [class*='_flowList_'] li {
+  border-color: color-mix(in srgb, var(--module-accent) 13%, var(--color-border)) !important;
+  border-radius: .9rem !important;
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--module-accent-soft)) !important;
+}
+
+[data-route='/app/reports'] [class*='_currencyCard_'] {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%);
+}
+
+[data-route='/app/reports'] [class*='_rows_'] li {
+  padding: .75rem .2rem !important;
+}
+
+[data-route='/app/reports'] [class*='_calendar_'] li:not([class*='_calendarEmpty_']) {
+  border-color: color-mix(in srgb, var(--module-accent) 12%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--module-accent-soft));
+}
+
+/* Settings */
+[data-route='/app/settings'] [class*='_section_'] {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1rem, 2.3vw, 1.5rem) !important;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 13%, var(--color-border)) !important;
+  border-radius: 1.2rem !important;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--module-accent-soft) 25%, var(--color-surface)), var(--color-surface) 38%) !important;
+  box-shadow: 0 .5rem 1.35rem rgb(13 43 40 / 5%);
+}
+
+[data-route='/app/settings'] [class*='_section_']::after {
+  position: absolute;
+  z-index: 0;
+  top: -2.2rem;
+  right: -2.2rem;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: 50%;
+  content: '';
+  background: color-mix(in srgb, var(--module-accent) 5%, transparent);
+  pointer-events: none;
+}
+
+[data-route='/app/settings'] [class*='_section_'] > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-route='/app/settings'] [class*='_details_'] div {
+  padding: .85rem;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 12%, var(--color-border));
+  border-radius: .8rem;
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--module-accent-soft));
+}
+
+[data-route='/app/settings'] [class*='_securityBlock_'] {
+  border-color: color-mix(in srgb, var(--module-accent) 15%, var(--color-border)) !important;
+  border-radius: 1rem !important;
+  background: color-mix(in srgb, var(--color-surface) 91%, var(--module-accent-soft)) !important;
+}
+
+[data-route='/app/settings'] [class*='_actions_'] {
+  padding: .9rem 0 !important;
+}
+
+[data-route='/app/settings'] [class*='_dropzone_'] {
+  border-radius: 1rem !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--module-accent-soft) 38%, var(--color-surface)), var(--color-surface)) !important;
+}
+
+[data-route='/app/settings'] [class*='_dangerZone_'] {
+  border-color: color-mix(in srgb, var(--color-error) 42%, var(--color-border)) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-error-soft) 38%, var(--color-surface)), var(--color-surface)) !important;
+}
+
+@media (max-width: 47.99rem) {
+  [data-route='/app/lending'] > div > header:first-child,
+  [data-route='/app/personal-balances'] > div > header:first-child,
+  [data-route='/app/settings'] > div > header:first-child,
+  [data-route='/app/reports'] > div > [class*='_screenOnly_']:first-child > header {
+    min-height: 0;
+    padding: 1.1rem !important;
+    border-radius: 1.15rem;
+  }
+
+  [data-route='/app/lending'] [class*='_section_'],
+  [data-route='/app/reports'] [class*='_section_'],
+  [data-route='/app/settings'] [class*='_section_'] {
+    padding: 1rem !important;
+  }
+
+  [data-route='/app/personal-balances'] [class*='_summaryGrid_'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [data-route='/app/personal-balances'] [class*='_summaryCard_'] {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-route='/app/lending'] *,
+  [data-route='/app/personal-balances'] *,
+  [data-route='/app/reports'] *,
+  [data-route='/app/settings'] * {
+    scroll-behavior: auto !important;
+  }
+}
