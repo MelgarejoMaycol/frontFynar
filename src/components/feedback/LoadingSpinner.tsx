@@ -11,6 +11,8 @@ const sizeClass = {
   large: styles.loaderLogoLarge,
 }
 
+const LOADER_ASSET = '/fynar-logo-loader-fluido.svg?v=20260901-desktop-1'
+
 export function LoadingSpinner({
   label = 'Cargando',
   size = 'medium',
@@ -22,13 +24,21 @@ export function LoadingSpinner({
       aria-label={label}
       aria-live="polite"
     >
-      <img
+      <object
         className={styles.loaderLogoImage}
-        src="/fynar-logo-loader-fluido.svg"
-        alt=""
+        data={LOADER_ASSET}
+        type="image/svg+xml"
         aria-hidden="true"
-        draggable={false}
-      />
+        tabIndex={-1}
+      >
+        <img
+          className={styles.loaderLogoImage}
+          src={LOADER_ASSET}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+        />
+      </object>
     </span>
   )
 }
