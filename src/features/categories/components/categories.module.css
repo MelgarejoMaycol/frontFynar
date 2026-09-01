@@ -3,6 +3,54 @@
   display: grid;
   gap: var(--space-4);
 }
+
+.page > :global([class*='pageHeader']) {
+  position: relative;
+  min-height: 12rem;
+  margin-bottom: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 84% 22%, color-mix(in srgb, #f59e0b 15%, transparent) 0 4.5rem, transparent 4.7rem),
+    radial-gradient(circle at 91% 72%, color-mix(in srgb, #3b82f6 14%, transparent) 0 3.4rem, transparent 3.6rem),
+    radial-gradient(circle at 76% 76%, color-mix(in srgb, #22c55e 13%, transparent) 0 2.6rem, transparent 2.8rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 72%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 1rem 2.8rem rgb(13 43 40 / 9%);
+}
+.page > :global([class*='pageHeader'])::before {
+  position: absolute;
+  right: clamp(1.5rem, 6vw, 5rem);
+  top: 50%;
+  width: clamp(7rem, 18vw, 11rem);
+  height: clamp(7rem, 18vw, 11rem);
+  content: '';
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  border-radius: 2.2rem;
+  background:
+    linear-gradient(90deg, transparent 48%, color-mix(in srgb, var(--color-primary) 10%, transparent) 49% 51%, transparent 52%),
+    linear-gradient(transparent 48%, color-mix(in srgb, var(--color-primary) 10%, transparent) 49% 51%, transparent 52%);
+  transform: translateY(-50%) rotate(12deg);
+  opacity: .8;
+}
+.page > :global([class*='pageHeader']) > * {
+  position: relative;
+  z-index: 1;
+}
+.page > :global([class*='pageHeader']) h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: -0.035em;
+}
+.page > :global([class*='pageHeader']) p {
+  max-width: 44rem;
+}
+.page > :global([class*='pageHeader']) button {
+  min-height: 3rem;
+  padding-inline: 1.2rem;
+  box-shadow: 0 .65rem 1.4rem color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
 .filters,
 .actions {
   display: flex;
@@ -84,6 +132,12 @@
   border-radius: var(--radius-small);
   background: var(--color-surface);
   font-size: var(--font-size-xs);
+  transition: transform var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.iconOption:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 .35rem 1rem rgb(13 43 40 / 8%);
+  transform: translateY(-2px);
 }
 .iconOption svg,
 .pickerSelected svg {
@@ -114,10 +168,10 @@
 .formPreview {
   display: grid;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
-  background: var(--color-surface-soft);
+  border-radius: var(--radius-large);
+  background: linear-gradient(135deg, var(--color-primary-soft), var(--color-surface-soft));
 }
 .formPreview > span {
   color: var(--color-text-secondary);
@@ -140,18 +194,34 @@
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
 }
 .card {
+  position: relative;
   display: grid;
   gap: var(--space-3);
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 0;
+  min-height: 7.4rem;
   padding: var(--space-4);
-  transition:
-    transform var(--duration-fast),
-    box-shadow var(--duration-fast),
-    border-color var(--duration-fast);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--category-color, var(--color-primary)) 18%, var(--color-border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--category-color, var(--color-primary)) 7%, var(--color-surface)), var(--color-surface) 58%);
+  box-shadow: 0 .35rem 1.1rem rgb(13 43 40 / 5%);
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast), border-color var(--duration-fast);
+}
+.card::after {
+  position: absolute;
+  right: -2rem;
+  bottom: -2.8rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  content: '';
+  background: color-mix(in srgb, var(--category-color, var(--color-primary)) 8%, transparent);
+  pointer-events: none;
 }
 .cardMain {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -161,6 +231,8 @@
   min-width: 0;
 }
 .cardSide {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -174,16 +246,12 @@
 }
 .archivedCard {
   border-style: dashed;
-  background: color-mix(
-    in srgb,
-    var(--color-surface) 88%,
-    var(--color-surface-muted)
-  );
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-surface-muted));
 }
 .card:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-soft);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--category-color, var(--color-primary)) 38%, var(--color-border));
+  box-shadow: 0 .9rem 2rem rgb(13 43 40 / 10%);
+  transform: translateY(-3px);
 }
 .card h2,
 .card p {
@@ -198,12 +266,15 @@
 }
 .icon {
   display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3rem;
+  height: 3rem;
   place-items: center;
+  flex: 0 0 auto;
   color: var(--category-contrast);
-  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-radius: 1rem;
   background: var(--category-color);
+  box-shadow: 0 .4rem 1rem color-mix(in srgb, var(--category-color) 20%, transparent);
 }
 .selectedPreview {
   display: inline-flex;
@@ -230,6 +301,18 @@
   justify-content: flex-end;
 }
 @media (max-width: 35.99rem) {
+  .page > :global([class*='pageHeader']) {
+    min-height: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-large);
+  }
+  .page > :global([class*='pageHeader'])::before {
+    right: -2rem;
+    opacity: .35;
+  }
+  .page > :global([class*='pageHeader']) button {
+    width: 100%;
+  }
   .actions button {
     flex: 0 1 auto;
   }
@@ -241,7 +324,7 @@
     padding: var(--space-3);
   }
   .icon {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }

@@ -32,7 +32,7 @@ export const preferencesSchema = z.object({
         return false
       }
     }, 'Selecciona una zona horaria IANA válida.'),
-  language: z.literal('es-CO'),
+  language: z.enum(['es-CO', 'en-US']),
   dateFormat: z.enum(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']),
   startScreen: z.enum(['DASHBOARD', 'TRANSACTIONS', 'BUDGETS', 'DEBTS']),
   financialCycleStartDay: z.number().int().min(1).max(28).nullable(),

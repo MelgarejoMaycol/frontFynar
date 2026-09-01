@@ -4,17 +4,99 @@
   display: grid;
   gap: 1rem;
 }
+
+.page > :global([class*='pageHeader']) {
+  position: relative;
+  min-height: 12rem;
+  margin-bottom: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 84% 28%, color-mix(in srgb, var(--color-warning) 15%, transparent) 0 4.2rem, transparent 4.4rem),
+    radial-gradient(circle at 91% 72%, color-mix(in srgb, var(--color-success) 13%, transparent) 0 3.1rem, transparent 3.3rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 76%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 1rem 2.8rem rgb(13 43 40 / 9%);
+}
+.page > :global([class*='pageHeader'])::before {
+  position: absolute;
+  top: 50%;
+  right: clamp(1.5rem, 7vw, 5rem);
+  width: clamp(8rem, 20vw, 12rem);
+  height: clamp(8rem, 20vw, 12rem);
+  content: '';
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  border-radius: 50%;
+  background:
+    conic-gradient(from 20deg, color-mix(in srgb, var(--color-primary) 20%, transparent) 0 26%, transparent 26% 42%, color-mix(in srgb, var(--color-warning) 20%, transparent) 42% 64%, transparent 64% 100%);
+  transform: translateY(-50%);
+  opacity: .75;
+}
+.page > :global([class*='pageHeader'])::after {
+  position: absolute;
+  right: clamp(4rem, 12vw, 10rem);
+  bottom: 1.6rem;
+  width: clamp(7rem, 18vw, 11rem);
+  height: .55rem;
+  content: '';
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 24%, transparent));
+  opacity: .32;
+}
+.page > :global([class*='pageHeader']) > * {
+  position: relative;
+  z-index: 1;
+}
+.page > :global([class*='pageHeader']) h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: -0.035em;
+}
+.page > :global([class*='pageHeader']) p { max-width: 45rem; }
+.page > :global([class*='pageHeader']) button {
+  min-height: 3rem;
+  padding-inline: 1.2rem;
+  box-shadow: 0 .65rem 1.4rem color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
 .list {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 .card {
+  position: relative;
   display: grid;
   gap: 1rem;
   min-width: 0;
+  min-height: 17rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--color-primary-soft) 42%, var(--color-surface)), var(--color-surface) 45%);
+  box-shadow: 0 .45rem 1.3rem rgb(13 43 40 / 6%);
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast), border-color var(--duration-fast);
+}
+.card::after {
+  position: absolute;
+  right: -2.5rem;
+  top: -2.7rem;
+  width: 8rem;
+  height: 8rem;
+  content: '';
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  pointer-events: none;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 36%, var(--color-border));
+  box-shadow: 0 1rem 2.2rem rgb(13 43 40 / 10%);
+  transform: translateY(-3px);
 }
 .cardHeader,
 .actions,
 .progressLabels {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
@@ -29,6 +111,7 @@
 }
 .cardHeader h2 {
   margin: 0;
+  font-size: 1.12rem;
 }
 .cardHeader p,
 .card p {
@@ -36,40 +119,58 @@
   overflow-wrap: anywhere;
 }
 .amount {
-  font-size: clamp(1.3rem, 3vw, 2rem);
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  letter-spacing: -0.025em;
   overflow-wrap: anywhere;
 }
 .progress {
-  height: 0.75rem;
+  height: 0.8rem;
   border: 1px solid var(--color-border);
   background: var(--color-surface-soft);
   border-radius: 999px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgb(13 43 40 / 7%);
 }
 .progress span {
   display: block;
   height: 100%;
-  background: var(--color-primary);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 74%, var(--color-success)));
 }
 .progressBlock {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  padding: .8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface-soft) 86%, transparent);
 }
 .totals,
 .detail {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: .75rem;
+}
+.totals > div,
+.detail > div {
+  padding: .72rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-soft);
 }
 .totals dt,
 .detail dt {
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 .totals dd,
 .detail dd {
-  margin: 0;
-  font-weight: 600;
+  margin: .15rem 0 0;
+  font-weight: 650;
   overflow-wrap: anywhere;
 }
 .formGrid {
@@ -80,10 +181,10 @@
 .periodFields {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
-  background: var(--color-surface-muted);
+  border-radius: var(--radius-large);
+  background: linear-gradient(135deg, var(--color-surface-muted), color-mix(in srgb, var(--color-primary-soft) 50%, var(--color-surface)));
 }
 .rangePreview,
 .helpText {
@@ -113,13 +214,17 @@
   overflow: auto;
   padding: 0.5rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-small);
+  border-radius: var(--radius-medium);
   background: var(--color-surface-muted);
 }
 .options label {
-  padding: 0.4rem 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid transparent;
   border-radius: var(--radius-small);
   background: var(--color-surface);
+}
+.options label:hover {
+  border-color: var(--color-border-strong);
 }
 .options label,
 .checkbox {
@@ -131,26 +236,42 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  align-items: end;
 }
 .filters label {
   display: grid;
   gap: 0.3rem;
-}
-.filters {
-  align-items: end;
-}
-.filters label {
   flex: 1 1 12rem;
   color: var(--color-text);
   font-weight: var(--font-weight-medium);
 }
+.actions {
+  justify-content: center;
+}
+.percentageInput {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .5rem;
+}
+.percentageInput span { font-weight: 700; }
+
 @media (max-width: 700px) {
+  .page > :global([class*='pageHeader']) {
+    min-height: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-large);
+  }
+  .page > :global([class*='pageHeader'])::before,
+  .page > :global([class*='pageHeader'])::after { opacity: .28; }
+  .page > :global([class*='pageHeader']) button { width: 100%; }
   .list,
   .formGrid,
   .options {
     grid-template-columns: 1fr;
   }
   .card {
+    min-height: 0;
     gap: var(--space-2);
   }
   .cardHeader,
@@ -162,18 +283,17 @@
     margin-block: 0;
   }
   .amount {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
   }
   .progress {
-    height: 0.625rem;
+    height: 0.65rem;
   }
   .totals,
   .detail {
+    grid-template-columns: 1fr;
     gap: var(--space-2);
   }
-.actions {
+  .actions {
     gap: var(--space-2);
   }
 }
-.percentageInput { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
-.percentageInput span { font-weight: 700; }

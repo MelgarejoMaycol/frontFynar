@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import {
   Button,
   ConfirmDeleteDialog,
@@ -51,21 +52,25 @@ export function AccountsPage() {
   const [message, setMessage] = useState('')
   const [creationKey, setCreationKey] = useState(0)
   const update = useUpdateAccount(workspaceId, editing?.id ?? '')
+
   const openCreate = () => {
     setMessage('')
     setCreating(true)
   }
+
   const closeForm = () => {
     setCreating(false)
     setEditing(null)
     create.reset()
     update.reset()
   }
+
   const saved = (text: string, consumeCreateDraft = false) => {
     setMessage(text)
     if (consumeCreateDraft) setCreationKey((value) => value + 1)
     closeForm()
   }
+
   if (accounts.isPending && !accounts.data) return <PageLoader />
   if (accounts.isError)
     return (
@@ -75,17 +80,57 @@ export function AccountsPage() {
         onRetry={() => void accounts.refetch()}
       />
     )
+
   return (
     <div className={styles.page}>
-      <PageHeader
-        title="Cuentas"
-        description="Administra dónde tienes y manejas tu dinero."
-        actions={
-          canWrite ? (
-            <Button onClick={openCreate}>Nueva cuenta</Button>
-          ) : undefined
-        }
-      />
+      <section
+        className={styles.accountsHero}
+        style={{
+          gridTemplateColumns: 'minmax(0, 1fr)',
+          backgroundImage:
+            "linear-gradient(90deg, rgba(246,248,247,.98) 0%, rgba(246,248,247,.94) 42%, rgba(246,248,247,.72) 68%, rgba(246,248,247,.38) 100%), url('/illustrations/accounts-hero.svg')",
+          backgroundPosition: 'center, right center',
+          backgroundRepeat: 'no-repeat, no-repeat',
+          backgroundSize: 'cover, auto 122%',
+        }}
+      >
+        <div className={styles.accountsHeroContent} style={{ maxWidth: '52rem' }}>
+          <span className={styles.accountsEyebrow}>Tu dinero, en un solo lugar</span>
+          <PageHeader
+            title="Cuentas"
+            description="Administra dónde tienes y manejas tu dinero con una vista clara de cada saldo."
+          />
+          <div
+            className={styles.heroFooter}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              marginTop: '0.5rem',
+            }}
+          >
+            <div className={styles.heroHighlights} aria-label="Tipos de cuenta">
+              <span>Efectivo</span>
+              <span>Bancos</span>
+              <span>Billeteras digitales</span>
+            </div>
+            {canWrite && (
+              <Button
+                className={styles.createAccountButton}
+                size="large"
+                onClick={openCreate}
+                style={{ marginLeft: 'auto', minWidth: '11.5rem' }}
+              >
+                <Plus size={20} aria-hidden="true" />
+                Nueva cuenta
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
       <div className={styles.listToolbar} aria-label="Filtros de cuentas">
         <fieldset className={styles.filterGroup}>
           <legend>Estado</legend>
@@ -105,11 +150,13 @@ export function AccountsPage() {
           <LoadingSpinner size="small" label="Actualizando cuentas" />
         )}
       </div>
+
       {message && (
         <p className={styles.success} role="status">
           {message}
         </p>
       )}
+
       {accounts.data.length === 0 ? (
         <EmptyState
           title={
@@ -117,7 +164,7 @@ export function AccountsPage() {
               ? 'No hay cuentas archivadas'
               : favoriteFilter === 'favorites'
                 ? 'No hay cuentas favoritas'
-              : 'Aún no tienes cuentas registradas'
+                : 'Aún no tienes cuentas registradas'
           }
           message={
             archived
@@ -177,6 +224,7 @@ export function AccountsPage() {
           ))}
         </div>
       )}
+
       <Dialog
         open={creating || Boolean(editing)}
         title={editing ? 'Editar cuenta' : 'Nueva cuenta'}
@@ -200,6 +248,7 @@ export function AccountsPage() {
           }
         />
       </Dialog>
+
       <BalanceAdjustmentDialog
         key={adjusting?.id ?? 'no-adjustment'}
         workspaceId={workspaceId}
@@ -207,6 +256,7 @@ export function AccountsPage() {
         open={Boolean(adjusting)}
         onClose={() => setAdjusting(null)}
       />
+
       <Dialog
         open={Boolean(archiving)}
         title="Archivar cuenta"
@@ -241,6 +291,7 @@ export function AccountsPage() {
         La cuenta dejará de aparecer entre tus cuentas activas, pero conservará
         su historial de movimientos.
       </Dialog>
+
       <ConfirmDeleteDialog
         open={Boolean(deleting)}
         title="Eliminar cuenta"
