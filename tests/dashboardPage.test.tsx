@@ -26,6 +26,22 @@ vi.mock('@/features/workspace', () => ({
 vi.mock('@/features/dashboard/hooks/dashboard.hooks', () => ({
   useDashboard: (...args: unknown[]) => mocks.dashboard(...args),
 }))
+vi.mock('@/features/transactions/hooks/transactions.hooks', () => ({
+  useCreateTransaction: () => ({
+    isPending: false,
+    error: null,
+    mutate: vi.fn(),
+    reset: vi.fn(),
+  }),
+}))
+vi.mock('@/features/accounts/hooks/accounts.hooks', () => ({
+  useCreateAccount: () => ({
+    isPending: false,
+    error: null,
+    mutate: vi.fn(),
+    reset: vi.fn(),
+  }),
+}))
 vi.mock('@/features/categories/hooks/categories.hooks', () => ({
   useCategories: () => ({
     data: [
