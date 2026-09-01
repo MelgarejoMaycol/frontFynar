@@ -94,22 +94,24 @@ export function AccountsPage() {
           backgroundSize: 'cover, auto 122%',
         }}
       >
-        <div className={styles.accountsHeroContent} style={{ maxWidth: '44rem' }}>
+        <div className={styles.accountsHeroContent} style={{ maxWidth: '52rem' }}>
           <span className={styles.accountsEyebrow}>Tu dinero, en un solo lugar</span>
           <PageHeader
             title="Cuentas"
             description="Administra dónde tienes y manejas tu dinero con una vista clara de cada saldo."
           />
-          {canWrite && (
-            <Button size="large" onClick={openCreate}>
-              <Plus size={20} aria-hidden="true" />
-              Nueva cuenta
-            </Button>
-          )}
-          <div className={styles.heroHighlights} aria-label="Tipos de cuenta">
-            <span>Efectivo</span>
-            <span>Bancos</span>
-            <span>Billeteras digitales</span>
+          <div className={styles.heroFooter}>
+            <div className={styles.heroHighlights} aria-label="Tipos de cuenta">
+              <span>Efectivo</span>
+              <span>Bancos</span>
+              <span>Billeteras digitales</span>
+            </div>
+            {canWrite && (
+              <Button className={styles.createAccountButton} size="large" onClick={openCreate}>
+                <Plus size={20} aria-hidden="true" />
+                Nueva cuenta
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -147,7 +149,7 @@ export function AccountsPage() {
               ? 'No hay cuentas archivadas'
               : favoriteFilter === 'favorites'
                 ? 'No hay cuentas favoritas'
-              : 'Aún no tienes cuentas registradas'
+                : 'Aún no tienes cuentas registradas'
           }
           message={
             archived
