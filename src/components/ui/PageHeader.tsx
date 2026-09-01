@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router'
 import { Button } from './Button'
 import styles from './surfaces.module.css'
 
@@ -13,11 +12,10 @@ export function PageHeader({
   description?: string
   actions?: ReactNode
 }) {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const pathname = typeof window === 'undefined' ? '' : window.location.pathname
   const isCommitmentTool =
-    location.pathname.startsWith('/app/lending') ||
-    location.pathname.startsWith('/app/personal-balances')
+    pathname.startsWith('/app/lending') ||
+    pathname.startsWith('/app/personal-balances')
 
   return (
     <header className={styles.pageHeader}>
@@ -27,7 +25,7 @@ export function PageHeader({
             type="button"
             variant="ghost"
             size="small"
-            onClick={() => navigate('/app/commitments')}
+            onClick={() => window.location.assign('/app/commitments')}
           >
             <ArrowLeft size={15} aria-hidden="true" /> Volver a créditos, deudas y cobros
           </Button>
