@@ -7,6 +7,62 @@
   overflow: visible;
   gap: 1.5rem;
 }
+.page {
+  position: relative;
+}
+.topPanel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
+  border-radius: calc(var(--radius-large) + 0.25rem);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 9%, var(--color-surface)) 0%, var(--color-surface) 55%, color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface)) 100%);
+  box-shadow: var(--shadow-soft);
+}
+.topPanelGlow {
+  position: absolute;
+  z-index: -1;
+  width: 24rem;
+  height: 24rem;
+  top: -15rem;
+  right: -7rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  filter: blur(2px);
+  pointer-events: none;
+}
+.topPanelContent {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.topPanelContent > header {
+  margin-bottom: 0;
+}
+.dashboardEyebrow {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+.quickSuccess {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-success) 22%, var(--color-border));
+  border-radius: var(--radius-medium);
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  font-weight: var(--font-weight-medium);
+}
 .dashboardSection {
   width: 100%;
   max-width: 100%;
@@ -57,9 +113,25 @@
   scroll-snap-align: start;
 }
 .summaryCard {
+  position: relative;
+  isolation: isolate;
   display: grid;
   gap: 0.5rem;
   min-width: 0;
+  overflow: hidden;
+}
+.summaryCard::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 7.5rem;
+  height: 7.5rem;
+  right: -2.2rem;
+  bottom: -3.4rem;
+  border: 1.2rem solid color-mix(in srgb, currentColor 7%, transparent);
+  border-radius: 50%;
+  opacity: 0.8;
+  pointer-events: none;
 }
 .summaryHeading {
   display: flex;
@@ -110,10 +182,11 @@
 }
 .summaryNeutral {
   border-top: 3px solid var(--color-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)), var(--color-surface));
 }
 .summaryIncome {
   border-top: 3px solid var(--color-success);
-  background: var(--color-success-soft);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 14%, var(--color-surface)), var(--color-success-soft));
 }
 .summaryIncome svg,
 .summaryIncome strong {
@@ -121,7 +194,7 @@
 }
 .summaryExpense {
   border-top: 3px solid var(--color-error);
-  background: var(--color-error-soft);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-error) 10%, var(--color-surface)), var(--color-error-soft));
 }
 .summaryExpense svg,
 .summaryExpense strong {
@@ -129,12 +202,14 @@
 }
 .summaryFlow {
   border-top: 3px solid var(--color-info);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-info) 8%, var(--color-surface)), var(--color-surface));
 }
 .summaryFlow small {
   color: var(--color-text-secondary);
 }
 .summaryWorth {
   border-top: 3px solid var(--color-secondary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface)), var(--color-surface));
 }
 .summaryCard svg {
   color: var(--color-primary);
@@ -331,6 +406,16 @@
     gap: var(--space-3);
     overflow: visible;
   }
+  .topPanel {
+    padding: 0.85rem;
+    border-radius: var(--radius-large);
+  }
+  .topPanelContent {
+    gap: var(--space-3);
+  }
+  .dashboardEyebrow {
+    font-size: 0.7rem;
+  }
   .page > * {
     min-width: 0;
     max-width: 100%;
@@ -338,12 +423,14 @@
   .page > header {
     margin-bottom: 0;
   }
-  .page > header h1 {
+  .page > header h1,
+  .topPanel h1 {
     margin: 0;
     font-size: 1.8rem;
     line-height: 1.05;
   }
-  .page > header p {
+  .page > header p,
+  .topPanel header p {
     margin-top: 0.25rem;
     font-size: 0.9rem;
     line-height: 1.25;
