@@ -201,15 +201,31 @@ describe('aislamiento de consultas en Créditos y pagos', () => {
   it('limita el menú archivado a restaurar e historial', () => {
     mocks.canWrite.mockReturnValue(true)
     mocks.obligations.mockReturnValue(
-      ok([{
-        id: 'obligation-archived', name: 'Spotify QA', description: null,
-        expectedAmount: '20000.00', currency: 'COP', amountType: 'FIXED',
-        status: 'CANCELLED', deletedAt: '2026-08-28T12:00:00Z',
-        paymentAccountId: null, categoryId: null, remindersEnabled: true,
-        recurrenceRules: { frequency: 'MONTHLY', intervalValue: 1, dayOfWeek: null,
-          dayOfMonth: 28, startsOn: '2026-06-28', endsOn: null, nextRunAt: null },
-        occurrences: [],
-      }]),
+      ok([
+        {
+          id: 'obligation-archived',
+          name: 'Spotify QA',
+          description: null,
+          expectedAmount: '20000.00',
+          currency: 'COP',
+          amountType: 'FIXED',
+          status: 'CANCELLED',
+          deletedAt: '2026-08-28T12:00:00Z',
+          paymentAccountId: null,
+          categoryId: null,
+          remindersEnabled: true,
+          recurrenceRules: {
+            frequency: 'MONTHLY',
+            intervalValue: 1,
+            dayOfWeek: null,
+            dayOfMonth: 28,
+            startsOn: '2026-06-28',
+            endsOn: null,
+            nextRunAt: null,
+          },
+          occurrences: [],
+        },
+      ]),
     )
     render(
       <MemoryRouter initialEntries={['/app/debts?tab=obligations']}>
@@ -235,12 +251,14 @@ describe('aislamiento de consultas en Créditos y pagos', () => {
     expect(screen.getByPlaceholderText('Ej. Visa principal')).toBeVisible()
     expect(screen.getByPlaceholderText('Ej. Banco de Bogotá')).toBeVisible()
     expect(screen.getByPlaceholderText('Ej. 5.000.000')).toBeVisible()
-    const paid = screen.getByRole('checkbox', { name: /Ya pagué el período actual/ })
+    const paid = screen.getByRole('checkbox', {
+      name: /Ya pagué el período actual/,
+    })
     expect(paid).not.toBeChecked()
     fireEvent.click(screen.getByText('Ya pagué el período actual'))
     expect(paid).toBeChecked()
   })
-  it('usa la misma agenda para tarjetas y calendario sin duplicar eventos', () => {
+  it('deduplica próximos pagos sin depender de una vista de calendario', () => {
     const base = {
       currency: 'COP',
       status: 'PENDING',
@@ -291,31 +309,15 @@ describe('aislamiento de consultas en Créditos y pagos', () => {
         },
       ]),
     )
-    mocks.calendar.mockReturnValue(
-      ok([
-        {
-          ...base,
-          type: 'OBLIGATION',
-          id: 'o1',
-          resourceId: 'obligation-1',
-          name: 'Internet',
-          amount: '85000.00',
-          date: '2026-09-25',
-          daysRemaining: 30,
-        },
-      ]),
-    )
     render(
       <MemoryRouter initialEntries={['/app/debts']}>
         <LiabilitiesPage />
       </MemoryRouter>,
     )
     expect(screen.getAllByText('Internet')).toHaveLength(1)
-    fireEvent.click(screen.getByRole('button', { name: /Calendario/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Mes siguiente' }))
     expect(
-      screen.getByRole('grid', { name: /septiembre de 2026/i }),
-    ).toBeVisible()
+      screen.queryByRole('button', { name: /Calendario/ }),
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: /Pago recurrente Internet/ }),
     ).toHaveAttribute('href', '/app/debts/obligations/obligation-1')
