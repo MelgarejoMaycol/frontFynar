@@ -33,16 +33,14 @@ export function LoadingSpinner({
   const [phase, setPhase] = useState(0)
 
   useEffect(() => {
-    let timer: number | undefined
-    let frame = window.requestAnimationFrame(() => setPhase(1))
-
-    timer = window.setInterval(() => {
+    const frame = window.requestAnimationFrame(() => setPhase(1))
+    const timer = window.setInterval(() => {
       setPhase((current) => (current >= LAST_PHASE ? 1 : current + 1))
     }, STEP_MS)
 
     return () => {
       window.cancelAnimationFrame(frame)
-      if (timer !== undefined) window.clearInterval(timer)
+      window.clearInterval(timer)
     }
   }, [])
 
@@ -86,9 +84,21 @@ export function LoadingSpinner({
           <rect x="68" y="158" width="25" height="55" rx="12.5" fill="#456856" />
           <rect x="110" y="131" width="25" height="82" rx="12.5" fill="#5d8c74" />
           <rect x="152" y="101" width="25" height="112" rx="12.5" fill="#8baa92" />
-          <path d="M226 177 V104" fill="none" stroke="#456856" strokeWidth="15" strokeLinecap="round" />
-          <path d="M222 105 C198 101 184 85 183 62 C207 64 224 78 228 99 C228 102 226 104 222 105Z" fill="#5d8c74" />
-          <path d="M229 104 C232 69 249 46 258 43 C259 76 247 99 232 108 C230 108 229 106 229 104Z" fill="#8baa92" />
+          <path
+            d="M226 177 V104"
+            fill="none"
+            stroke="#456856"
+            strokeWidth="15"
+            strokeLinecap="round"
+          />
+          <path
+            d="M222 105 C198 101 184 85 183 62 C207 64 224 78 228 99 C228 102 226 104 222 105Z"
+            fill="#5d8c74"
+          />
+          <path
+            d="M229 104 C232 69 249 46 258 43 C259 76 247 99 232 108 C230 108 229 106 229 104Z"
+            fill="#8baa92"
+          />
         </g>
 
         <path
