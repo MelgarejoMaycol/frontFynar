@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 
 const email = 'e2e-fynar@example.com'
 const password = 'E2E secure password 1!'
 const api = 'http://127.0.0.1:3000/api/v1'
 
-async function prepareAccount(request: Parameters<typeof test>[0] extends never ? never : any) {
+async function prepareAccount(request: APIRequestContext) {
   const loginResponse = await request.post(`${api}/auth/login`, {
     data: { email, password },
   })
@@ -30,13 +30,12 @@ async function prepareAccount(request: Parameters<typeof test>[0] extends never 
   )
   expect(accountResponse.status()).toBe(201)
   return {
-    workspaceId,
     accountId: (await accountResponse.json()).data.id as string,
     goalName: `Moto CI ${stamp}`,
   }
 }
 
-async function loginInUi(page: Parameters<typeof test>[0] extends never ? never : any) {
+async function loginInUi(page: Page) {
   await page.goto('/login')
   await page.getByLabel(/correo/i).fill(email)
   await page.getByRole('textbox', { name: 'Contraseña' }).fill(password)
@@ -88,11 +87,15 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   await withdrawalDialog.getByLabel('Monto a retirar').fill('5000000')
   await withdrawalDialog.getByRole('button', { name: 'Registrar retiro' }).click()
   await expect(page.getByText('10.00 % completado')).toBeVisible()
-  await expect(page.getByText('Retiro o corrección', { exact: true }).first()).toBeVisible()
+  await expect(
+    page.getByText('Retiro o corrección', { exact: true }).first(),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: 'Pausar', exact: true }).click()
   await expect(page.getByText('Pausada', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Aportar', exact: true })).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Aportar', exact: true }),
+  ).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Reactivar', exact: true }).click()
   await expect(page.getByText('Activa', { exact: true })).toBeVisible()
@@ -106,7 +109,9 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   await expect(page.getByRole('heading', { name: goalName })).toBeVisible()
 
   await page.getByRole('button', { name: 'Archivar', exact: true }).click()
-  const archiveDialog = page.getByRole('dialog', { name: 'Archivar meta de ahorro' })
+  const archiveDialog = page.getByRole('dialog', {
+    name: 'Archivar meta de ahorro',
+  })
   await archiveDialog.getByRole('button', { name: 'Archivar meta' }).click()
   await expect(page.getByText('Archivada', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Restaurar meta', exact: true }).click()
@@ -115,7 +120,9 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/app/goals')
   await expect(page.getByRole('heading', { name: 'Metas de ahorro' })).toBeVisible()
-  await expect(page.getByRole('link', { name: `Ver meta ${goalName}` })).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: `Ver meta ${goalName}` }),
+  ).toBeVisible()
   const fitsViewport = await page.evaluate(
     () => document.documentElement.scrollWidth <= window.innerWidth + 1,
   )
