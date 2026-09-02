@@ -1,0 +1,40 @@
+dialog[data-fynar-dialog] input[type='date'],
+dialog[data-fynar-dialog] input[type='month'],
+dialog[data-fynar-dialog] input[type='datetime-local'],
+dialog[data-fynar-dialog] input[type='time'] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 35.99rem) {
+  dialog[data-fynar-dialog] {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 0.75rem) !important;
+    margin: auto;
+  }
+
+  dialog[data-fynar-dialog] > * {
+    min-width: 0;
+  }
+
+  dialog[data-fynar-dialog] input[type='date'],
+  dialog[data-fynar-dialog] input[type='month'],
+  dialog[data-fynar-dialog] input[type='datetime-local'],
+  dialog[data-fynar-dialog] input[type='time'] {
+    display: block;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    font-size: 16px;
+  }
+
+  dialog[data-fynar-dialog] input[type='date']::-webkit-date-and-time-value,
+  dialog[data-fynar-dialog] input[type='month']::-webkit-date-and-time-value,
+  dialog[data-fynar-dialog] input[type='datetime-local']::-webkit-date-and-time-value,
+  dialog[data-fynar-dialog] input[type='time']::-webkit-date-and-time-value {
+    min-width: 0;
+    text-align: left;
+  }
+}
