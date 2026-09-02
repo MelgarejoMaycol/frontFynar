@@ -578,7 +578,7 @@ export function PersonalBalancesPage() {
           const related = list.data!.filter((item) => item.personId === person.id)
           const payable = related.filter((item) => item.direction === 'PAYABLE').reduce((sum, item) => sum + Number(item.currentBalance), 0)
           const receivable = related.filter((item) => item.direction === 'RECEIVABLE').reduce((sum, item) => sum + Number(item.currentBalance), 0)
-          return <article key={person.id} className={styles.personCard}><div><strong>{person.name}</strong><small>{person.relationship || 'Sin relación indicada'}</small></div><dl><div><dt>Me debe</dt><dd>{money(String(receivable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Le debo</dt><dd>{money(String(payable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Balance</dt><dd>{money(String(receivable - payable), activeWorkspace!.baseCurrency)}</dd></div></dl>{canWrite ? <div className={styles.quickActions}><Button variant="secondary" onClick={() => setPersonDialog(person)}>Editar</Button><Button variant="danger" onClick={() => archivePerson.mutate(person.id)}>Archivar</Button></div> : null}</article>
+          return <article key={person.id} className={styles.personCard}><div><strong>{person.name}</strong><small>{person.relationship || 'Sin relación indicada'}</small></div><dl><div><dt>Me debe</dt><dd>{money(String(receivable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Le debo</dt><dd>{money(String(payable), activeWorkspace!.baseCurrency)}</dd></div><div><dt>Balance</dt><dd>{money(String(receivable - payable), activeWorkspace!.baseCurrency)}</dd></div></dl>{canWrite ? <div className={styles.quickActions}><Button variant="secondary" onClick={() => setPersonDialog(person)}>Editar</Button><Button variant="danger" onClick={() => archivePerson.mutate(person.id)}>Eliminar</Button></div> : null}</article>
         })}</div>
       </section>}
 
@@ -679,7 +679,7 @@ export function PersonalBalancesPage() {
             {canWrite && (
               <div className={styles.detailActions}>
                 <Button variant="secondary" onClick={() => { setEditing(detail.data!); setDetailId('') }}>Editar</Button>
-                <Button variant="danger" onClick={() => { setArchiving(detail.data!); setDetailId('') }}>Archivar</Button>
+                <Button variant="danger" onClick={() => { setArchiving(detail.data!); setDetailId('') }}>Eliminar</Button>
               </div>
             )}
           </div>
@@ -705,7 +705,7 @@ export function PersonalBalancesPage() {
 
       <Dialog
         open={Boolean(archiving)}
-        title="Archivar registro"
+        title="Eliminar registro"
         onClose={() => !archive.isPending && setArchiving(null)}
         footer={
           <>
@@ -717,12 +717,12 @@ export function PersonalBalancesPage() {
                 archiving && archive.mutate(archiving.id, {
                   onSuccess: () => {
                     setArchiving(null)
-                    setMessage('Registro archivado.')
+                    setMessage('Registro eliminado.')
                   },
                 })
               }
             >
-              Archivar
+              Eliminar
             </Button>
           </>
         }
