@@ -7,6 +7,7 @@ import { AppProviders } from '@/app/providers/AppProviders'
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
 import { PwaPrompt } from '@/components/pwa/PwaPrompt'
 import '@/styles/globals.css'
+import '@/styles/mobile-fixes.css'
 import { applyCachedTheme } from '@/features/workspace/theme'
 import { initializeObservability } from '@/services/observability/sentry'
 
