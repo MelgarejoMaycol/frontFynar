@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { IconButton } from './IconButton'
 import styles from './surfaces.module.css'
+import './dialog.mobile.css'
 
 type Props = {
   open: boolean
@@ -137,6 +138,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
+      data-fynar-dialog
       className={clsx(
         styles.dialog,
         styles[`dialogTone${visual.tone[0].toUpperCase()}${visual.tone.slice(1)}`],
