@@ -3,9 +3,9 @@ import { Controller, useForm, useWatch } from 'react-hook-form'
 import {
   Button,
   FormField,
+  Input,
   MoneyInput,
   Select,
-  Input,
 } from '@/components/ui'
 import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
 import { useTransactions } from '@/features/transactions/hooks/transactions.hooks'
@@ -26,6 +26,7 @@ import styles from './goals.module.css'
 export function ContributionForm({
   workspaceId,
   timezone,
+  baseCurrency,
   goal,
   mode,
   pending,
@@ -35,6 +36,7 @@ export function ContributionForm({
 }: {
   workspaceId: string
   timezone: string
+  baseCurrency: string
   goal: Goal
   mode: 'CONTRIBUTE' | 'WITHDRAW'
   pending: boolean
@@ -70,6 +72,7 @@ export function ContributionForm({
     },
   })
   const transactionId = useWatch({ control, name: 'transactionId' })
+  const transactionField = register('transactionId')
 
   const eligibleMovements = (movements.data?.items ?? []).filter(
     (movement) =>
@@ -103,7 +106,9 @@ export function ContributionForm({
     >
       <div className={styles.formIntro}>
         <strong>
-          {mode === 'CONTRIBUTE' ? 'Registrar dinero destinado a esta meta' : 'Liberar dinero de la meta'}
+          {mode === 'CONTRIBUTE'
+            ? 'Registrar dinero destinado a esta meta'
+            : 'Liberar dinero de la meta'}
         </strong>
         <p>
           {mode === 'CONTRIBUTE'
@@ -158,13 +163,14 @@ export function ContributionForm({
         >
           <Select
             id="goal-contribution-transaction"
-            {...register('transactionId')}
+            {...transactionField}
             onChange={(event) => {
-              register('transactionId').onChange(event)
+              void transactionField.onChange(event)
               const movement = eligibleMovements.find(
                 (item) => item.id === event.target.value,
               )
-              if (movement) setValue('amount', movement.amount, { shouldDirty: true })
+              if (movement)
+                setValue('amount', movement.amount, { shouldDirty: true })
             }}
           >
             <option value="">Sin vincular movimiento</option>
@@ -180,19 +186,24 @@ export function ContributionForm({
         </FormField>
       )}
 
-      {mode === 'CONTRIBUTE' && goal.account && movements.isSuccess && eligibleMovements.length === 0 && (
-        <div className={styles.notice}>
-          <strong>No hay movimientos de entrada recientes para vincular.</strong>
-          <span>Puedes registrar el aporte igualmente como una asignación interna.</span>
-        </div>
-      )}
+      {mode === 'CONTRIBUTE' &&
+        goal.account &&
+        movements.isSuccess &&
+        eligibleMovements.length === 0 && (
+          <div className={styles.notice}>
+            <strong>No hay movimientos de entrada recientes para vincular.</strong>
+            <span>
+              Puedes registrar el aporte igualmente como una asignación interna.
+            </span>
+          </div>
+        )}
 
       {selectedMovement && (
         <div className={styles.notice}>
           <strong>Movimiento vinculado</strong>
           <span>
-            {formatMoney(selectedMovement.amount, selectedMovement.currency)} recibido en{' '}
-            {goal.account?.name}.
+            {formatMoney(selectedMovement.amount, selectedMovement.currency)} recibido
+            en {goal.account?.name}.
           </span>
         </div>
       )}
@@ -200,7 +211,12 @@ export function ContributionForm({
       {mode === 'WITHDRAW' && (
         <div className={styles.notice}>
           <strong>Disponible en la meta</strong>
-          <span>{formatMoney(goal.savedAmount, goal.account?.currency ?? 'COP')}</span>
+          <span>
+            {formatMoney(
+              goal.savedAmount,
+              goal.account?.currency ?? baseCurrency,
+            )}
+          </span>
         </div>
       )}
 
