@@ -10,7 +10,8 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({ page }) =>
   await page.getByRole('button', { name: /iniciar sesión/i }).click()
 
   await expect(page).toHaveURL(/\/app\/(dashboard|debts)/)
-  await page.goto('/app/dashboard')
+  await page.getByRole('link', { name: 'Inicio', exact: true }).click()
+  await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Inicio' })).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Resumen financiero' }).first(),
