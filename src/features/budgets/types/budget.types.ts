@@ -28,6 +28,18 @@ export interface BudgetProgress {
   percentage: string
   status: BudgetStatus
 }
+export interface BudgetMovement {
+  id: string
+  amount: string
+  currency: string
+  occurredAt: string
+  description: string | null
+  merchantName: string | null
+  categoryId: string | null
+  categoryName: string | null
+  accountId: string
+  accountName: string | null
+}
 export interface Budget {
   id: string
   name: string
@@ -48,6 +60,7 @@ export interface Budget {
     projectedPercentage: string
     projectedStatus: BudgetStatus
   }
+  movements?: BudgetMovement[]
   createdAt: string
   updatedAt: string
 }
