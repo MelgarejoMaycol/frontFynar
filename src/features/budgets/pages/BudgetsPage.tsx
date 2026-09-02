@@ -16,6 +16,7 @@ import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { formatMoney } from '@/features/transactions/transactions.format'
 import { BudgetCard } from '../components/BudgetCard'
 import { BudgetForm } from '../components/BudgetForm'
+import { BudgetMovements } from '../components/BudgetMovements'
 import { getBudgetErrorMessage } from '../budgets.errors'
 import {
   useArchiveBudget,
@@ -359,6 +360,7 @@ export function BudgetsPage() {
                   </dd>
                 </div>
               </dl>
+              <BudgetMovements budget={current} />
             </div>
           )
         )}
