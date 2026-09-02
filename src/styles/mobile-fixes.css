@@ -1,0 +1,41 @@
+/* Correcciones compartidas para controles y tarjetas en pantallas pequeñas. */
+
+/* Safari/iOS puede imponer un ancho intrínseco mayor al contenedor a los campos
+   de fecha. Estas reglas permiten que cualquier date/time dentro de formularios
+   y modales se contraiga al ancho disponible sin desbordar horizontalmente. */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value,
+input[type='datetime-local']::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
+
+@media (max-width: 47.99rem) {
+  /* Evita que wrappers de formularios/modales hereden mínimos de contenido
+     de los controles nativos de Safari. */
+  form,
+  form > *,
+  label,
+  [role='dialog'] form,
+  [role='dialog'] label {
+    min-width: 0;
+  }
+
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime-local'] {
+    display: block;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+}
