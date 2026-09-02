@@ -40,6 +40,7 @@
 .item {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
   padding: 0.65rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
@@ -51,6 +52,16 @@
   min-width: 15rem;
   flex: 0 0 auto;
   scroll-snap-align: start;
+}
+.item > div:first-child {
+  min-width: 0;
+}
+.item > div:first-child strong {
+  min-width: 0;
+}
+.item > div:first-child span {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 .item:hover {
   border-color: var(--color-primary);
@@ -66,9 +77,12 @@
   white-space: nowrap;
 }
 .item small {
+  overflow-wrap: anywhere;
   color: var(--color-text-secondary);
 }
 .progress {
+  width: 100%;
+  min-width: 0;
   height: 0.45rem;
   overflow: hidden;
   border-radius: 999px;
@@ -81,9 +95,31 @@
   background: var(--color-primary);
 }
 @media (max-width: 768px) {
+  .widget {
+    gap: 0.65rem;
+    padding: 0.8rem;
+  }
+  .list {
+    gap: 0.55rem;
+    padding-bottom: 0.2rem;
+  }
   .list .item {
-    width: min(15rem, 76vw);
-    min-width: min(15rem, 76vw);
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+  .item {
+    padding: 0.75rem;
+  }
+  .item > div:first-child {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .item > div:first-child span {
+    font-size: 0.9rem;
+    font-weight: 700;
   }
   .empty {
     align-items: flex-start;
