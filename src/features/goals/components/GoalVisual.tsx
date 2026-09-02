@@ -15,6 +15,9 @@ import { goalStatusLabel } from '../goals.format'
 import type { Goal, GoalStatus } from '../types/goal.types'
 import styles from './goals.module.css'
 
+// eslint-disable-next-line react-refresh/only-export-components
+export { formatGoalDate } from '../goals.format'
+
 const iconMap: Record<string, LucideIcon> = {
   target: Target,
   bike: Bike,
