@@ -53,7 +53,9 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
 
   await page.getByRole('link', { name: 'Metas de ahorro', exact: true }).click()
   await expect(page).toHaveURL(/\/app\/goals$/)
-  await expect(page.getByRole('heading', { name: 'Metas de ahorro' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: /nueva meta/i }).click()
   const createDialog = page.getByRole('dialog', { name: 'Crear meta de ahorro' })
@@ -119,7 +121,9 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/app/goals')
-  await expect(page.getByRole('heading', { name: 'Metas de ahorro' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
+  ).toBeVisible()
   await expect(
     page.getByRole('link', { name: `Ver meta ${goalName}` }),
   ).toBeVisible()
