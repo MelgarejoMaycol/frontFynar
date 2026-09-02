@@ -119,9 +119,14 @@ export function Dialog({
         )
       }
 
-      dialog
-        .querySelector<HTMLElement>('button, [href], input, select, textarea')
-        ?.focus()
+      const canAutoFocus =
+        typeof window.matchMedia !== 'function' ||
+        window.matchMedia('(hover: hover) and (pointer: fine)').matches
+      if (canAutoFocus) {
+        dialog
+          .querySelector<HTMLElement>('button, [href], input, select, textarea')
+          ?.focus()
+      }
     }
 
     if (!open && dialog.open) {
