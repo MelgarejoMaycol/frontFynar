@@ -1,15 +1,5 @@
 import type { CSSProperties } from 'react'
-import {
-  Banknote,
-  CircleDollarSign,
-  HandCoins,
-  Landmark,
-  MoreHorizontal,
-  Smartphone,
-  Star,
-  TrendingUp,
-  WalletCards,
-} from 'lucide-react'
+import { MoreHorizontal, Star } from 'lucide-react'
 import { Link } from 'react-router'
 import {
   Button,
@@ -19,20 +9,10 @@ import {
   IconButton,
 } from '@/components/ui'
 import { accountTypeLabels } from '../accounts.constants'
+import { accountTypeIcons } from '../accountIcons'
 import { formatCurrency } from '../accounts.format'
 import type { Account } from '../types/account.types'
 import styles from './accounts.module.css'
-
-const accountIcons = {
-  CASH: Banknote,
-  CHECKING: Landmark,
-  SAVINGS: Landmark,
-  E_WALLET: Smartphone,
-  CREDIT_CARD: WalletCards,
-  INVESTMENT: TrendingUp,
-  LOAN: HandCoins,
-  OTHER: CircleDollarSign,
-} as const
 
 export function AccountCard({
   account,
@@ -55,7 +35,7 @@ export function AccountCard({
   onDelete: () => void
   onRestore: () => void
 }) {
-  const AccountIcon = accountIcons[account.type]
+  const AccountIcon = accountTypeIcons[account.type]
   const cardStyle = account.color
     ? ({ '--account-accent': account.color } as CSSProperties)
     : undefined

@@ -262,6 +262,20 @@
   gap: 1rem;
   align-items: center;
 }
+.accountIcon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  border-radius: var(--radius-medium);
+  background: var(--color-primary-soft);
+}
+.accountInfo {
+  min-width: 0;
+  flex: 1;
+}
 .account h3 {
   display: flex;
   align-items: center;
