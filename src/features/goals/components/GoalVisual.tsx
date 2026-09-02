@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { goalStatusLabel } from '../goals.format'
 import type { Goal, GoalStatus } from '../types/goal.types'
 import styles from './goals.module.css'
 
@@ -23,13 +24,6 @@ const iconMap: Record<string, LucideIcon> = {
   house: House,
   shield: ShieldCheck,
   sparkles: Sparkles,
-}
-
-export const goalStatusLabel: Record<GoalStatus, string> = {
-  ACTIVE: 'Activa',
-  PAUSED: 'Pausada',
-  COMPLETED: 'Completada',
-  CANCELLED: 'Archivada',
 }
 
 const statusClass: Record<GoalStatus, string> = {
@@ -64,14 +58,4 @@ export function GoalStatusPill({ status }: { status: GoalStatus }) {
       {goalStatusLabel[status]}
     </span>
   )
-}
-
-export function formatGoalDate(value: string | null) {
-  if (!value) return null
-  return new Intl.DateTimeFormat('es-CO', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(`${value}T12:00:00Z`))
 }
