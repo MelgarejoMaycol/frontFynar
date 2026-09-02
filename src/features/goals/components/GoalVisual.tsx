@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import {
   Bike,
   Car,
@@ -38,12 +39,18 @@ const statusClass: Record<GoalStatus, string> = {
   CANCELLED: styles.statusArchived,
 }
 
-export function GoalIcon({ goal, size = 22 }: { goal: Pick<Goal, 'icon' | 'color'>; size?: number }) {
+export function GoalIcon({
+  goal,
+  size = 22,
+}: {
+  goal: Pick<Goal, 'icon' | 'color'>
+  size?: number
+}) {
   const Icon = iconMap[goal.icon ?? 'target'] ?? Target
   return (
     <span
       className={styles.goalIcon}
-      style={{ '--goal-color': goal.color ?? '#154B45' } as React.CSSProperties}
+      style={{ '--goal-color': goal.color ?? '#154B45' } as CSSProperties}
       aria-hidden="true"
     >
       <Icon size={size} strokeWidth={2} />
