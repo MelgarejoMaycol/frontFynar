@@ -10,12 +10,9 @@ import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { formatMoney } from '@/features/transactions/transactions.format'
 import { ContributionForm } from '../components/ContributionForm'
 import { GoalForm } from '../components/GoalForm'
-import {
-  GoalIcon,
-  GoalStatusPill,
-  formatGoalDate,
-} from '../components/GoalVisual'
+import { GoalIcon, GoalStatusPill } from '../components/GoalVisual'
 import { getGoalErrorMessage } from '../goals.errors'
+import { formatGoalDate } from '../goals.format'
 import {
   useContributeToGoal,
   useCreateGoal,
