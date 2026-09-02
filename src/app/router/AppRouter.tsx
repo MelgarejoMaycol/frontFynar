@@ -97,6 +97,16 @@ const BudgetsPage = lazy(() =>
     default: module.BudgetsPage,
   })),
 )
+const GoalsPage = lazy(() =>
+  import('@/features/goals').then((module) => ({
+    default: module.GoalsPage,
+  })),
+)
+const GoalDetailPage = lazy(() =>
+  import('@/features/goals').then((module) => ({
+    default: module.GoalDetailPage,
+  })),
+)
 const ReportsPage = lazy(() =>
   import('@/features/reports').then((module) => ({
     default: module.ReportsPage,
@@ -197,6 +207,11 @@ export function AppRoutes() {
               element={pending(<TransactionsPage />)}
             />
             <Route path="budgets" element={pending(<BudgetsPage />)} />
+            <Route path="goals" element={pending(<GoalsPage />)} />
+            <Route
+              path="goals/:goalId"
+              element={pending(<GoalDetailPage />)}
+            />
             <Route path="reports" element={pending(<ReportsPage />)} />
             <Route path="commitments" element={pending(<CommitmentsPage />)} />
             <Route path="debts" element={pending(<LiabilitiesPage />)} />
