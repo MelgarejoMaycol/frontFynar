@@ -27,6 +27,7 @@ import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDa
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
 import { BudgetDashboardWidget } from '../components/BudgetDashboardWidget'
+import { GoalsDashboardWidget } from '../components/GoalsDashboardWidget'
 
 const customError = (params: DashboardParams) => {
   if (params.period !== 'CUSTOM') return undefined
@@ -178,6 +179,7 @@ export function DashboardPage() {
             </div>
             <LiabilitiesDashboardWidget />
             <BudgetDashboardWidget />
+            <GoalsDashboardWidget />
             <AccountsSummary accounts={dashboard.data.accountBalances} />
             {dashboard.data.recentTransactions.length === 0 ? (
               <EmptyState
