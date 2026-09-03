@@ -190,7 +190,7 @@ describe('ActionableOverview', () => {
     mocks.budgets.mockReturnValue({ isError: false, data: { items: [] } })
     renderOverview()
     expect(screen.getByText('Tus compromisos superan lo disponible')).toBeVisible()
-    expect(screen.getByText(/te faltarían/i)).toBeVisible()
+    expect(screen.getByText(/revisa qué vence primero y cómo cubrirlo/i)).toBeVisible()
   })
 
   it('degrada sin romper el inicio cuando una fuente secundaria falla', () => {
