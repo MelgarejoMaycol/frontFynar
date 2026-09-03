@@ -1,0 +1,32 @@
+name: Apply recurring payment UI fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-recurring-payment-ui-fix.yml'
+      - 'scripts/apply-recurring-payment-ui-fix.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/apply-recurring-payment-ui-fix.mjs
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/liabilities/DetailPages.tsx src/features/liabilities/liabilities.module.css
+          git commit -m "fix(recurring): ordenar periodos y mejorar cuenta pagadora"
+          git push
