@@ -1,0 +1,150 @@
+.accountLink {
+  width: clamp(16.5rem, 28vw, 21rem);
+}
+
+.accountCard {
+  display: grid;
+  align-content: start;
+  gap: 0.9rem;
+  min-height: 10.5rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)) 0%, var(--color-surface) 55%),
+    var(--color-surface);
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.accountIcon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.identity h3 {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.identity h3 > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identity p {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.balanceBlock {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.balanceBlock > span {
+  color: var(--color-text-secondary);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.balanceBlock strong {
+  min-width: 0;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  line-height: 1.1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reservationRow {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.3rem 0.5rem;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.goalBadge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.reservedAmount {
+  justify-self: end;
+  color: var(--color-text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalBalance {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.noReservationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.noReservationRow span:last-child {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .accountLink {
+    width: min(18rem, calc(100vw - 2.5rem));
+  }
+
+  .accountCard {
+    min-height: 9.75rem;
+    padding: 0.85rem;
+  }
+
+  .balanceBlock strong {
+    font-size: 1.3rem;
+  }
+
+  .reservationRow {
+    gap: 0.25rem 0.45rem;
+  }
+}
