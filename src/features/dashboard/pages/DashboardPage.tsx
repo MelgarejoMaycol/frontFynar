@@ -27,6 +27,7 @@ import { useDashboard } from '../hooks/dashboard.hooks'
 import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDashboardWidget'
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
+import planningStyles from '../components/DashboardPlanning.module.css'
 import { BudgetDashboardWidget } from '../components/BudgetDashboardWidget'
 import { GoalsDashboardWidget } from '../components/GoalsDashboardWidget'
 
@@ -195,7 +196,7 @@ export function DashboardPage() {
 
             <LiabilitiesDashboardWidget />
 
-            <div className={styles.planningGrid}>
+            <div className={planningStyles.grid}>
               <BudgetDashboardWidget />
               <GoalsDashboardWidget />
             </div>
