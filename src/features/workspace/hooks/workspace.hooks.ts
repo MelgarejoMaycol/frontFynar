@@ -77,6 +77,8 @@ export function useUpdatePreferences() {
         useWorkspaceStore
           .getState()
           .setActiveWorkspaceId(data.defaultWorkspaceId)
+      void queryClient.invalidateQueries({ queryKey: ['forecasts'] })
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
 }
@@ -128,6 +130,8 @@ export function useSelectWorkspace() {
         void queryClient.cancelQueries({ queryKey: [root] })
         queryClient.removeQueries({ queryKey: [root] })
       }
+      void queryClient.cancelQueries({ queryKey: ['forecasts'] })
+      queryClient.removeQueries({ queryKey: ['forecasts'] })
       void queryClient.invalidateQueries({
         queryKey: workspaceKeys.preferences,
       })
