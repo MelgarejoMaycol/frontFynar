@@ -9,6 +9,7 @@ import { PwaPrompt } from '@/components/pwa/PwaPrompt'
 import '@/styles/globals.css'
 import '@/styles/mobile-fixes.css'
 import '@/styles/recurring-overdue.css'
+import '@/styles/projection-settings-alignment.css'
 import { applyCachedTheme } from '@/features/workspace/theme'
 import { initializeObservability } from '@/services/observability/sentry'
 
