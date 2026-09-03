@@ -1,5 +1,5 @@
 .accountLink {
-  width: clamp(16.5rem, 28vw, 21rem);
+  width: clamp(15.5rem, 24vw, 18.5rem);
   align-self: flex-start;
 }
 
@@ -55,11 +55,16 @@
 }
 
 .balanceBlock {
-  display: grid;
-  gap: 0.15rem;
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding-top: 0.1rem;
 }
 
 .balanceBlock > span {
+  flex: 0 0 auto;
   color: var(--color-text-secondary);
   font-size: 0.72rem;
   font-weight: 600;
@@ -69,17 +74,18 @@
 
 .balanceBlock strong {
   min-width: 0;
-  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  flex: 1 1 auto;
+  font-size: clamp(1.12rem, 1.8vw, 1.42rem);
   line-height: 1.05;
   overflow: hidden;
-  text-align: left;
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .reservationRow {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.25rem 0.5rem;
   align-items: center;
   padding-top: 0.6rem;
@@ -100,17 +106,22 @@
 }
 
 .reservedAmount {
+  min-width: 0;
   justify-self: end;
+  overflow: hidden;
   color: var(--color-text);
   font-size: 0.82rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .totalBalance {
   grid-column: 1 / -1;
   color: var(--color-text-muted);
   font-size: 0.72rem;
+  text-align: right;
 }
 
 .noReservationRow {
@@ -125,16 +136,18 @@
 }
 
 .noReservationRow span:last-child {
+  min-width: 0;
   overflow: hidden;
   color: var(--color-text-secondary);
   font-weight: 600;
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @media (max-width: 600px) {
   .accountLink {
-    width: min(18rem, calc(100vw - 2.5rem));
+    width: min(17rem, calc(100vw - 2.5rem));
   }
 
   .accountCard {
@@ -143,8 +156,12 @@
     gap: 0.65rem;
   }
 
+  .balanceBlock {
+    gap: 0.6rem;
+  }
+
   .balanceBlock strong {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 
   .reservationRow {
