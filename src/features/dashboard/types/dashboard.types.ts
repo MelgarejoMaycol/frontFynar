@@ -22,6 +22,8 @@ export interface DashboardParams {
 export interface CurrencySummary {
   currency: string
   availableMoney: string
+  totalMoney?: string
+  reservedForGoals?: string
   totalIncome: string
   totalExpenses: string
   netCashFlow: string
@@ -34,6 +36,8 @@ export interface DashboardAccount {
   nature: AccountNature
   currency: string
   currentBalance: string
+  reservedForGoals?: string
+  availableBalance?: string
   isFavorite: boolean
   includeInNetWorth: boolean
 }
