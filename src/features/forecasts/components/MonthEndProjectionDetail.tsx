@@ -33,6 +33,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
 
   const data = query.data
   const forecast = data.primary
+  const cycleProjection = data.period.type === 'CYCLE_END'
   const relevantDates = new Set([
     data.period.dateFrom,
     data.period.dateTo,
@@ -59,7 +60,9 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
           <LineChart />
         </div>
         <div className={styles.detailHeroTopline}>
-          <p className={styles.eyebrow}>Proyección · mes actual</p>
+          <p className={styles.eyebrow}>
+            Proyección · {cycleProjection ? 'ciclo actual' : 'mes actual'}
+          </p>
           <span className={styles.badge}>
             {forecast.status === 'PARTIAL'
               ? 'Resultado parcial'
@@ -68,23 +71,40 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
         </div>
         <div className={styles.detailHeroContent}>
           <div>
-            <h2 id="month-end-projection-title">Cómo podrías cerrar el mes</h2>
+            <h2 id="month-end-projection-title">
+              {cycleProjection ? 'Cómo podrías cerrar tu ciclo' : 'Cómo podrías cerrar el mes'}
+            </h2>
             <p className={styles.amount}>
               {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
             </p>
             <p className={styles.detailLead}>
               {forecast.status === 'PARTIAL'
-                ? 'Fynar ya contempla tu dinero disponible y tus compromisos conocidos, pero todavía no estima el gasto cotidiano.'
-                : `Estimación al ${dateLabel(data.period.dateTo)} usando tus movimientos reales y compromisos pendientes.`}
+                ? 'Fynar ya contempla tu dinero disponible, ingresos esperados configurados y compromisos conocidos, pero todavía no estima el gasto cotidiano.'
+                : `Estimación al ${dateLabel(data.period.dateTo)} usando tus movimientos, ingresos esperados y compromisos pendientes.`}
             </p>
           </div>
           <div className={styles.heroDateCard}>
             <CalendarDays size={18} aria-hidden="true" />
-            <span>Fin del periodo</span>
+            <span>{cycleProjection ? 'Fin de tu ciclo' : 'Fin del mes'}</span>
             <strong>{dateLabel(data.period.dateTo)}</strong>
           </div>
         </div>
       </div>
+
+      {data.configuredIncome && (
+        <div className={styles.noticeBlock}>
+          <h3>
+            <TrendingUp size={18} aria-hidden="true" /> Ingreso esperado incluido
+          </h3>
+          <p className={styles.muted}>
+            {data.configuredIncome.label}: {' '}
+            <strong>
+              {formatCurrency(data.configuredIncome.amount, data.configuredIncome.currency)}
+            </strong>{' '}
+            el {dateLabel(data.configuredIncome.date)}. Es una expectativa para la proyección; no es un movimiento real ni aumenta tu saldo hasta que realmente lo recibas.
+          </p>
+        </div>
+      )}
 
       <div className={styles.factorGrid} aria-label="Factores de la proyección">
         <div className={styles.factor}>
@@ -98,7 +118,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
           <span className={styles.factorIcon}>
             <TrendingUp size={19} aria-hidden="true" />
           </span>
-          <span>Ingresos futuros conocidos</span>
+          <span>Ingresos futuros esperados</span>
           <strong>{formatCurrency(forecast.expectedIncome, forecast.currency)}</strong>
         </div>
         <div className={styles.factor}>
@@ -134,7 +154,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
             <span>
               {lowestIsNegative
                 ? 'Con los compromisos conocidos podrías necesitar ajustar gastos o fechas de pago.'
-                : 'Este sería el punto del mes en el que tendrías menos dinero libre.'}
+                : `Este sería el punto del ${cycleProjection ? 'ciclo' : 'mes'} en el que tendrías menos dinero libre.`}
             </span>
           </div>
         </div>
