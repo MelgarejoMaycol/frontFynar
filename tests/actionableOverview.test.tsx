@@ -155,7 +155,7 @@ describe('ActionableOverview', () => {
     expect(
       screen.getByText(/los pagos próximos todavía no se descuentan/i),
     ).toBeVisible()
-    expect(screen.getByText(/400\.000/)).toBeVisible()
+    expect(screen.getAllByText(/400\.000/)).toHaveLength(2)
   })
 
   it('prioriza vencimientos cercanos, presupuestos en riesgo y comparación', () => {
