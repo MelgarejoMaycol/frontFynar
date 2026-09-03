@@ -12,15 +12,15 @@
   "categories": ["finance", "productivity"],
   "icons": [
     {
-      "src": "/fynar-symbol.svg",
+      "src": "/fynar-symbol.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/fynar-symbol.svg",
+      "src": "/fynar-symbol.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]
