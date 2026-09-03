@@ -15,6 +15,7 @@ export function Badge({
         tone !== 'neutral' && styles[tone],
         className,
       )}
+      data-tone={tone}
       {...props}
     />
   )
