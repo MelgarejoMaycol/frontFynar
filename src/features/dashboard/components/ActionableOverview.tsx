@@ -78,7 +78,7 @@ const buildCommitmentAttention = ({
   summaries: CurrencySummary[]
   upcoming: Upcoming[]
 }): AttentionItem[] =>
-  summaries.flatMap((summary) => {
+  summaries.flatMap<AttentionItem>((summary) => {
     const available = numberValue(summary.availableMoney)
     const commitments = upcoming
       .filter(
@@ -100,7 +100,7 @@ const buildCommitmentAttention = ({
           title: 'Tus compromisos superan lo disponible',
           description: `Con los pagos conocidos de los próximos 30 días te faltarían ${formatMoney(String(Math.abs(afterCommitments)), summary.currency)}. Revisa qué vence primero y cómo cubrirlo.`,
           to: '/app/liabilities',
-          tone: 'danger' as const,
+          tone: 'danger',
           icon: AlertTriangle,
         },
       ]
@@ -116,7 +116,7 @@ const buildCommitmentAttention = ({
         title: 'Tus pagos próximos pesan bastante',
         description: `Los compromisos conocidos de los próximos 30 días representan cerca del ${Math.round(coverage)} % de tu dinero disponible.`,
         to: '/app/liabilities',
-        tone: 'warning' as const,
+        tone: 'warning',
         icon: CalendarClock,
       },
     ]
