@@ -2080,8 +2080,20 @@ export function ObligationDetailPage() {
         <h2>Periodos</h2>
         {o.occurrences.length ? (
           <div className={styles.list}>
-            {o.occurrences.map((x) => (
-              <Card className={styles.row} key={x.id}>
+            {[...o.occurrences]
+              .sort((a, b) => {
+                const aPending = !['PAID', 'CANCELLED'].includes(a.status)
+                const bPending = !['PAID', 'CANCELLED'].includes(b.status)
+                if (aPending !== bPending) return aPending ? -1 : 1
+                return aPending
+                  ? a.dueDate.localeCompare(b.dueDate)
+                  : b.dueDate.localeCompare(a.dueDate)
+              })
+              .map((x) => (
+              <Card
+                className={`${styles.row} ${x.status === 'PAID' ? styles.paidOccurrence : ''}`}
+                key={x.id}
+              >
                 <div>
                   <strong>{calendarDate(x.dueDate)}</strong>
                   <small>
@@ -2401,15 +2413,31 @@ function OccurrencePaymentForm({
         idempotencyKey: idempotency(),
       })}
     >
-      <FormField label="Cuenta pagadora" htmlFor="op-account">
-        <Select id="op-account" name="accountId">
+      <FormField
+        label="Cuenta o tarjeta pagadora"
+        htmlFor="op-account"
+        helpText="Se muestra el saldo disponible de las cuentas y el cupo disponible de las tarjetas."
+      >
+        <Select id="op-account" name="accountId" required>
           {accounts.data
-            ?.filter((a) => a.nature === 'ASSET' && a.currency === o.currency)
-            .map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
+            ?.filter(
+              (a) =>
+                a.currency === o.currency &&
+                a.isActive &&
+                (a.nature === 'ASSET' || a.type === 'CREDIT_CARD'),
+            )
+            .map((a) => {
+              const available =
+                a.type === 'CREDIT_CARD'
+                  ? Math.max(0, Number(a.creditLimit ?? 0) - Number(a.currentBalance))
+                  : Number(a.currentBalance)
+              return (
+                <option key={a.id} value={a.id}>
+                  {a.name} · {a.type === 'CREDIT_CARD' ? 'Cupo' : 'Disponible'}{' '}
+                  {money(available.toFixed(2), a.currency)}
+                </option>
+              )
+            })}
         </Select>
       </FormField>
       <FormField label="Monto" htmlFor="op-amount">
