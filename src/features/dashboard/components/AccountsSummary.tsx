@@ -25,6 +25,10 @@ export function AccountsSummary({
           .filter((account) => account.type !== 'CREDIT_CARD')
           .map((account) => {
             const AccountIcon = accountTypeIcons[account.type]
+            const reserved = account.reservedForGoals ?? '0.00'
+            const available = account.availableBalance ?? account.currentBalance
+            const hasReservations =
+              account.nature === 'ASSET' && Number(reserved) > 0
             return (
               <Link
                 key={account.id}
@@ -48,9 +52,15 @@ export function AccountsSummary({
                       )}
                     </h3>
                     <p>{accountTypeLabels[account.type]}</p>
+                    {hasReservations && (
+                      <p>
+                        En metas {formatMoney(reserved, account.currency)} · saldo{' '}
+                        {formatMoney(account.currentBalance, account.currency)}
+                      </p>
+                    )}
                   </div>
                   <strong>
-                    {formatMoney(account.currentBalance, account.currency)}
+                    {formatMoney(available, account.currency)}
                   </strong>
                 </Card>
               </Link>
