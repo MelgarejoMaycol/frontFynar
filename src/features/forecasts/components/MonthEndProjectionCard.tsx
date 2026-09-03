@@ -22,23 +22,23 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
 
   if (query.isPending)
     return (
-      <section className={styles.card} aria-label="Proyección de fin de mes">
+      <section className={styles.card} aria-label="Proyección financiera">
         <div className={styles.cardBackdrop} aria-hidden="true">
           <LineChart />
         </div>
-        <p className={styles.eyebrow}>Proyección de fin de mes</p>
+        <p className={styles.eyebrow}>Proyección financiera</p>
         <p className={styles.muted}>Calculando con tus datos reales…</p>
       </section>
     )
 
   if (query.isError || !query.data)
     return (
-      <section className={styles.card} aria-label="Proyección de fin de mes">
+      <section className={styles.card} aria-label="Proyección financiera">
         <div className={styles.cardBackdrop} aria-hidden="true">
           <LineChart />
         </div>
         <div className={styles.compactTopline}>
-          <p className={styles.eyebrow}>Proyección de fin de mes</p>
+          <p className={styles.eyebrow}>Proyección financiera</p>
         </div>
         <p className={styles.muted}>
           No pudimos calcularla ahora. Tus demás datos siguen disponibles.
@@ -51,12 +51,16 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
       </section>
     )
 
-  const forecast = query.data.primary
+  const data = query.data
+  const forecast = data.primary
   const lowest = Number(forecast.lowestProjectedBalance.amount)
   const partial = forecast.status === 'PARTIAL'
   const currentAvailable = Number(forecast.currentAvailable)
   const hasRisk = lowest < 0
   const hasWarning = !hasRisk && currentAvailable > 0 && lowest < currentAvailable * 0.15
+  const cycleProjection = data.period.type === 'CYCLE_END'
+  const periodLabel = cycleProjection ? 'Tu ciclo' : 'Este mes'
+  const projectionTitle = cycleProjection ? 'Proyección al cierre de tu ciclo' : 'Proyección de fin de mes'
 
   return (
     <section className={styles.card} aria-labelledby="month-end-title">
@@ -65,10 +69,10 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
       </div>
 
       <div className={styles.compactTopline}>
-        <p className={styles.eyebrow}>Proyección de fin de mes</p>
+        <p className={styles.eyebrow}>{projectionTitle}</p>
         <span className={styles.badge}>
           <CalendarRange size={14} aria-hidden="true" />
-          {partial ? 'Parcial' : 'Este mes'}
+          {partial ? 'Parcial' : periodLabel}
         </span>
       </div>
 
@@ -81,9 +85,11 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
             {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
           </h2>
           <p className={styles.compactHint}>
-            {partial
-              ? 'Aún falta historial para estimar tu gasto cotidiano con confianza.'
-              : `Basado en ${forecast.historyDays} días de comportamiento real.`}
+            {data.configuredIncome
+              ? `Incluye ${data.configuredIncome.label.toLowerCase()} el ${formatDate(data.configuredIncome.date)}.`
+              : partial
+                ? 'Aún falta historial para estimar tu gasto cotidiano con confianza.'
+                : `Basado en ${forecast.historyDays} días de comportamiento real.`}
           </p>
         </div>
 
@@ -117,7 +123,7 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
 
       <div className={styles.compactFooter}>
         <span className={styles.compactFootnote}>
-          No cambia saldos: solo anticipa lo que podría pasar.
+          Cierra el {formatDate(data.period.dateTo)} · no cambia tus saldos reales.
         </span>
         <Button
           variant="secondary"
