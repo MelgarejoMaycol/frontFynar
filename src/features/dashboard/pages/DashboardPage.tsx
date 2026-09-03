@@ -17,6 +17,7 @@ import {
   usePreferences,
 } from '@/features/workspace'
 import { AccountsSummary } from '../components/AccountsSummary'
+import { ActionableOverview } from '../components/ActionableOverview'
 import { DashboardPeriodFilter } from '../components/DashboardPeriodFilter'
 import { FinancialSummary } from '../components/FinancialSummary'
 import { RecentTransactions } from '../components/RecentTransactions'
@@ -172,14 +173,33 @@ export function DashboardPage() {
           />
         ) : (
           <>
+            <ActionableOverview
+              summaries={dashboard.data.summariesByCurrency}
+              accounts={dashboard.data.accountBalances}
+              comparisons={dashboard.data.comparisonByCurrency}
+              workspaceId={workspace.id}
+              timezone={workspace.timezone}
+            />
+
             <div className={styles.currencySections}>
               {dashboard.data.summariesByCurrency.map((summary) => (
-                <FinancialSummary key={summary.currency} summary={summary} />
+                <FinancialSummary
+                  key={summary.currency}
+                  summary={summary}
+                  comparison={dashboard.data.comparisonByCurrency.find(
+                    (item) => item.currency === summary.currency,
+                  )}
+                />
               ))}
             </div>
+
             <LiabilitiesDashboardWidget />
-            <BudgetDashboardWidget />
-            <GoalsDashboardWidget />
+
+            <div className={styles.planningGrid}>
+              <BudgetDashboardWidget />
+              <GoalsDashboardWidget />
+            </div>
+
             <AccountsSummary accounts={dashboard.data.accountBalances} />
             {dashboard.data.recentTransactions.length === 0 ? (
               <EmptyState
