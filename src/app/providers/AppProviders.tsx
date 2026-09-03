@@ -8,13 +8,13 @@ const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        // Mantiene datos recientes disponibles al navegar entre pantallas para evitar
-        // solicitudes repetidas y loaders innecesarios. Las mutaciones existentes
-        // siguen invalidando sus queries cuando cambian datos financieros.
-        staleTime: 2 * 60_000,
+        // Estrategia stale-while-revalidate: conserva la caché para mostrar datos al instante,
+        // pero vuelve a consultar en segundo plano al entrar a una pantalla, recuperar el foco
+        // o reconectarse. Así la UI no queda mostrando información financiera desactualizada.
+        staleTime: 30_000,
         gcTime: 30 * 60_000,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
+        refetchOnMount: 'always',
+        refetchOnWindowFocus: true,
         refetchOnReconnect: true,
         placeholderData: (previousData: unknown) => previousData,
         retry: (failureCount, error) =>
