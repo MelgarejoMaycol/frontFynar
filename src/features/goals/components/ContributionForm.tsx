@@ -1,17 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm, useWatch } from 'react-hook-form'
-import {
-  Button,
-  FormField,
-  Input,
-  MoneyInput,
-  Select,
-} from '@/components/ui'
+import { Button, FormField, Input, MoneyInput, Select } from '@/components/ui'
 import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
-import { useTransactions } from '@/features/transactions/hooks/transactions.hooks'
+import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
+import { formatMoney } from '@/features/transactions/transactions.format'
 import {
-  formatMoney,
-  formatTransactionDate,
   isoToWorkspaceDateTimeValue,
   workspaceDateTimeToIso,
 } from '@/features/transactions/transactions.format'
@@ -44,21 +37,12 @@ export function ContributionForm({
   onSubmit: (input: GoalContributionInput) => void
   onCancel: () => void
 }) {
-  const movements = useTransactions(
-    workspaceId,
-    {
-      accountId: goal.account?.id,
-      status: 'CONFIRMED',
-      page: 1,
-      limit: 50,
-    },
-    mode === 'CONTRIBUTE' && Boolean(goal.account?.id),
-  )
+  const accounts = useAccounts(workspaceId)
   const {
     register,
     control,
     handleSubmit,
-    setValue,
+    setError,
     formState: { errors },
   } = useForm<ContributionFormValues>({
     resolver: zodResolver(contributionFormSchema),
@@ -68,24 +52,39 @@ export function ContributionForm({
         new Date().toISOString(),
         timezone,
       ),
-      transactionId: '',
+      accountId: goal.account?.id ?? '',
     },
   })
-  const transactionId = useWatch({ control, name: 'transactionId' })
-  const transactionField = register('transactionId')
+  const accountId = useWatch({ control, name: 'accountId' })
 
-  const eligibleMovements = (movements.data?.items ?? []).filter(
-    (movement) =>
-      movement.status === 'CONFIRMED' &&
-      goal.account != null &&
-      ((movement.type === 'INCOME' && movement.accountId === goal.account.id) ||
-        (movement.type === 'TRANSFER' &&
-          movement.destinationAccountId === goal.account.id)),
+  const goalReservedByAccount = goal.contributions.reduce<Record<string, number>>(
+    (totals, contribution) => {
+      if (!contribution.accountId) return totals
+      totals[contribution.accountId] =
+        (totals[contribution.accountId] ?? 0) + Number(contribution.amount)
+      return totals
+    },
+    {},
   )
 
-  const selectedMovement = eligibleMovements.find(
-    (movement) => movement.id === transactionId,
+  const assetAccounts = (accounts.data ?? []).filter(
+    (account) => account.isActive && account.nature === 'ASSET',
   )
+  const availableAccounts =
+    mode === 'WITHDRAW'
+      ? assetAccounts.filter(
+          (account) => (goalReservedByAccount[account.id] ?? 0) > 0,
+        )
+      : assetAccounts
+  const selectedAccount = availableAccounts.find(
+    (account) => account.id === accountId,
+  )
+  const selectedAvailable = Number(
+    selectedAccount?.availableBalance ?? selectedAccount?.currentBalance ?? 0,
+  )
+  const selectedGoalReserved = selectedAccount
+    ? Math.max(0, goalReservedByAccount[selectedAccount.id] ?? 0)
+    : 0
 
   return (
     <form
@@ -93,13 +92,23 @@ export function ContributionForm({
       onSubmit={(event) =>
         void handleSubmit((values) => {
           const amount = canonicalMoneyInput(values.amount)
+          const numericAmount = Number(amount)
+          if (mode === 'CONTRIBUTE' && numericAmount > selectedAvailable) {
+            setError('amount', {
+              message: 'El aporte supera el dinero disponible en esta cuenta.',
+            })
+            return
+          }
+          if (mode === 'WITHDRAW' && numericAmount > selectedGoalReserved) {
+            setError('amount', {
+              message: 'El retiro supera lo reservado para esta meta en la cuenta.',
+            })
+            return
+          }
           onSubmit({
             amount: mode === 'WITHDRAW' ? `-${amount}` : amount,
             contributedAt: workspaceDateTimeToIso(values.contributedAt, timezone),
-            transactionId:
-              mode === 'CONTRIBUTE' && values.transactionId
-                ? values.transactionId
-                : null,
+            accountId: values.accountId,
           })
         })(event)
       }
@@ -107,17 +116,89 @@ export function ContributionForm({
       <div className={styles.formIntro}>
         <strong>
           {mode === 'CONTRIBUTE'
-            ? 'Registrar dinero destinado a esta meta'
-            : 'Liberar dinero de la meta'}
+            ? 'Reservar dinero de una cuenta para esta meta'
+            : 'Liberar dinero reservado de la meta'}
         </strong>
         <p>
           {mode === 'CONTRIBUTE'
-            ? 'El aporte aumenta el avance de la meta, pero no modifica por sí solo el saldo de tu cuenta.'
-            : 'El retiro reduce únicamente lo asignado a la meta; no crea un ingreso ni cambia el saldo de la cuenta.'}
+            ? 'El saldo real de la cuenta no cambia. Fynar separa este monto como dinero comprometido con la meta y reduce lo que aparece como disponible para usar.'
+            : 'El dinero vuelve a quedar disponible dentro de la misma cuenta. No se crea un ingreso ni un movimiento financiero.'}
         </p>
       </div>
 
       {error != null && <p role="alert">{getGoalErrorMessage(error)}</p>}
+
+      <FormField
+        label={
+          mode === 'CONTRIBUTE'
+            ? 'Cuenta de la cual se hará el aporte'
+            : 'Cuenta de la cual se liberará la reserva'
+        }
+        htmlFor="goal-contribution-account"
+        required
+        error={errors.accountId?.message}
+        helpText={
+          mode === 'CONTRIBUTE'
+            ? 'El aporte queda relacionado con esta cuenta, pero no genera un gasto ni una transferencia.'
+            : 'Solo aparecen cuentas donde esta meta tiene dinero reservado.'
+        }
+      >
+        <Select id="goal-contribution-account" {...register('accountId')}>
+          <option value="">Selecciona una cuenta</option>
+          {availableAccounts.map((account) => {
+            const available = account.availableBalance ?? account.currentBalance
+            const reserved = account.reservedForGoals ?? '0.00'
+            return (
+              <option key={account.id} value={account.id}>
+                {mode === 'CONTRIBUTE'
+                  ? `${account.name} · Disponible ${formatMoney(available, account.currency)} · En metas ${formatMoney(reserved, account.currency)}`
+                  : `${account.name} · En esta meta ${formatMoney(String(Math.max(0, goalReservedByAccount[account.id] ?? 0)), account.currency)}`}
+              </option>
+            )
+          })}
+        </Select>
+      </FormField>
+
+      {selectedAccount && (
+        <div className={styles.notice}>
+          <strong>
+            {mode === 'CONTRIBUTE'
+              ? `Disponible en ${selectedAccount.name}`
+              : `Reservado en ${selectedAccount.name} para esta meta`}
+          </strong>
+          <span>
+            {formatMoney(
+              String(
+                mode === 'CONTRIBUTE'
+                  ? selectedAvailable
+                  : selectedGoalReserved,
+              ),
+              selectedAccount.currency,
+            )}
+          </span>
+          {mode === 'CONTRIBUTE' && Number(selectedAccount.reservedForGoals ?? 0) > 0 && (
+            <span>
+              Saldo total {formatMoney(selectedAccount.currentBalance, selectedAccount.currency)} · En metas{' '}
+              {formatMoney(selectedAccount.reservedForGoals ?? '0', selectedAccount.currency)}
+            </span>
+          )}
+        </div>
+      )}
+
+      {accounts.isSuccess && availableAccounts.length === 0 && (
+        <div className={styles.notice}>
+          <strong>
+            {mode === 'CONTRIBUTE'
+              ? 'No hay cuentas de dinero disponibles.'
+              : 'Esta meta no tiene reservas atribuibles a una cuenta.'}
+          </strong>
+          <span>
+            {mode === 'CONTRIBUTE'
+              ? 'Crea o activa una cuenta de efectivo, banco, ahorro o billetera para poder aportar.'
+              : 'Los aportes antiguos sin cuenta pueden requerir una corrección antes de retirarlos.'}
+          </span>
+        </div>
+      )}
 
       <FormField
         label={mode === 'CONTRIBUTE' ? 'Monto del aporte' : 'Monto a retirar'}
@@ -155,62 +236,9 @@ export function ContributionForm({
         />
       </FormField>
 
-      {mode === 'CONTRIBUTE' && goal.account && (
-        <FormField
-          label="Movimiento real relacionado"
-          htmlFor="goal-contribution-transaction"
-          helpText="Opcional. Úsalo si este ahorro proviene de un ingreso o una transferencia que ya llegó a la cuenta asociada."
-        >
-          <Select
-            id="goal-contribution-transaction"
-            {...transactionField}
-            onChange={(event) => {
-              void transactionField.onChange(event)
-              const movement = eligibleMovements.find(
-                (item) => item.id === event.target.value,
-              )
-              if (movement)
-                setValue('amount', movement.amount, { shouldDirty: true })
-            }}
-          >
-            <option value="">Sin vincular movimiento</option>
-            {eligibleMovements.map((movement) => (
-              <option key={movement.id} value={movement.id}>
-                {formatTransactionDate(movement.occurredAt, timezone)} ·{' '}
-                {formatMoney(movement.amount, movement.currency)} ·{' '}
-                {movement.description ||
-                  (movement.type === 'TRANSFER' ? 'Transferencia' : 'Ingreso')}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-      )}
-
-      {mode === 'CONTRIBUTE' &&
-        goal.account &&
-        movements.isSuccess &&
-        eligibleMovements.length === 0 && (
-          <div className={styles.notice}>
-            <strong>No hay movimientos de entrada recientes para vincular.</strong>
-            <span>
-              Puedes registrar el aporte igualmente como una asignación interna.
-            </span>
-          </div>
-        )}
-
-      {selectedMovement && (
-        <div className={styles.notice}>
-          <strong>Movimiento vinculado</strong>
-          <span>
-            {formatMoney(selectedMovement.amount, selectedMovement.currency)} recibido
-            en {goal.account?.name}.
-          </span>
-        </div>
-      )}
-
       {mode === 'WITHDRAW' && (
         <div className={styles.notice}>
-          <strong>Disponible en la meta</strong>
+          <strong>Total ahorrado en la meta</strong>
           <span>
             {formatMoney(
               goal.savedAmount,
@@ -224,8 +252,12 @@ export function ContributionForm({
         <Button type="button" variant="secondary" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" loading={pending} disabled={pending}>
-          {mode === 'CONTRIBUTE' ? 'Registrar aporte' : 'Registrar retiro'}
+        <Button
+          type="submit"
+          loading={pending}
+          disabled={pending || availableAccounts.length === 0}
+        >
+          {mode === 'CONTRIBUTE' ? 'Reservar para la meta' : 'Liberar reserva'}
         </Button>
       </div>
     </form>
