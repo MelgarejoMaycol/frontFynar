@@ -72,6 +72,11 @@ const DashboardPage = lazy(() =>
     default: module.DashboardPage,
   })),
 )
+const PurchaseSimulatorPage = lazy(() =>
+  import('@/features/simulations').then((module) => ({
+    default: module.PurchaseSimulatorPage,
+  })),
+)
 const AccountsPage = lazy(() =>
   import('@/features/accounts').then((module) => ({
     default: module.AccountsPage,
@@ -196,6 +201,7 @@ export function AppRoutes() {
           <Route index element={<InitialPrivateRedirect />} />
           <Route element={<WorkspaceGate />}>
             <Route path="dashboard" element={pending(<DashboardPage />)} />
+            <Route path="simulator" element={pending(<PurchaseSimulatorPage />)} />
             <Route path="accounts" element={pending(<AccountsPage />)} />
             <Route
               path="accounts/:accountId"
