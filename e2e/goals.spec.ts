@@ -108,8 +108,12 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   const goalsWidget = page.getByText('Metas de ahorro', { exact: true }).last()
   await expect(goalsWidget).toBeVisible()
-  await expect(page.getByRole('link', { name: goalName, exact: true })).toBeVisible()
-  await page.getByRole('link', { name: goalName, exact: true }).click()
+  const dashboardGoalLink = page.getByRole('link', {
+    name: `Ver meta ${goalName}`,
+    exact: true,
+  })
+  await expect(dashboardGoalLink).toBeVisible()
+  await dashboardGoalLink.click()
   await expect(page.getByRole('heading', { name: goalName })).toBeVisible()
 
   await page.getByRole('button', { name: 'Archivar', exact: true }).click()
