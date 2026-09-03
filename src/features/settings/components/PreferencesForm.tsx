@@ -38,6 +38,9 @@ const timezones = [
   'UTC',
 ]
 
+const nullableDay = (value: unknown) =>
+  value === '' || value === undefined || value === null ? null : Number(value)
+
 const projectionDefaults = (preferences: UserPreferences) => {
   const projection = preferences.dashboardLayout.projection
   return {
@@ -155,7 +158,7 @@ export function PreferencesForm({
               min={1}
               max={28}
               {...register('financialCycleStartDay', {
-                setValueAs: (value) => (value === '' ? null : Number(value)),
+                setValueAs: nullableDay,
               })}
             />
             <small className={styles.help}>
@@ -213,7 +216,7 @@ export function PreferencesForm({
               max={28}
               disabled={!salaryEnabled}
               {...register('salaryPayDay', {
-                setValueAs: (value) => (value === '' ? null : Number(value)),
+                setValueAs: nullableDay,
               })}
             />
             <small className={styles.help}>
