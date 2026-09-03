@@ -71,6 +71,57 @@ const activeUpcoming = (items: Upcoming[]) =>
       numberValue(item.amount) > 0 && !['PAID', 'CANCELLED'].includes(item.status),
   )
 
+const buildCommitmentAttention = ({
+  summaries,
+  upcoming,
+}: {
+  summaries: CurrencySummary[]
+  upcoming: Upcoming[]
+}): AttentionItem[] =>
+  summaries.flatMap((summary) => {
+    const available = numberValue(summary.availableMoney)
+    const commitments = upcoming
+      .filter(
+        (item) =>
+          item.currency === summary.currency &&
+          item.daysRemaining >= 0 &&
+          item.daysRemaining <= 30,
+      )
+      .reduce((total, item) => total + numberValue(item.amount), 0)
+
+    if (commitments <= 0) return []
+
+    const afterCommitments = available - commitments
+    if (afterCommitments < 0) {
+      return [
+        {
+          key: `commitments-gap-${summary.currency}`,
+          priority: 0,
+          title: 'Tus compromisos superan lo disponible',
+          description: `Con los pagos conocidos de los próximos 30 días te faltarían ${formatMoney(String(Math.abs(afterCommitments)), summary.currency)}. Revisa qué vence primero y cómo cubrirlo.`,
+          to: '/app/liabilities',
+          tone: 'danger' as const,
+          icon: AlertTriangle,
+        },
+      ]
+    }
+
+    const coverage = available > 0 ? (commitments / available) * 100 : 0
+    if (coverage < 70) return []
+
+    return [
+      {
+        key: `commitments-pressure-${summary.currency}`,
+        priority: 2,
+        title: 'Tus pagos próximos pesan bastante',
+        description: `Los compromisos conocidos de los próximos 30 días representan cerca del ${Math.round(coverage)} % de tu dinero disponible.`,
+        to: '/app/liabilities',
+        tone: 'warning' as const,
+        icon: CalendarClock,
+      },
+    ]
+  })
+
 const buildAttentionItems = ({
   upcoming,
   budgets,
@@ -142,6 +193,12 @@ const buildAttentionItems = ({
     const percentage = Math.round(numberValue(budget.progress.percentage))
     const projected = Math.round(numberValue(budget.projection.projectedPercentage))
     const projectedExceeded = budget.projection.projectedStatus === 'EXCEEDED'
+    const remaining = Math.max(0, numberValue(budget.progress.remaining))
+    const dailyLimit = remainingDays > 0 && remaining > 0 ? remaining / remainingDays : null
+    const guidance = dailyLimit
+      ? ` Te quedan ${formatMoney(String(remaining), budget.currency)}; para mantenerte dentro del límite, intenta no pasar de ${formatMoney(String(dailyLimit), budget.currency)} al día.`
+      : ''
+
     attention.push({
       key: `budget-${budget.id}`,
       priority: projectedExceeded || budget.progress.status === 'EXCEEDED' ? 1 : 3,
@@ -150,8 +207,8 @@ const buildAttentionItems = ({
           ? `${budget.name} superó el presupuesto`
           : `${budget.name} necesita atención`,
       description: projectedExceeded
-        ? `Llevas ${percentage} % y, al ritmo actual, podrías cerrar cerca de ${projected} %. Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}.`
-        : `Has usado ${percentage} % y quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'} del período.`,
+        ? `Llevas ${percentage} % y, al ritmo actual, podrías cerrar cerca de ${projected} %. Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}.${guidance}`
+        : `Has usado ${percentage} % y quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'} del período.${guidance}`,
       to: `/app/budgets?budgetId=${budget.id}`,
       tone: projectedExceeded ? 'warning' : 'info',
       icon: projectedExceeded ? TrendingUp : AlertTriangle,
@@ -202,7 +259,7 @@ const buildAttentionItems = ({
     })
   }
 
-  return attention.sort((a, b) => a.priority - b.priority).slice(0, 3)
+  return attention.sort((a, b) => a.priority - b.priority)
 }
 
 export function ActionableOverview({
@@ -231,12 +288,17 @@ export function ActionableOverview({
   const upcoming = upcomingQuery.data ?? []
   const budgets = budgetsQuery.data?.items ?? []
   const pendingUpcoming = activeUpcoming(upcoming)
-  const attention = buildAttentionItems({
-    upcoming,
-    budgets,
-    comparisons,
-    timezone,
-  })
+  const attention = [
+    ...buildCommitmentAttention({ summaries, upcoming: pendingUpcoming }),
+    ...buildAttentionItems({
+      upcoming,
+      budgets,
+      comparisons,
+      timezone,
+    }),
+  ]
+    .sort((a, b) => a.priority - b.priority)
+    .slice(0, 3)
   const isPartial = upcomingQuery.isError || budgetsQuery.isError
 
   return (
@@ -281,10 +343,16 @@ export function ActionableOverview({
             const upcoming30 = pendingUpcoming
               .filter(
                 (item) =>
-                  item.currency === summary.currency && item.daysRemaining <= 30,
+                  item.currency === summary.currency &&
+                  item.daysRemaining >= 0 &&
+                  item.daysRemaining <= 30,
               )
               .reduce((total, item) => total + numberValue(item.amount), 0)
             const afterCommitments = numberValue(summary.availableMoney) - upcoming30
+            const commitmentShare =
+              numberValue(summary.availableMoney) > 0 && upcoming30 > 0
+                ? Math.round((upcoming30 / numberValue(summary.availableMoney)) * 100)
+                : 0
             return (
               <Card className={styles.moneyCard} key={summary.currency}>
                 <div className={styles.moneyHeader}>
@@ -325,6 +393,11 @@ export function ActionableOverview({
                     {formatMoney(String(Math.abs(afterCommitments)), summary.currency)}
                   </strong>
                 </div>
+                {commitmentShare > 0 && (
+                  <small className={styles.commitmentContext}>
+                    Los pagos conocidos usan aproximadamente {commitmentShare} % de tu dinero disponible.
+                  </small>
+                )}
                 <small className={styles.estimateNote}>
                   Es una estimación: los pagos próximos todavía no se descuentan de tu saldo real.
                 </small>
