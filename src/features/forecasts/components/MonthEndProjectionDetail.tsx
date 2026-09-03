@@ -43,6 +43,10 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
   ])
   const timeline = forecast.timeline.filter((item) => relevantDates.has(item.date))
   const lowestIsNegative = Number(forecast.lowestProjectedBalance.amount) < 0
+  const commitmentsAndSpending = String(
+    Number(forecast.knownCommitments) +
+      Number(forecast.estimatedVariableExpenses ?? 0),
+  )
 
   return (
     <section
@@ -151,13 +155,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
             <span aria-hidden="true">−</span>
             <div>
               <span>Compromisos y gasto</span>
-              <strong>
-                {formatCurrency(
-                  Number(forecast.knownCommitments) +
-                    Number(forecast.estimatedVariableExpenses ?? 0),
-                  forecast.currency,
-                )}
-              </strong>
+              <strong>{formatCurrency(commitmentsAndSpending, forecast.currency)}</strong>
             </div>
           </div>
           <p className={styles.muted}>
