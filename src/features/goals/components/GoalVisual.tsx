@@ -1,33 +1,13 @@
 import type { CSSProperties } from 'react'
-import {
-  Bike,
-  Car,
-  House,
-  Laptop,
-  Plane,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  type LucideIcon,
-} from 'lucide-react'
+import { Target } from 'lucide-react'
 import clsx from 'clsx'
 import { goalStatusLabel } from '../goals.format'
+import { goalIcons } from '../goals.visual'
 import type { Goal, GoalStatus } from '../types/goal.types'
 import styles from './goals.module.css'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { formatGoalDate } from '../goals.format'
-
-const iconMap: Record<string, LucideIcon> = {
-  target: Target,
-  bike: Bike,
-  car: Car,
-  laptop: Laptop,
-  plane: Plane,
-  house: House,
-  shield: ShieldCheck,
-  sparkles: Sparkles,
-}
 
 const statusClass: Record<GoalStatus, string> = {
   ACTIVE: styles.statusActive,
@@ -43,7 +23,7 @@ export function GoalIcon({
   goal: Pick<Goal, 'icon' | 'color'>
   size?: number
 }) {
-  const Icon = iconMap[goal.icon ?? 'target'] ?? Target
+  const Icon = goalIcons[goal.icon ?? 'target'] ?? Target
   return (
     <span
       className={styles.goalIcon}

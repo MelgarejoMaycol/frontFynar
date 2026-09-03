@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
+import { createElement, type CSSProperties } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import {
   Button,
   FormField,
@@ -12,22 +13,19 @@ import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { formatMoney } from '@/features/transactions/transactions.format'
 import { getGoalErrorMessage } from '../goals.errors'
 import {
+  goalColorLabels,
+  goalColors,
+  goalIconLabels,
+  goalIconOptions,
+  goalIcons,
+} from '../goals.visual'
+import {
   goalFormSchema,
   type GoalFormValues,
 } from '../schemas/goal.schemas'
 import type { Goal, GoalInput } from '../types/goal.types'
 import styles from './goals.module.css'
-
-const iconOptions = [
-  { value: 'target', label: 'Objetivo' },
-  { value: 'bike', label: 'Moto o bicicleta' },
-  { value: 'car', label: 'Vehículo' },
-  { value: 'laptop', label: 'Tecnología' },
-  { value: 'plane', label: 'Viaje' },
-  { value: 'house', label: 'Vivienda' },
-  { value: 'shield', label: 'Fondo de emergencia' },
-  { value: 'sparkles', label: 'Otro sueño' },
-]
+import identityStyles from './goal-identity.module.css'
 
 export function GoalForm({
   workspaceId,
@@ -49,6 +47,7 @@ export function GoalForm({
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -58,9 +57,14 @@ export function GoalForm({
       targetDate: goal?.targetDate ?? '',
       accountId: goal?.account?.id ?? '',
       icon: goal?.icon ?? 'target',
-      color: goal?.color ?? '#154B45',
+      color: goal?.color ?? '#2F855A',
     },
   })
+
+  const name = useWatch({ control, name: 'name' })
+  const icon = useWatch({ control, name: 'icon' })
+  const color = useWatch({ control, name: 'color' })
+  const PreviewIcon = goalIcons[icon || 'target'] ?? goalIcons.target
 
   const availableAccounts = (accounts.data ?? []).filter(
     (account) => account.isActive && account.nature === 'ASSET',
@@ -91,6 +95,23 @@ export function GoalForm({
       </div>
 
       {error != null && <p role="alert">{getGoalErrorMessage(error)}</p>}
+
+      <section
+        className={identityStyles.preview}
+        aria-label="Vista previa de la identidad de la meta"
+        style={{ '--goal-color': color || '#2F855A' } as CSSProperties}
+      >
+        <span>Vista previa</span>
+        <div className={identityStyles.previewContent}>
+          <span className={identityStyles.previewIcon} aria-hidden="true">
+            <PreviewIcon size={24} strokeWidth={2} />
+          </span>
+          <div>
+            <strong>{name.trim() || 'Tu nueva meta'}</strong>
+            <small>{goalIconLabels[icon || 'target'] ?? 'Objetivo'}</small>
+          </div>
+        </div>
+      </section>
 
       <FormField
         label="Nombre de la meta"
@@ -157,24 +178,58 @@ export function GoalForm({
         </FormField>
       </div>
 
-      <div className={styles.formGrid}>
-        <FormField label="Tipo visual" htmlFor="goal-icon">
-          <Select id="goal-icon" {...register('icon')}>
-            {iconOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </FormField>
+      <fieldset className={identityStyles.field}>
+        <legend>Icono</legend>
+        <p>Elige el símbolo que mejor represente esta meta.</p>
+        <div className={identityStyles.iconGrid} id="goal-icon">
+          {goalIconOptions.map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={icon === value}
+              title={goalIconLabels[value]}
+              className={
+                icon === value
+                  ? identityStyles.iconSelected
+                  : identityStyles.iconOption
+              }
+              onClick={() => setValue('icon', value, { shouldDirty: true })}
+            >
+              {createElement(goalIcons[value], { 'aria-hidden': true })}
+              <span>{goalIconLabels[value]}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
-        <FormField label="Color" htmlFor="goal-color" error={errors.color?.message}>
-          <div className={styles.colorField}>
-            <Input id="goal-color" type="color" {...register('color')} />
-            <span>Identifica esta meta rápidamente.</span>
-          </div>
-        </FormField>
-      </div>
+      <fieldset className={identityStyles.field}>
+        <legend>Color</legend>
+        <p>Usa un color para reconocer la meta rápidamente en toda Fynar.</p>
+        <div
+          className={identityStyles.colorGrid}
+          id="goal-color"
+          role="radiogroup"
+          aria-label="Color de la meta"
+        >
+          {goalColors.map((value, index) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={color === value}
+              aria-label={goalColorLabels[index]}
+              title={goalColorLabels[index]}
+              className={
+                color === value
+                  ? identityStyles.colorSelected
+                  : identityStyles.colorOption
+              }
+              style={{ backgroundColor: value }}
+              onClick={() => setValue('color', value, { shouldDirty: true })}
+            />
+          ))}
+        </div>
+      </fieldset>
 
       {availableAccounts.length === 0 && !accounts.isPending && (
         <div className={styles.notice}>
