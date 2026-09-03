@@ -59,6 +59,7 @@ export function GoalsDashboardWidget() {
                 key={goal.id}
                 className={styles.item}
                 to={`/app/goals/${goal.id}`}
+                aria-label={`Ver meta ${goal.name}`}
               >
                 <div className={styles.itemHeader}>
                   <strong>{goal.name}</strong>
