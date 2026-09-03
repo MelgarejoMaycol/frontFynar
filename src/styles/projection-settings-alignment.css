@@ -1,0 +1,33 @@
+/* Keep the two projection field pairs aligned on desktop and tablet. */
+@media (min-width: 48rem) {
+  form div:has(> label[for='preferences-projection-mode']),
+  form div:has(> label[for='preferences-cycle-start']),
+  form div:has(> label[for='preferences-expected-income']),
+  form div:has(> label[for='preferences-salary-pay-day']) {
+    display: grid;
+    grid-template-rows: 2.5rem var(--control-height-md) minmax(2.9rem, auto);
+    align-content: start;
+  }
+
+  form div:has(> label[for='preferences-projection-mode']) > label,
+  form div:has(> label[for='preferences-cycle-start']) > label,
+  form div:has(> label[for='preferences-expected-income']) > label,
+  form div:has(> label[for='preferences-salary-pay-day']) > label {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: flex-end;
+  }
+
+  #preferences-projection-mode,
+  #preferences-cycle-start,
+  #preferences-expected-income,
+  #preferences-salary-pay-day {
+    box-sizing: border-box;
+    height: var(--control-height-md);
+    min-height: var(--control-height-md);
+  }
+
+  #preferences-projection-mode {
+    display: block;
+  }
+}
