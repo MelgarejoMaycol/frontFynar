@@ -39,6 +39,10 @@ export function AccountCard({
   const cardStyle = account.color
     ? ({ '--account-accent': account.color } as CSSProperties)
     : undefined
+  const reserved = account.reservedForGoals ?? '0.00'
+  const available = account.availableBalance ?? account.currentBalance
+  const hasGoalReservations = account.nature === 'ASSET' && Number(reserved) > 0
+
   return (
     <Card className={styles.card} style={cardStyle}>
       <div className={styles.cardHead}>
@@ -82,10 +86,20 @@ export function AccountCard({
         ) : null}
       </div>
       <div className={styles.balanceBlock}>
-        <span>Saldo actual</span>
+        <span>{hasGoalReservations ? 'Disponible para usar' : 'Saldo actual'}</span>
         <strong className={styles.balance}>
-          {formatCurrency(account.currentBalance, account.currency)}
+          {formatCurrency(available, account.currency)}
         </strong>
+        {hasGoalReservations && (
+          <>
+            <span>
+              Saldo total {formatCurrency(account.currentBalance, account.currency)}
+            </span>
+            <span>
+              En metas {formatCurrency(reserved, account.currency)}
+            </span>
+          </>
+        )}
       </div>
       <div className={styles.cardActions}>
         <Link className={styles.detailLink} to={`/app/accounts/${account.id}`}>

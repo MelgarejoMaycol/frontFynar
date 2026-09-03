@@ -22,6 +22,12 @@ export interface GoalAccount {
   isActive: boolean
 }
 
+export interface GoalContributionAccount {
+  id: string
+  name: string
+  currency: string
+}
+
 export interface GoalProjection {
   savedAmount: string
   targetAmount: string
@@ -37,6 +43,8 @@ export interface GoalProjection {
 export interface GoalContribution {
   id: string
   transactionId: string | null
+  accountId?: string | null
+  account?: GoalContributionAccount | null
   amount: string
   direction: 'IN' | 'OUT'
   contributedAt: string
@@ -90,5 +98,5 @@ export type UpdateGoalInput = Partial<GoalInput>
 export interface GoalContributionInput {
   amount: string
   contributedAt?: string
-  transactionId?: string | null
+  accountId: string
 }

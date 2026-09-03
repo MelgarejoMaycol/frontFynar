@@ -48,6 +48,11 @@ export function AccountDetailPage() {
   const categoryName = (id: string | null) =>
     categories.data?.find((x) => x.id === id)?.name ??
     (id ? 'Categoría no disponible' : 'Sin categoría')
+  const reservedForGoals = item.reservedForGoals ?? '0.00'
+  const availableBalance = item.availableBalance ?? item.currentBalance
+  const hasGoalReservations =
+    item.nature === 'ASSET' && Number(reservedForGoals) > 0
+
   return (
     <div className={styles.detail}>
       <PageHeader
@@ -68,9 +73,20 @@ export function AccountDetailPage() {
         </div>
         <div>
           <div className={styles.detailBalance}>
-            {formatCurrency(item.currentBalance, item.currency)}
+            {formatCurrency(
+              hasGoalReservations ? availableBalance : item.currentBalance,
+              item.currency,
+            )}
           </div>
-          <small>Saldo actual</small>
+          <small>
+            {hasGoalReservations ? 'Disponible para usar' : 'Saldo actual'}
+          </small>
+          {hasGoalReservations && (
+            <p>
+              Saldo total {formatCurrency(item.currentBalance, item.currency)} · En metas{' '}
+              {formatCurrency(reservedForGoals, item.currency)}
+            </p>
+          )}
         </div>
         <div className={styles.detailActions}>
           {canWrite && item.isActive && (
@@ -92,6 +108,30 @@ export function AccountDetailPage() {
           )}
         </div>
       </Card>
+      {hasGoalReservations && (
+        <Card className={styles.detailSection}>
+          <SectionHeader title="Distribución del dinero" />
+          <dl className={styles.detailGrid}>
+            <div>
+              <dt>Saldo total</dt>
+              <dd>{formatCurrency(item.currentBalance, item.currency)}</dd>
+            </div>
+            <div>
+              <dt>Reservado en metas</dt>
+              <dd>{formatCurrency(reservedForGoals, item.currency)}</dd>
+            </div>
+            <div>
+              <dt>Disponible para usar</dt>
+              <dd>{formatCurrency(availableBalance, item.currency)}</dd>
+            </div>
+          </dl>
+          <p>
+            El dinero reservado sigue estando físicamente en esta cuenta. Fynar lo separa del
+            disponible para que no se confunda con dinero libre para gastar.
+          </p>
+          <Link to="/app/goals">Ver metas de ahorro</Link>
+        </Card>
+      )}
       <Card className={styles.detailSection}>
         <SectionHeader title="Información" />
         <dl className={styles.detailGrid}>
@@ -134,6 +174,12 @@ export function AccountDetailPage() {
             </Link>
           }
         />
+        {hasGoalReservations && (
+          <p>
+            Los aportes a metas no aparecen aquí porque son reservas internas: no cambian el saldo
+            real ni crean un ingreso, gasto o transferencia.
+          </p>
+        )}
         {movements.isPending ? (
           <PageLoader />
         ) : movements.data?.items.length ? (

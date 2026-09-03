@@ -53,6 +53,7 @@ const useRefreshGoals = (workspaceId: string) => {
   return async (goalId?: string) => {
     await Promise.all([
       client.invalidateQueries({ queryKey: goalKeys.all(workspaceId) }),
+      client.invalidateQueries({ queryKey: ['accounts', workspaceId] }),
       client.invalidateQueries({ queryKey: ['dashboard', workspaceId] }),
       ...(goalId
         ? [

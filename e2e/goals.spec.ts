@@ -78,8 +78,12 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
     name: 'Registrar aporte a la meta',
   })
   await expect(contributionDialog).toBeVisible()
+  await contributionDialog
+    .getByLabel('Cuenta de la cual se hará el aporte')
+    .selectOption(accountId)
+  await expect(contributionDialog.getByText(/Disponible en Ahorro metas CI/)).toBeVisible()
   await contributionDialog.getByLabel('Monto del aporte').fill('30000000')
-  await contributionDialog.getByRole('button', { name: 'Registrar aporte' }).click()
+  await contributionDialog.getByRole('button', { name: 'Reservar para la meta' }).click()
   await expect(page.getByText('12.00 % completado')).toBeVisible()
   await expect(page.getByText('Aporte', { exact: true }).first()).toBeVisible()
 
@@ -89,7 +93,7 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   })
   await expect(withdrawalDialog).toBeVisible()
   await withdrawalDialog.locator('#goal-contribution-amount').fill('5000000')
-  await withdrawalDialog.getByRole('button', { name: 'Registrar retiro' }).click()
+  await withdrawalDialog.getByRole('button', { name: 'Liberar reserva' }).click()
   await expect(page.getByText('10.00 % completado')).toBeVisible()
   await expect(
     page.getByText('Retiro o corrección', { exact: true }).first(),

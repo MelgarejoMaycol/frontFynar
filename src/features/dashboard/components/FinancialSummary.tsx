@@ -65,9 +65,14 @@ export function FinancialSummary({ summary }: { summary: CurrencySummary }) {
               <Icon aria-hidden="true" />
               <span>{label}</span>
               <strong>{signed(key)}</strong>
-              {(key === 'availableMoney' || key === 'netWorth') && (
-                <small>Saldo actual</small>
+              {key === 'availableMoney' && (
+                <small>
+                  {Number(summary.reservedForGoals ?? 0) > 0
+                    ? `${formatMoney(summary.reservedForGoals ?? '0', summary.currency)} reservados en metas`
+                    : 'Disponible para usar'}
+                </small>
               )}
+              {key === 'netWorth' && <small>Patrimonio actual</small>}
               {(key === 'totalIncome' || key === 'totalExpenses') && (
                 <small>Período seleccionado</small>
               )}
