@@ -2,6 +2,7 @@ import {
   ArrowRight,
   CalendarRange,
   LineChart,
+  ShoppingBag,
   TriangleAlert,
   WalletCards,
 } from 'lucide-react'
@@ -125,12 +126,17 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
         <span className={styles.compactFootnote}>
           Cierra el {formatDate(data.period.dateTo)} · no cambia tus saldos reales.
         </span>
-        <Button
-          variant="secondary"
-          onClick={() => navigate('/app/reports#month-end-projection')}
-        >
-          Ver detalle <ArrowRight size={16} aria-hidden="true" />
-        </Button>
+        <div className={styles.actions}>
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/app/reports#month-end-projection')}
+          >
+            Ver detalle <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+          <Button onClick={() => navigate('/app/simulator')}>
+            <ShoppingBag size={16} aria-hidden="true" /> ¿Puedo comprar algo?
+          </Button>
+        </div>
       </div>
     </section>
   )
