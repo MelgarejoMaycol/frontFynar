@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 
+vi.mock('@/features/dashboard/components/ActionableOverview', () => ({
+  ActionableOverview: () => <section>Tu situación hoy</section>,
+}))
 vi.mock('@/features/dashboard/components/BudgetDashboardWidget', () => ({
   BudgetDashboardWidget: () => <section>Widget de presupuestos</section>,
 }))
@@ -193,8 +196,9 @@ describe('DashboardPage', () => {
     )
     expect(screen.getByText('Empieza a organizar tus finanzas')).toBeVisible()
   })
-  it('presenta monedas separadas, cuentas, recientes y acción de navegación', () => {
+  it('presenta situación accionable, monedas, cuentas y movimientos', () => {
     view()
+    expect(screen.getByText('Tu situación hoy')).toBeVisible()
     expect(screen.getByText('Valores en COP')).toBeVisible()
     expect(screen.getByText('Valores en USD')).toBeVisible()
     expect(screen.getByText('Bancolombia')).toBeVisible()

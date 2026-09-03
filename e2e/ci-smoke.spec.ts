@@ -42,8 +42,34 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Inicio' })).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Resumen financiero' }).first(),
+    page.getByRole('heading', { name: 'Tu situación hoy' }),
   ).toBeVisible()
+  await expect(page.getByText('Disponible para usar').first()).toBeVisible()
+  await expect(page.getByText('Compromisos · 30 días').first()).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Necesita tu atención' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Actividad del período' }).first(),
+  ).toBeVisible()
+
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 820, height: 1180 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await expect(
+      page.getByRole('heading', { name: 'Tu situación hoy' }),
+    ).toBeVisible()
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    ).toBe(true)
+  }
 
   const accounts = page.getByRole('region', { name: 'cuentas disponibles' })
   await expect(accounts).toBeVisible()
