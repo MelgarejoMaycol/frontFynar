@@ -155,6 +155,7 @@ describe('ActionableOverview', () => {
     expect(
       screen.getByText(/los pagos próximos todavía no se descuentan/i),
     ).toBeVisible()
+    expect(screen.getByText(/usan aproximadamente 50 %/i)).toBeVisible()
     expect(screen.getAllByText(/400\.000/)).toHaveLength(2)
   })
 
@@ -164,6 +165,32 @@ describe('ActionableOverview', () => {
     expect(screen.getByText('Restaurantes necesita atención')).toBeVisible()
     expect(screen.getByText('Estás gastando más')).toBeVisible()
     expect(screen.getByText(/50 % por encima/)).toBeVisible()
+    expect(screen.getByText(/para mantenerte dentro del límite/i)).toBeVisible()
+  })
+
+  it('eleva a prioridad cuando los compromisos conocidos superan lo disponible', () => {
+    mocks.upcoming.mockReturnValue({
+      isError: false,
+      data: [
+        {
+          type: 'OBLIGATION',
+          id: 'payment-gap',
+          resourceId: 'obligation-gap',
+          name: 'Pago grande',
+          date: '2026-09-10',
+          amount: '900000.00',
+          currency: 'COP',
+          status: 'PENDING',
+          daysRemaining: 7,
+          source: 'SCHEDULED',
+          amountLabel: 'Pago esperado',
+        },
+      ],
+    })
+    mocks.budgets.mockReturnValue({ isError: false, data: { items: [] } })
+    renderOverview()
+    expect(screen.getByText('Tus compromisos superan lo disponible')).toBeVisible()
+    expect(screen.getByText(/revisa qué vence primero y cómo cubrirlo/i)).toBeVisible()
   })
 
   it('degrada sin romper el inicio cuando una fuente secundaria falla', () => {

@@ -175,10 +175,19 @@
   background: var(--color-error-soft);
 }
 
+.commitmentContext,
 .estimateNote {
-  margin-top: calc(var(--space-2) * -1);
   color: var(--color-text-muted);
   line-height: 1.35;
+}
+
+.commitmentContext {
+  margin-top: calc(var(--space-2) * -1);
+  font-weight: var(--font-weight-medium);
+}
+
+.estimateNote {
+  margin-top: calc(var(--space-3) * -1);
 }
 
 .attentionCard {
