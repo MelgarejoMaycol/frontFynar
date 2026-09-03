@@ -1,4 +1,10 @@
-import { ArrowRight, CalendarRange, TriangleAlert } from 'lucide-react'
+import {
+  ArrowRight,
+  CalendarRange,
+  LineChart,
+  TriangleAlert,
+  WalletCards,
+} from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { formatCurrency } from '@/features/accounts/accounts.format'
 import { Button } from '@/components/ui'
@@ -17,6 +23,9 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
   if (query.isPending)
     return (
       <section className={styles.card} aria-label="Proyección de fin de mes">
+        <div className={styles.cardBackdrop} aria-hidden="true">
+          <LineChart />
+        </div>
         <p className={styles.eyebrow}>Proyección de fin de mes</p>
         <p className={styles.muted}>Calculando con tus datos reales…</p>
       </section>
@@ -25,7 +34,12 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
   if (query.isError || !query.data)
     return (
       <section className={styles.card} aria-label="Proyección de fin de mes">
-        <p className={styles.eyebrow}>Proyección de fin de mes</p>
+        <div className={styles.cardBackdrop} aria-hidden="true">
+          <LineChart />
+        </div>
+        <div className={styles.compactTopline}>
+          <p className={styles.eyebrow}>Proyección de fin de mes</p>
+        </div>
         <p className={styles.muted}>
           No pudimos calcularla ahora. Tus demás datos siguen disponibles.
         </p>
@@ -40,60 +54,76 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
   const forecast = query.data.primary
   const lowest = Number(forecast.lowestProjectedBalance.amount)
   const partial = forecast.status === 'PARTIAL'
+  const currentAvailable = Number(forecast.currentAvailable)
+  const hasRisk = lowest < 0
+  const hasWarning = !hasRisk && currentAvailable > 0 && lowest < currentAvailable * 0.15
 
   return (
     <section className={styles.card} aria-labelledby="month-end-title">
-      <div className={styles.cardHeader}>
-        <div>
-          <p className={styles.eyebrow}>Proyección de fin de mes</p>
-          <h2 id="month-end-title">
-            {partial ? 'Saldo después de compromisos conocidos' : 'Saldo estimado al cierre'}
-          </h2>
-          <p className={styles.amount}>
-            {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
-          </p>
-        </div>
+      <div className={styles.cardBackdrop} aria-hidden="true">
+        <LineChart />
+      </div>
+
+      <div className={styles.compactTopline}>
+        <p className={styles.eyebrow}>Proyección de fin de mes</p>
         <span className={styles.badge}>
-          <CalendarRange size={15} aria-hidden="true" />{' '}
-          {partial ? 'Proyección parcial' : `Datos ${forecast.dataQuality.toLowerCase()}`}
+          <CalendarRange size={14} aria-hidden="true" />
+          {partial ? 'Parcial' : 'Este mes'}
         </span>
       </div>
 
-      <p className={styles.description}>
-        {partial
-          ? 'Fynar ya puede descontar tus pagos conocidos, pero todavía no tiene historial suficiente para inventar cuánto gastarás en el día a día.'
-          : 'Calculado con tu dinero libre actual, ingresos programados, compromisos pendientes y tu ritmo de gasto con salida real de dinero.'}
-      </p>
-
-      <div className={styles.metrics}>
-        <div className={styles.metric}>
-          <span>Disponible hoy</span>
-          <strong>{formatCurrency(forecast.currentAvailable, forecast.currency)}</strong>
+      <div className={styles.compactMain}>
+        <div className={styles.compactAmountBlock}>
+          <span className={styles.compactLabel}>
+            {partial ? 'Después de compromisos conocidos' : 'Saldo estimado al cierre'}
+          </span>
+          <h2 id="month-end-title" className={styles.amount}>
+            {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
+          </h2>
+          <p className={styles.compactHint}>
+            {partial
+              ? 'Aún falta historial para estimar tu gasto cotidiano con confianza.'
+              : `Basado en ${forecast.historyDays} días de comportamiento real.`}
+          </p>
         </div>
-        <div className={styles.metric}>
-          <span>Compromisos pendientes</span>
-          <strong>{formatCurrency(forecast.knownCommitments, forecast.currency)}</strong>
+
+        <div className={styles.compactMetrics} aria-label="Resumen de la proyección">
+          <div className={styles.compactMetric}>
+            <WalletCards size={16} aria-hidden="true" />
+            <span>Hoy</span>
+            <strong>{formatCurrency(forecast.currentAvailable, forecast.currency)}</strong>
+          </div>
+          <div className={styles.compactMetric}>
+            <CalendarRange size={16} aria-hidden="true" />
+            <span>Por pagar</span>
+            <strong>{formatCurrency(forecast.knownCommitments, forecast.currency)}</strong>
+          </div>
         </div>
       </div>
 
-      {lowest < 0 ? (
-        <p className={styles.risk} role="status">
-          <TriangleAlert size={16} aria-hidden="true" /> Podrías quedar en negativo cerca del{' '}
-          {formatDate(forecast.lowestProjectedBalance.date)}. Revisa el detalle antes de asumir nuevos gastos.
-        </p>
-      ) : lowest < Number(forecast.currentAvailable) * 0.15 ? (
-        <p className={styles.warning} role="status">
-          Tu punto de menor liquidez sería cerca del {formatDate(forecast.lowestProjectedBalance.date)}:{' '}
-          <strong>{formatCurrency(forecast.lowestProjectedBalance.amount, forecast.currency)}</strong>.
-        </p>
-      ) : null}
+      {(hasRisk || hasWarning) && (
+        <div
+          className={hasRisk ? styles.compactRisk : styles.compactWarning}
+          role="status"
+        >
+          <TriangleAlert size={16} aria-hidden="true" />
+          <span>
+            {hasRisk
+              ? `Podrías quedar en negativo cerca del ${formatDate(forecast.lowestProjectedBalance.date)}.`
+              : `Tu menor liquidez sería cerca del ${formatDate(forecast.lowestProjectedBalance.date)}: ${formatCurrency(forecast.lowestProjectedBalance.amount, forecast.currency)}.`}
+          </span>
+        </div>
+      )}
 
-      <div className={styles.actions}>
+      <div className={styles.compactFooter}>
+        <span className={styles.compactFootnote}>
+          No cambia saldos: solo anticipa lo que podría pasar.
+        </span>
         <Button
           variant="secondary"
           onClick={() => navigate('/app/reports#month-end-projection')}
         >
-          Ver cómo se calculó <ArrowRight size={17} aria-hidden="true" />
+          Ver detalle <ArrowRight size={16} aria-hidden="true" />
         </Button>
       </div>
     </section>

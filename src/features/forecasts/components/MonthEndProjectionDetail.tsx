@@ -1,4 +1,11 @@
-import { CircleAlert, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
+import {
+  CalendarDays,
+  CircleAlert,
+  LineChart,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+} from 'lucide-react'
 import { PageLoader } from '@/components/feedback/PageLoader'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { formatCurrency } from '@/features/accounts/accounts.format'
@@ -35,6 +42,11 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
       .map((item) => item.date),
   ])
   const timeline = forecast.timeline.filter((item) => relevantDates.has(item.date))
+  const lowestIsNegative = Number(forecast.lowestProjectedBalance.amount) < 0
+  const commitmentsAndSpending = String(
+    Number(forecast.knownCommitments) +
+      Number(forecast.estimatedVariableExpenses ?? 0),
+  )
 
   return (
     <section
@@ -42,44 +54,64 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
       className={styles.detail}
       aria-labelledby="month-end-projection-title"
     >
-      <div className={styles.detailHeader}>
-        <div>
-          <p className={styles.eyebrow}>Qué puede pasar con tu dinero</p>
-          <h2 id="month-end-projection-title">Proyección de fin de mes</h2>
-          <p className={styles.amount}>
-            {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
-          </p>
-          <p className={styles.muted}>
-            {forecast.status === 'PARTIAL'
-              ? 'Resultado parcial basado únicamente en lo que Fynar puede sustentar con tus datos.'
-              : `Estimación para el ${dateLabel(data.period.dateTo)}.`}
-          </p>
+      <div className={styles.detailHero}>
+        <div className={styles.detailBackdrop} aria-hidden="true">
+          <LineChart />
         </div>
-        <span className={styles.badge}>
-          {forecast.status === 'PARTIAL'
-            ? 'Parcial'
-            : `Calidad de datos: ${forecast.dataQuality.toLowerCase()}`}
-        </span>
+        <div className={styles.detailHeroTopline}>
+          <p className={styles.eyebrow}>Proyección · mes actual</p>
+          <span className={styles.badge}>
+            {forecast.status === 'PARTIAL'
+              ? 'Resultado parcial'
+              : `Datos ${forecast.dataQuality.toLowerCase()}`}
+          </span>
+        </div>
+        <div className={styles.detailHeroContent}>
+          <div>
+            <h2 id="month-end-projection-title">Cómo podrías cerrar el mes</h2>
+            <p className={styles.amount}>
+              {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
+            </p>
+            <p className={styles.detailLead}>
+              {forecast.status === 'PARTIAL'
+                ? 'Fynar ya contempla tu dinero disponible y tus compromisos conocidos, pero todavía no estima el gasto cotidiano.'
+                : `Estimación al ${dateLabel(data.period.dateTo)} usando tus movimientos reales y compromisos pendientes.`}
+            </p>
+          </div>
+          <div className={styles.heroDateCard}>
+            <CalendarDays size={18} aria-hidden="true" />
+            <span>Fin del periodo</span>
+            <strong>{dateLabel(data.period.dateTo)}</strong>
+          </div>
+        </div>
       </div>
 
       <div className={styles.factorGrid} aria-label="Factores de la proyección">
         <div className={styles.factor}>
-          <WalletCards size={20} aria-hidden="true" />
+          <span className={styles.factorIcon}>
+            <WalletCards size={19} aria-hidden="true" />
+          </span>
           <span>Dinero libre actual</span>
           <strong>{formatCurrency(forecast.currentAvailable, forecast.currency)}</strong>
         </div>
         <div className={styles.factor}>
-          <TrendingUp size={20} aria-hidden="true" />
+          <span className={styles.factorIcon}>
+            <TrendingUp size={19} aria-hidden="true" />
+          </span>
           <span>Ingresos futuros conocidos</span>
           <strong>{formatCurrency(forecast.expectedIncome, forecast.currency)}</strong>
         </div>
         <div className={styles.factor}>
-          <TrendingDown size={20} aria-hidden="true" />
+          <span className={styles.factorIcon}>
+            <TrendingDown size={19} aria-hidden="true" />
+          </span>
           <span>Pagos y compromisos</span>
           <strong>- {formatCurrency(forecast.knownCommitments, forecast.currency)}</strong>
         </div>
         <div className={styles.factor}>
-          <TrendingDown size={20} aria-hidden="true" />
+          <span className={styles.factorIcon}>
+            <TrendingDown size={19} aria-hidden="true" />
+          </span>
           <span>Gasto cotidiano estimado</span>
           <strong>
             {forecast.estimatedVariableExpenses === null
@@ -89,32 +121,70 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
         </div>
       </div>
 
-      <div>
-        <h3>Punto de menor liquidez</h3>
-        <p className={Number(forecast.lowestProjectedBalance.amount) < 0 ? styles.risk : styles.warning}>
-          {dateLabel(forecast.lowestProjectedBalance.date)} ·{' '}
-          <strong>
+      <div className={styles.insightGrid}>
+        <div className={styles.insightCard}>
+          <p className={styles.eyebrow}>Momento más ajustado</p>
+          <h3>Punto de menor liquidez</h3>
+          <p className={styles.insightAmount}>
             {formatCurrency(forecast.lowestProjectedBalance.amount, forecast.currency)}
-          </strong>
-          {Number(forecast.lowestProjectedBalance.amount) < 0
-            ? ' — con los compromisos conocidos podrías necesitar ajustar gastos o fechas de pago.'
-            : ' — este sería el momento del mes en el que tendrías menos dinero libre.'}
-        </p>
+          </p>
+          <p className={styles.muted}>{dateLabel(forecast.lowestProjectedBalance.date)}</p>
+          <div className={lowestIsNegative ? styles.compactRisk : styles.compactWarning}>
+            <CircleAlert size={16} aria-hidden="true" />
+            <span>
+              {lowestIsNegative
+                ? 'Con los compromisos conocidos podrías necesitar ajustar gastos o fechas de pago.'
+                : 'Este sería el punto del mes en el que tendrías menos dinero libre.'}
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.insightCard}>
+          <p className={styles.eyebrow}>Lectura rápida</p>
+          <h3>De dónde sale la cifra</h3>
+          <div className={styles.formula}>
+            <div>
+              <span>Disponible hoy</span>
+              <strong>{formatCurrency(forecast.currentAvailable, forecast.currency)}</strong>
+            </div>
+            <span aria-hidden="true">+</span>
+            <div>
+              <span>Ingresos</span>
+              <strong>{formatCurrency(forecast.expectedIncome, forecast.currency)}</strong>
+            </div>
+            <span aria-hidden="true">−</span>
+            <div>
+              <span>Compromisos y gasto</span>
+              <strong>{formatCurrency(commitmentsAndSpending, forecast.currency)}</strong>
+            </div>
+          </div>
+          <p className={styles.muted}>
+            Es una estimación explicable: no cambia movimientos, saldos ni presupuestos.
+          </p>
+        </div>
       </div>
 
-      <div>
-        <h3>Cómo se movería tu saldo</h3>
-        <p className={styles.muted}>
-          Mostramos los días relevantes, no una lista de relleno. Los gastos cotidianos estimados se distribuyen progresivamente cuando hay historial suficiente.
-        </p>
+      <div className={styles.timelineSection}>
+        <div className={styles.sectionIntro}>
+          <div>
+            <p className={styles.eyebrow}>Días que sí importan</p>
+            <h3>Cómo se movería tu saldo</h3>
+          </div>
+          <p className={styles.muted}>
+            Solo mostramos fechas con impacto real o puntos clave de la proyección.
+          </p>
+        </div>
         <div className={styles.timeline}>
           {timeline.map((item) => (
             <div className={styles.timelineRow} key={item.date}>
-              <div>
-                <strong>{dateLabel(item.date)}</strong>
-                <p className={styles.muted}>
-                  Saldo estimado: {formatCurrency(item.projectedBalance, forecast.currency)}
-                </p>
+              <div className={styles.timelineDate}>
+                <span className={styles.timelineDot} aria-hidden="true" />
+                <div>
+                  <strong>{dateLabel(item.date)}</strong>
+                  <p className={styles.muted}>
+                    Saldo estimado: {formatCurrency(item.projectedBalance, forecast.currency)}
+                  </p>
+                </div>
               </div>
               <div className={styles.timelineEvents}>
                 {item.events.length === 0 ? (
@@ -134,7 +204,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
       </div>
 
       {forecast.limitations.length > 0 && (
-        <div>
+        <div className={styles.noticeBlock}>
           <h3>
             <CircleAlert size={18} aria-hidden="true" /> Lo que todavía no podemos asegurar
           </h3>
@@ -146,7 +216,7 @@ export function MonthEndProjectionDetail({ workspaceId }: { workspaceId: string 
         </div>
       )}
 
-      <details>
+      <details className={styles.assumptions}>
         <summary>Ver supuestos del cálculo</summary>
         <ul className={styles.list}>
           {forecast.assumptions.map((item) => (
