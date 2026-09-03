@@ -19,6 +19,13 @@ export interface WorkspaceSelection {
   updatedAt: string
 }
 
+export interface ProjectionPreferences {
+  mode: 'MONTH_END' | 'CYCLE_END'
+  enabled: boolean
+  expectedMonthlyIncome: string | null
+  payDay: number | null
+}
+
 export interface UserPreferences {
   defaultWorkspaceId: string | null
   language: string
@@ -27,7 +34,9 @@ export interface UserPreferences {
   dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD'
   theme: 'LIGHT' | 'DARK' | 'SYSTEM'
   startScreen: 'DASHBOARD' | 'TRANSACTIONS' | 'BUDGETS' | 'DEBTS'
-  dashboardLayout: Record<string, unknown>
+  dashboardLayout: Record<string, unknown> & {
+    projection?: Partial<ProjectionPreferences>
+  }
   financialCycleStartDay?: number | null
   createdAt: string
   updatedAt: string
