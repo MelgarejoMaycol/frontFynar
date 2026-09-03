@@ -25,6 +25,7 @@ import {
 } from '../schemas/goal.schemas'
 import type { Goal, GoalInput } from '../types/goal.types'
 import styles from './goals.module.css'
+import identityStyles from './goal-identity.module.css'
 
 export function GoalForm({
   workspaceId,
@@ -96,13 +97,13 @@ export function GoalForm({
       {error != null && <p role="alert">{getGoalErrorMessage(error)}</p>}
 
       <section
-        className={styles.identityPreview}
+        className={identityStyles.preview}
         aria-label="Vista previa de la identidad de la meta"
         style={{ '--goal-color': color || '#2F855A' } as CSSProperties}
       >
         <span>Vista previa</span>
-        <div className={styles.identityPreviewContent}>
-          <span className={styles.identityPreviewIcon} aria-hidden="true">
+        <div className={identityStyles.previewContent}>
+          <span className={identityStyles.previewIcon} aria-hidden="true">
             <PreviewIcon size={24} strokeWidth={2} />
           </span>
           <div>
@@ -177,10 +178,10 @@ export function GoalForm({
         </FormField>
       </div>
 
-      <fieldset className={styles.identityField}>
+      <fieldset className={identityStyles.field}>
         <legend>Icono</legend>
         <p>Elige el símbolo que mejor represente esta meta.</p>
-        <div className={styles.identityIconGrid} id="goal-icon">
+        <div className={identityStyles.iconGrid} id="goal-icon">
           {goalIconOptions.map((value) => (
             <button
               key={value}
@@ -188,7 +189,9 @@ export function GoalForm({
               aria-pressed={icon === value}
               title={goalIconLabels[value]}
               className={
-                icon === value ? styles.identityIconSelected : styles.identityIconOption
+                icon === value
+                  ? identityStyles.iconSelected
+                  : identityStyles.iconOption
               }
               onClick={() => setValue('icon', value, { shouldDirty: true })}
             >
@@ -199,11 +202,11 @@ export function GoalForm({
         </div>
       </fieldset>
 
-      <fieldset className={styles.identityField}>
+      <fieldset className={identityStyles.field}>
         <legend>Color</legend>
         <p>Usa un color para reconocer la meta rápidamente en toda Fynar.</p>
         <div
-          className={styles.identityColorGrid}
+          className={identityStyles.colorGrid}
           id="goal-color"
           role="radiogroup"
           aria-label="Color de la meta"
@@ -218,8 +221,8 @@ export function GoalForm({
               title={goalColorLabels[index]}
               className={
                 color === value
-                  ? styles.identityColorSelected
-                  : styles.identityColorOption
+                  ? identityStyles.colorSelected
+                  : identityStyles.colorOption
               }
               style={{ backgroundColor: value }}
               onClick={() => setValue('color', value, { shouldDirty: true })}
