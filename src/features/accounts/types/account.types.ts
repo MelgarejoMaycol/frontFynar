@@ -21,6 +21,8 @@ export interface Account {
   currency: string
   openingBalance: string
   currentBalance: string
+  reservedForGoals?: string
+  availableBalance?: string
   creditLimit: string | null
   billingDay: number | null
   paymentDueDay: number | null
