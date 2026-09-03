@@ -43,8 +43,8 @@ export interface GoalProjection {
 export interface GoalContribution {
   id: string
   transactionId: string | null
-  accountId: string | null
-  account: GoalContributionAccount | null
+  accountId?: string | null
+  account?: GoalContributionAccount | null
   amount: string
   direction: 'IN' | 'OUT'
   contributedAt: string
