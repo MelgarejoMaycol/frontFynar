@@ -21,7 +21,7 @@ export type GoalFormValues = z.infer<typeof goalFormSchema>
 export const contributionFormSchema = z.object({
   amount: money,
   contributedAt: z.string().min(1, 'La fecha es obligatoria'),
-  transactionId: z.string(),
+  accountId: z.string().min(1, 'Selecciona una cuenta'),
 })
 
 export type ContributionFormValues = z.infer<typeof contributionFormSchema>
