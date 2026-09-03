@@ -226,7 +226,10 @@ export function GoalsPage() {
                   <GoalStatusPill status={goal.status} />
                 </div>
 
-                <div className={styles.progressBlock}>
+                <div
+                  className={styles.progressBlock}
+                  style={{ pointerEvents: 'none' }}
+                >
                   <div className={styles.amountRow}>
                     <strong>{formatMoney(goal.savedAmount, currency)}</strong>
                     <span>de {formatMoney(goal.targetAmount, currency)}</span>
@@ -252,7 +255,10 @@ export function GoalsPage() {
                   </div>
                 </div>
 
-                <div className={styles.cardFooter}>
+                <div
+                  className={styles.cardFooter}
+                  style={{ pointerEvents: 'none' }}
+                >
                   <div>
                     <strong>
                       {goal.targetDate
@@ -262,7 +268,10 @@ export function GoalsPage() {
                     <span>{estimatedLabel(goal)}</span>
                   </div>
                   {canWrite && goal.status === 'ACTIVE' && !archived && (
-                    <div className={styles.quickButton}>
+                    <div
+                      className={styles.quickButton}
+                      style={{ pointerEvents: 'auto' }}
+                    >
                       <Button
                         size="small"
                         onClick={() => {
@@ -275,7 +284,10 @@ export function GoalsPage() {
                     </div>
                   )}
                   {canWrite && archived && (
-                    <div className={styles.quickButton}>
+                    <div
+                      className={styles.quickButton}
+                      style={{ pointerEvents: 'auto' }}
+                    >
                       <Button
                         size="small"
                         variant="secondary"
