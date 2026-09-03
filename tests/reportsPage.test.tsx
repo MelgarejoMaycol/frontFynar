@@ -2,6 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { ReportsPage } from '@/features/reports/pages/ReportsPage'
+
+vi.mock('@/features/forecasts/components/MonthEndProjectionDetail', () => ({
+  MonthEndProjectionDetail: () => <section>Proyección de fin de mes</section>,
+}))
+
 const mocks = vi.hoisted(() => ({
   read: true,
   enabled: [] as boolean[],
@@ -198,6 +203,7 @@ describe('ReportsPage', () => {
   })
   it('renderiza todos los reportes y mantiene monedas separadas', () => {
     renderPage()
+    expect(screen.getByText('Proyección de fin de mes')).toBeVisible()
     expect(screen.getByText('Ingresos frente a gastos')).toBeVisible()
     expect(screen.getByLabelText('Resumen COP')).toBeVisible()
     expect(screen.getByLabelText('Resumen USD')).toBeVisible()
