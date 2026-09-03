@@ -42,7 +42,10 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Inicio' })).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Resumen financiero' }).first(),
+    page.getByRole('heading', { name: 'Tu situación hoy' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Actividad del período' }).first(),
   ).toBeVisible()
 
   const accounts = page.getByRole('region', { name: 'cuentas disponibles' })
