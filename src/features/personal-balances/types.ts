@@ -62,6 +62,7 @@ export type CreatePersonalBalanceInput = {
   direction: PersonalBalanceDirection
   amount: string
   currency: string
+  sourceAccountId?: string | null
   description?: string | null
   occurredOn?: string
   dueOn?: string | null
@@ -71,6 +72,7 @@ export type CreatePersonalBalanceInput = {
 export type UpdatePersonalBalanceInput = {
   personId?: string
   originalAmount?: string
+  sourceAccountId?: string | null
   description?: string | null
   dueOn?: string | null
   notes?: string | null
