@@ -35,6 +35,7 @@ export interface MonthEndCurrencyForecast {
 
 export interface MonthEndForecastData {
   period: {
+    type: 'MONTH_END' | 'CYCLE_END'
     dateFrom: string
     dateTo: string
     generatedAt: string
@@ -43,6 +44,12 @@ export interface MonthEndForecastData {
   baseCurrency: string
   primary: MonthEndCurrencyForecast
   byCurrency: MonthEndCurrencyForecast[]
+  configuredIncome: {
+    amount: string
+    currency: string
+    date: string
+    label: string
+  } | null
   methodology: {
     version: string
     description: string
