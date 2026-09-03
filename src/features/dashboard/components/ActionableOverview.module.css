@@ -1,0 +1,376 @@
+.section {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading h2,
+.heading p,
+.attentionHeader h3 {
+  margin: 0;
+}
+
+.heading h2 {
+  margin-top: 0.2rem;
+  font-size: clamp(1.35rem, 1.15rem + 0.65vw, 1.85rem);
+}
+
+.heading p {
+  margin-top: 0.25rem;
+  color: var(--color-text-secondary);
+}
+
+.eyebrow,
+.attentionHeader span {
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.partial {
+  color: var(--color-warning);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.85fr);
+  gap: var(--space-4);
+  align-items: stretch;
+  min-width: 0;
+}
+
+.moneyColumn {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.moneyCard,
+.attentionCard {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 13%, var(--color-border));
+  box-shadow: var(--shadow-soft);
+}
+
+.moneyCard {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1rem, 2vw, 1.35rem);
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 28%),
+    linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)), var(--color-surface));
+}
+
+.moneyHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.moneyHeader > div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.moneyHeader span:first-child {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.moneyHeader strong {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.8rem, 1.35rem + 1.35vw, 2.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.currency {
+  flex: none;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.breakdown > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.45rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface-soft) 78%, transparent);
+}
+
+.breakdown svg {
+  color: var(--color-primary);
+}
+
+.breakdown span {
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.breakdown b {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.afterCommitments {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-medium);
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.afterCommitments span {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.afterCommitments strong {
+  flex: none;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.afterCommitmentsDanger {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.estimateNote {
+  margin-top: calc(var(--space-2) * -1);
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+.attentionCard {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: clamp(1rem, 2vw, 1.25rem);
+  background: linear-gradient(160deg, var(--color-surface), color-mix(in srgb, var(--color-warning) 4%, var(--color-surface)));
+}
+
+.attentionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.attentionHeader h3 {
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+}
+
+.attentionHeader > svg {
+  color: var(--color-warning);
+}
+
+.attentionList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.attentionItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform var(--duration-fast),
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast);
+}
+
+.attentionItem:hover,
+.attentionItem:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.attentionItem:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.attentionIcon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: var(--radius-medium);
+}
+
+.attentionCopy {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.attentionCopy strong {
+  font-size: var(--font-size-sm);
+}
+
+.attentionCopy small {
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+}
+
+.danger .attentionIcon {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.warning .attentionIcon {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.info .attentionIcon {
+  color: var(--color-info);
+  background: var(--color-info-soft);
+}
+
+.allGood {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: 0.9rem;
+  border-radius: var(--radius-medium);
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.allGood > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.allGood span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .attentionCard {
+    order: -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .section {
+    gap: var(--space-3);
+  }
+
+  .heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .heading p {
+    font-size: var(--font-size-sm);
+    line-height: 1.35;
+  }
+
+  .moneyCard,
+  .attentionCard {
+    padding: 0.9rem;
+  }
+
+  .breakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .breakdown > div {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .breakdown b {
+    grid-column: auto;
+    text-align: right;
+  }
+
+  .afterCommitments {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .attentionItem {
+    align-items: start;
+  }
+}
+
+@media (max-width: 420px) {
+  .moneyHeader strong {
+    font-size: clamp(1.55rem, 8vw, 2rem);
+  }
+
+  .currency {
+    padding-inline: 0.45rem;
+  }
+
+  .breakdown > div {
+    padding: 0.7rem;
+  }
+
+  .attentionItem {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .attentionItem > svg {
+    display: none;
+  }
+}
