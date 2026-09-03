@@ -1,0 +1,22 @@
+/* Los periodos vencidos de pagos recurrentes deben distinguirse del resto sin perder legibilidad. */
+#history > div > div:has([data-tone='error']) {
+  border-color: color-mix(in srgb, var(--color-error) 52%, var(--color-border));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-error-soft) 78%, var(--color-surface)), var(--color-surface) 72%);
+  box-shadow: inset 0.22rem 0 0 var(--color-error);
+}
+
+#history > div > div:has([data-tone='error']):hover {
+  border-color: var(--color-error);
+  box-shadow:
+    inset 0.22rem 0 0 var(--color-error),
+    0 0.45rem 1.2rem color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+#history > div > div:has([data-tone='error']) > div:first-child > strong {
+  color: var(--color-error);
+}
+
+#history > div > div:has([data-tone='error']) > div:first-child > small {
+  color: color-mix(in srgb, var(--color-error) 72%, var(--color-text-secondary));
+}
