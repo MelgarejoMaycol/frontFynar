@@ -13,7 +13,21 @@ const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   (window.navigator as Navigator & { standalone?: boolean }).standalone === true
 
+const userAgent = () => window.navigator.userAgent.toLowerCase()
 const isIos = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+const isAndroid = () => /android/i.test(window.navigator.userAgent)
+const isWindows = () => /windows nt/i.test(window.navigator.userAgent)
+const isMac = () => /macintosh|mac os x/i.test(window.navigator.userAgent) && !isIos()
+const isLinux = () => /linux/i.test(window.navigator.userAgent) && !isAndroid()
+
+const installTarget = () => {
+  if (isAndroid()) return 'tu Android'
+  if (isWindows()) return 'tu Windows'
+  if (isMac()) return 'tu Mac'
+  if (isLinux()) return 'tu equipo Linux'
+  if (/cros/i.test(userAgent())) return 'tu Chromebook'
+  return 'tu equipo'
+}
 
 const shouldShowIosInstallHelp = () => {
   if (typeof window === 'undefined') return false
@@ -114,7 +128,7 @@ export function PwaPrompt() {
           <Download size={19} aria-hidden="true" />
         </span>
         <div className={styles.copy}>
-          <strong>Instala Fynar en tu teléfono</strong>
+          <strong>Instala Fynar en {installTarget()}</strong>
           <span>Ábrelo como una app y entra más rápido.</span>
         </div>
         <button type="button" className={styles.primaryAction} onClick={() => void install()}>
