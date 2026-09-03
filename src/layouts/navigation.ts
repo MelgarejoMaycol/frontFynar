@@ -6,6 +6,7 @@ import {
   Gauge,
   Landmark,
   Settings,
+  Target,
   WalletCards,
   HandCoins,
   type LucideIcon,
@@ -17,6 +18,7 @@ export const mainNavigation: NavigationItem[] = [
   { to: '/app/categories', label: 'Categorías', icon: FolderTree },
   { to: '/app/transactions', label: 'Movimientos', icon: CircleDollarSign },
   { to: '/app/budgets', label: 'Presupuestos', icon: WalletCards },
+  { to: '/app/goals', label: 'Metas de ahorro', icon: Target },
   { to: '/app/commitments', label: 'Créditos y deudas', icon: HandCoins },
   { to: '/app/reports', label: 'Reportes', icon: ChartNoAxesCombined },
 ]

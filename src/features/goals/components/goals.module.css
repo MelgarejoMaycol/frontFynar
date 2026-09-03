@@ -1,0 +1,567 @@
+.page,
+.form,
+.list,
+.detailPage,
+.history,
+.detailContent {
+  display: grid;
+  gap: 1rem;
+}
+
+.page > :global([class*='pageHeader']) {
+  position: relative;
+  min-height: 11.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 88% 26%, color-mix(in srgb, var(--color-success) 17%, transparent) 0 4rem, transparent 4.15rem),
+    radial-gradient(circle at 78% 76%, color-mix(in srgb, var(--color-warning) 12%, transparent) 0 2.8rem, transparent 2.95rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 78%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 1rem 2.8rem rgb(13 43 40 / 8%);
+}
+
+.page > :global([class*='pageHeader'])::after {
+  position: absolute;
+  right: clamp(2rem, 10vw, 8rem);
+  bottom: 1.7rem;
+  width: clamp(8rem, 20vw, 13rem);
+  height: 0.6rem;
+  content: '';
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-success) 76%, var(--color-primary)));
+  opacity: 0.25;
+}
+
+.page > :global([class*='pageHeader']) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page > :global([class*='pageHeader']) h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: -0.035em;
+}
+
+.page > :global([class*='pageHeader']) p {
+  max-width: 48rem;
+}
+
+.filters {
+  display: flex;
+  align-items: end;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.filters label {
+  display: grid;
+  flex: 1 1 13rem;
+  gap: 0.35rem;
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--goal-color, var(--color-primary)) 22%, var(--color-border));
+  border-radius: var(--radius-large);
+  background:
+    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--goal-color, var(--color-primary)) 10%, transparent) 0 4.5rem, transparent 4.7rem),
+    linear-gradient(145deg, color-mix(in srgb, var(--goal-color, var(--color-primary)) 5%, var(--color-surface)), var(--color-surface) 52%);
+  box-shadow: 0 0.45rem 1.4rem rgb(13 43 40 / 6%);
+  transition:
+    transform var(--duration-fast),
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast);
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--goal-color, var(--color-primary)) 46%, var(--color-border));
+  box-shadow: 0 1rem 2.2rem rgb(13 43 40 / 10%);
+  transform: translateY(-3px);
+}
+
+.cardLink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.cardLink:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+.cardTop,
+.cardTitle,
+.cardFooter,
+.amountRow,
+.actions,
+.secondaryActions,
+.historyMain,
+.historyActions,
+.detailTop,
+.detailActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cardTop,
+.cardFooter,
+.amountRow,
+.detailTop {
+  justify-content: space-between;
+}
+
+.cardTitle {
+  min-width: 0;
+}
+
+.goalIcon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--goal-color, var(--color-primary)) 35%, var(--color-border));
+  border-radius: 0.9rem;
+  color: var(--goal-color, var(--color-primary));
+  background: color-mix(in srgb, var(--goal-color, var(--color-primary)) 10%, var(--color-surface));
+}
+
+.cardTitle h2,
+.detailHeading h1 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardTitle h2 {
+  font-size: 1.08rem;
+  white-space: nowrap;
+}
+
+.cardTitle p,
+.cardFooter,
+.targetMeta,
+.detailSubtitle,
+.historyMeta,
+.projectionNote,
+.formIntro p,
+.notice span {
+  color: var(--color-text-muted);
+}
+
+.cardTitle p,
+.detailSubtitle,
+.formIntro p,
+.notice span {
+  margin: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusActive {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.statusPaused {
+  color: var(--color-warning-strong, #7a5a00);
+  background: var(--color-warning-soft);
+}
+
+.statusCompleted {
+  color: var(--color-success-strong, #176b45);
+  background: var(--color-success-soft);
+}
+
+.statusArchived {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+}
+
+.progressBlock {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 0.72rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  box-shadow: inset 0 1px 2px rgb(13 43 40 / 7%);
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--goal-color, var(--color-primary)), color-mix(in srgb, var(--goal-color, var(--color-primary)) 68%, var(--color-success)));
+}
+
+.amountRow {
+  align-items: baseline;
+}
+
+.amountRow strong {
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  letter-spacing: -0.02em;
+}
+
+.amountRow span {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.cardFooter {
+  position: relative;
+  z-index: 2;
+  align-items: flex-end;
+  font-size: 0.86rem;
+}
+
+.cardFooter > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cardFooter strong {
+  color: var(--color-text);
+  font-size: 0.88rem;
+}
+
+.quickButton {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+}
+
+.form {
+  min-width: 0;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.formIntro,
+.notice {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: linear-gradient(135deg, var(--color-surface-muted), color-mix(in srgb, var(--color-primary-soft) 48%, var(--color-surface)));
+}
+
+.notice {
+  background: var(--color-surface-muted);
+}
+
+.colorField {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.colorField input[type='color'] {
+  min-height: 2.75rem;
+  padding: 0.2rem;
+}
+
+.colorField span {
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 0.3rem;
+}
+
+.detailPage {
+  min-width: 0;
+}
+
+.backLink {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.detailHero {
+  position: relative;
+  display: grid;
+  gap: 1.2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--goal-color, var(--color-primary)) 24%, var(--color-border));
+  border-radius: 1.4rem;
+  background:
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--goal-color, var(--color-primary)) 12%, transparent) 0 5rem, transparent 5.2rem),
+    linear-gradient(145deg, color-mix(in srgb, var(--goal-color, var(--color-primary)) 7%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 0.8rem 2.4rem rgb(13 43 40 / 8%);
+}
+
+.detailHeading {
+  min-width: 0;
+}
+
+.detailHeading h1 {
+  font-size: clamp(1.65rem, 4vw, 2.45rem);
+  letter-spacing: -0.035em;
+}
+
+.detailSubtitle {
+  margin-top: 0.35rem;
+}
+
+.detailActions,
+.secondaryActions {
+  position: relative;
+  z-index: 2;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.metric {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface-soft) 88%, transparent);
+}
+
+.metric span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.metric strong {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+}
+
+.section {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: var(--color-surface);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.projectionNote {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.history {
+  gap: 0.6rem;
+}
+
+.historyItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-soft);
+}
+
+.historyIcon {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+}
+
+.historyMain {
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.historyMain strong,
+.historyMain span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.historyMeta {
+  font-size: 0.82rem;
+}
+
+.historyActions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.amountIn {
+  color: var(--color-success-strong, var(--color-primary));
+  font-weight: 800;
+}
+
+.amountOut {
+  color: var(--color-danger);
+  font-weight: 800;
+}
+
+.targetMeta {
+  font-size: 0.85rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page > :global([class*='pageHeader']) {
+    min-height: auto;
+    padding: 1rem;
+    border-radius: 1.15rem;
+  }
+
+  .page > :global([class*='pageHeader'])::after {
+    display: none;
+  }
+
+  .list,
+  .formGrid,
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+    padding: 0.9rem;
+  }
+
+  .cardTop,
+  .cardFooter,
+  .amountRow,
+  .detailTop {
+    align-items: flex-start;
+  }
+
+  .cardFooter,
+  .amountRow,
+  .detailTop {
+    flex-direction: column;
+  }
+
+  .amountRow span {
+    text-align: left;
+  }
+
+  .quickButton,
+  .quickButton button,
+  .actions > button,
+  .detailActions > button,
+  .secondaryActions > button {
+    width: 100%;
+  }
+
+  .detailActions,
+  .secondaryActions,
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .historyItem {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .historyActions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .historyActions button {
+    width: 100%;
+  }
+
+  .colorField {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+}
