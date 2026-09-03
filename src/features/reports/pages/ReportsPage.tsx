@@ -4,6 +4,7 @@ import { Button, FilterPanel, PageHeader } from '@/components/ui'
 import { APP_NAME } from '@/config/brand'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageLoader } from '@/components/feedback/PageLoader'
+import { MonthEndProjectionDetail } from '@/features/forecasts/components/MonthEndProjectionDetail'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { AccountBalancesReport } from '../components/AccountBalancesReport'
 import { CashFlowReport } from '../components/CashFlowReport'
@@ -150,6 +151,9 @@ export function ReportsPage() {
           }).format(new Date())}
         </p>
       </header>
+
+      <MonthEndProjectionDetail workspaceId={workspace.id} />
+
       <div className={styles.screenOnly}>
         <div className={styles.filters} aria-label="Navegación mensual">
           <Button
