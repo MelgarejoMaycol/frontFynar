@@ -92,9 +92,6 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
     name: 'Retirar asignación de la meta',
   })
   await expect(withdrawalDialog).toBeVisible()
-  await withdrawalDialog
-    .getByLabel('Cuenta de la cual se liberará la reserva')
-    .selectOption(accountId)
   await withdrawalDialog.locator('#goal-contribution-amount').fill('5000000')
   await withdrawalDialog.getByRole('button', { name: 'Liberar reserva' }).click()
   await expect(page.getByText('10.00 % completado')).toBeVisible()
