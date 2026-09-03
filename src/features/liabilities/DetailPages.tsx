@@ -2530,13 +2530,24 @@ function EditOccurrencePaymentForm({
           {accounts.data
             ?.filter(
               (account) =>
-                account.nature === 'ASSET' &&
                 account.currency === obligation.currency &&
-                account.isActive,
+                account.isActive &&
+                (account.nature === 'ASSET' || account.type === 'CREDIT_CARD'),
             )
             .map((account) => (
               <option key={account.id} value={account.id}>
-                {account.name} · {money(account.currentBalance, account.currency)}
+                {account.name} ·{' '}
+                {account.type === 'CREDIT_CARD' ? 'Cupo' : 'Disponible'}{' '}
+                {money(
+                  (account.type === 'CREDIT_CARD'
+                    ? Math.max(
+                        0,
+                        Number(account.creditLimit ?? 0) - Number(account.currentBalance),
+                      )
+                    : Number(account.currentBalance)
+                  ).toFixed(2),
+                  account.currency,
+                )}
               </option>
             ))}
         </Select>
@@ -2584,9 +2595,9 @@ function EditOccurrencePaymentForm({
         </div>
       </Card>
       <p className={styles.hint} role="status">
-        {payment.account.name} recuperará {money(payment.amount, obligation.currency)} y{' '}
-        {newAccount?.name ?? 'la nueva cuenta'} disminuirá{' '}
-        {money(amount || '0', obligation.currency)}. La operación será atómica.
+        La corrección restaurará primero el efecto de {payment.account.name} y luego
+        aplicará {money(amount || '0', obligation.currency)} a{' '}
+        {newAccount?.name ?? 'la nueva cuenta o tarjeta'}. La operación será atómica.
       </p>
       <MutationActions mutation={mutate} close={close} label="Guardar corrección" />
     </form>
