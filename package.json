@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "e2e:ci": "playwright test e2e/ci-smoke.spec.ts e2e/goals.spec.ts e2e/actionable-dashboard.spec.ts",
+    "e2e:ci": "playwright test e2e/ci-smoke.spec.ts e2e/goals.spec.ts",
     "qa:e2e": "npm --prefix ../BackFynar run qa:e2e:seed && playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
