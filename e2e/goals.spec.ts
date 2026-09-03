@@ -77,6 +77,7 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   const contributionDialog = page.getByRole('dialog', {
     name: 'Registrar aporte a la meta',
   })
+  await expect(contributionDialog).toBeVisible()
   await contributionDialog.getByLabel('Monto del aporte').fill('30000000')
   await contributionDialog.getByRole('button', { name: 'Registrar aporte' }).click()
   await expect(page.getByText('12.00 % completado')).toBeVisible()
@@ -86,7 +87,8 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   const withdrawalDialog = page.getByRole('dialog', {
     name: 'Retirar asignación de la meta',
   })
-  await withdrawalDialog.getByLabel('Monto a retirar').fill('5000000')
+  await expect(withdrawalDialog).toBeVisible()
+  await withdrawalDialog.locator('#goal-contribution-amount').fill('5000000')
   await withdrawalDialog.getByRole('button', { name: 'Registrar retiro' }).click()
   await expect(page.getByText('10.00 % completado')).toBeVisible()
   await expect(
@@ -114,6 +116,7 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   const archiveDialog = page.getByRole('dialog', {
     name: 'Archivar meta de ahorro',
   })
+  await expect(archiveDialog).toBeVisible()
   await archiveDialog.getByRole('button', { name: 'Archivar meta' }).click()
   await expect(page.getByText('Archivada', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Restaurar meta', exact: true }).click()
