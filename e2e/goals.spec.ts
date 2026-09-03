@@ -127,7 +127,8 @@ test('usuario administra una meta de ahorro de extremo a extremo', async ({
   await expect(page.getByText('Activa', { exact: true })).toBeVisible()
 
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/app/goals')
+  await page.locator('a[href="/app/goals"]:visible').first().click()
+  await expect(page).toHaveURL(/\/app\/goals$/)
   await expect(
     page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
   ).toBeVisible()
