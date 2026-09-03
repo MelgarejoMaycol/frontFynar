@@ -12,6 +12,9 @@ vi.mock('@/features/dashboard/components/BudgetDashboardWidget', () => ({
 vi.mock('@/features/dashboard/components/GoalsDashboardWidget', () => ({
   GoalsDashboardWidget: () => <section>Widget de metas</section>,
 }))
+vi.mock('@/features/forecasts/components/MonthEndProjectionCard', () => ({
+  MonthEndProjectionCard: () => <section>Proyección de fin de mes</section>,
+}))
 vi.mock('@/features/transactions/components/TransactionForm', () => ({
   TransactionForm: () => <form aria-label="Formulario de movimiento" />,
 }))
@@ -199,6 +202,7 @@ describe('DashboardPage', () => {
   it('presenta situación accionable, monedas, cuentas y movimientos', () => {
     view()
     expect(screen.getByText('Tu situación hoy')).toBeVisible()
+    expect(screen.getByText('Proyección de fin de mes')).toBeVisible()
     expect(screen.getByText('Valores en COP')).toBeVisible()
     expect(screen.getByText('Valores en USD')).toBeVisible()
     expect(screen.getByText('Bancolombia')).toBeVisible()

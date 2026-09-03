@@ -8,6 +8,7 @@ import { AccountForm } from '@/features/accounts/components/AccountForm'
 import { useCreateAccount } from '@/features/accounts/hooks/accounts.hooks'
 import type { AccountInput } from '@/features/accounts/types/account.types'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
+import { MonthEndProjectionCard } from '@/features/forecasts/components/MonthEndProjectionCard'
 import { TransactionForm } from '@/features/transactions/components/TransactionForm'
 import { useCreateTransaction } from '@/features/transactions/hooks/transactions.hooks'
 import type { CreateTransactionInput } from '@/features/transactions/types/transaction.types'
@@ -181,6 +182,8 @@ export function DashboardPage() {
               workspaceId={workspace.id}
               timezone={workspace.timezone}
             />
+
+            <MonthEndProjectionCard workspaceId={workspace.id} />
 
             <div className={styles.currencySections}>
               {dashboard.data.summariesByCurrency.map((summary) => (
