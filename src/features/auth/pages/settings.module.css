@@ -14,6 +14,54 @@
   display: grid;
   gap: var(--space-4);
 }
+.preferenceGroup {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface-muted) 72%, var(--color-surface));
+}
+.preferenceGroupHeader h3,
+.preferenceGroupHeader p {
+  margin: 0;
+}
+.preferenceGroupHeader h3 {
+  font-size: var(--font-size-md);
+}
+.preferenceGroupHeader p {
+  margin-top: var(--space-1);
+}
+.preferenceToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 4.25rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+.preferenceToggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--color-primary);
+}
+.preferenceToggle label {
+  display: grid;
+  gap: 0.2rem;
+  cursor: pointer;
+}
+.preferenceToggle label span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+.preferenceSpacer {
+  display: none;
+}
 .help {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
@@ -213,6 +261,9 @@
   .formGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .preferenceSpacer {
+    display: block;
+  }
 }
 @media (max-width: 35.99rem) {
   .page,
@@ -220,6 +271,9 @@
   .form,
   .formGrid {
     gap: var(--space-3);
+  }
+  .preferenceGroup {
+    padding: var(--space-3);
   }
   .avatarHeader {
     align-items: flex-start;
