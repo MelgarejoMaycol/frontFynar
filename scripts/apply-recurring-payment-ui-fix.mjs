@@ -18,10 +18,7 @@ if (!detail.includes(oldPeriods)) throw new Error('No se encontró el map de per
 detail = detail.replace(oldPeriods, newPeriods)
 
 const oldCard = `<Card className={styles.row} key={x.id}>`
-const newCard = `<Card
-                className={\`${styles.row} ${'${'}x.status === 'PAID' ? styles.paidOccurrence : ''}\`}
-                key={x.id}
-              >`
+const newCard = '<Card\n                className={`${styles.row} ${x.status === \'PAID\' ? styles.paidOccurrence : \'\'}`}\n                key={x.id}\n              >'
 if (!detail.includes(oldCard)) throw new Error('No se encontró la tarjeta de periodo')
 detail = detail.replace(oldCard, newCard)
 
