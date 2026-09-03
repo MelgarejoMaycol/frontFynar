@@ -137,5 +137,6 @@ export function useSelectWorkspace() {
 
 export function usePermission(permission: string): boolean {
   const { activeWorkspace } = useActiveWorkspace()
+  if (activeWorkspace?.role === 'OWNER') return true
   return hasPermission(activeWorkspace?.permissions, permission)
 }
