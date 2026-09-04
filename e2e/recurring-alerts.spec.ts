@@ -82,7 +82,7 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
   await page.getByRole('button', { name: /iniciar sesión/i }).click()
   await expect(page).toHaveURL(/\/app\//)
 
-  await page.goto('/app/debts?tab=obligations')
+  await page.goto('/app/commitments')
   const suggestions = page.getByRole('region', { name: 'Sugerencias de pagos recurrentes' })
   await expect(suggestions).toBeVisible()
   await expect(suggestions.getByText(merchantName)).toBeVisible()
