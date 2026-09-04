@@ -12,10 +12,7 @@ function RecurringSuggestionsPortal() {
   const isObligationsTab = params.get('tab') === 'obligations'
 
   useLayoutEffect(() => {
-    if (!isObligationsTab) {
-      setHost(null)
-      return
-    }
+    if (!isObligationsTab) return
 
     const statusTabs = document.querySelector<HTMLElement>(
       '[aria-label="Estado de pagos recurrentes"]',
@@ -25,15 +22,15 @@ function RecurringSuggestionsPortal() {
     const container = document.createElement('div')
     container.dataset.recurringSuggestionsHost = 'true'
     statusTabs.parentElement.insertBefore(container, statusTabs)
-    setHost(container)
+
+    queueMicrotask(() => setHost(container))
 
     return () => {
-      setHost(null)
       container.remove()
     }
   }, [isObligationsTab])
 
-  if (!host || !activeWorkspace || !isObligationsTab) return null
+  if (!host || !activeWorkspace || !isObligationsTab || !host.isConnected) return null
 
   return createPortal(
     <RecurringSuggestionsPanel
