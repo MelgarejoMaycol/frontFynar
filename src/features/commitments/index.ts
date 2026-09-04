@@ -1,1 +1,1 @@
-export { CommitmentsPage } from './CommitmentsPage'
+export { CommitmentsPageWithSuggestions as CommitmentsPage } from './CommitmentsPageWithSuggestions'

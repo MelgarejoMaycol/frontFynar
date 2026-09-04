@@ -1,51 +1,22 @@
-import { useLayoutEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router'
 import { useActiveWorkspace } from '@/features/workspace'
 import { LiabilitiesPage as BaseLiabilitiesPage } from './LiabilitiesPage'
 import { RecurringSuggestionsPanel } from './RecurringSuggestionsPanel'
 
-function RecurringSuggestionsPortal() {
+export function LiabilitiesPageWithSuggestions() {
   const { activeWorkspace } = useActiveWorkspace()
   const [params] = useSearchParams()
-  const [host, setHost] = useState<HTMLDivElement | null>(null)
   const isObligationsTab = params.get('tab') === 'obligations'
 
-  useLayoutEffect(() => {
-    if (!isObligationsTab) return
-
-    const statusTabs = document.querySelector<HTMLElement>(
-      '[aria-label="Estado de pagos recurrentes"]',
-    )
-    if (!statusTabs?.parentElement) return
-
-    const container = document.createElement('div')
-    container.dataset.recurringSuggestionsHost = 'true'
-    statusTabs.parentElement.insertBefore(container, statusTabs)
-
-    queueMicrotask(() => setHost(container))
-
-    return () => {
-      container.remove()
-    }
-  }, [isObligationsTab])
-
-  if (!host || !activeWorkspace || !isObligationsTab || !host.isConnected) return null
-
-  return createPortal(
-    <RecurringSuggestionsPanel
-      workspaceId={activeWorkspace.id}
-      currency={activeWorkspace.baseCurrency}
-    />,
-    host,
-  )
-}
-
-export function LiabilitiesPageWithSuggestions() {
   return (
     <>
       <BaseLiabilitiesPage />
-      <RecurringSuggestionsPortal />
+      {activeWorkspace && isObligationsTab ? (
+        <RecurringSuggestionsPanel
+          workspaceId={activeWorkspace.id}
+          currency={activeWorkspace.baseCurrency}
+        />
+      ) : null}
     </>
   )
 }
