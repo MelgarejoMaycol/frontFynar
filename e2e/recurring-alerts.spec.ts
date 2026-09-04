@@ -117,7 +117,7 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
   await expect(dialog).toBeHidden()
   await expect(suggestions.getByText(merchantName)).toBeHidden()
 
-  const bell = page.getByRole('button', { name: /^Alertas(?:\: .* sin leer)?$/i })
+  const bell = page.getByRole('button', { name: /^Alertas(?:: .* sin leer)?$/i })
   await expect(bell).toBeVisible()
   await bell.click()
   const alertsDialog = page.getByRole('dialog', { name: 'Alertas' })
