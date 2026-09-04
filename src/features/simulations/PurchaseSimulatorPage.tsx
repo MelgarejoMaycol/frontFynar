@@ -3,6 +3,7 @@ import { ArrowLeft, Banknote, Calculator, CreditCard, Landmark, ShieldCheck, Spa
 import { useNavigate } from 'react-router'
 import { Button, MoneyInput } from '@/components/ui'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
+import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { useActiveWorkspace } from '@/features/workspace'
 import { usePurchaseSimulation } from './hooks'
 import type { PurchasePaymentMethod, PurchaseSimulationResult, SimulationImpactLevel } from './types'
@@ -33,6 +34,9 @@ const formatMoney = (value: string | number, currency = 'COP') =>
     maximumFractionDigits: 0,
   }).format(Number(value))
 
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat('es-CO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`))
+
 function ResultPanel({ result }: { result: PurchaseSimulationResult }) {
   const delta = Number(result.before.projectedClosingBalance) - Number(result.after.projectedClosingBalance)
   return (
@@ -61,18 +65,9 @@ function ResultPanel({ result }: { result: PurchaseSimulationResult }) {
       </div>
 
       <div className={styles.impactGrid}>
-        <div>
-          <span>Impacto en tu margen</span>
-          <strong>-{formatMoney(delta, result.currency)}</strong>
-        </div>
-        <div>
-          <span>Compromiso añadido este periodo</span>
-          <strong>{formatMoney(result.after.addedCommitmentThisPeriod, result.currency)}</strong>
-        </div>
-        <div>
-          <span>Punto de menor liquidez</span>
-          <strong>{formatMoney(result.after.lowestProjectedBalance.amount, result.currency)}</strong>
-        </div>
+        <div><span>Impacto en tu margen</span><strong>-{formatMoney(delta, result.currency)}</strong></div>
+        <div><span>Compromiso añadido este periodo</span><strong>{formatMoney(result.after.addedCommitmentThisPeriod, result.currency)}</strong></div>
+        <div><span>Punto de menor liquidez</span><strong>{formatMoney(result.after.lowestProjectedBalance.amount, result.currency)}</strong></div>
         {result.after.selectedAccountAfter !== null && (
           <div>
             <span>{result.purchase.paymentMethod === 'CREDIT_CARD' ? 'Cupo estimado después' : 'Saldo estimado de la cuenta'}</span>
@@ -81,25 +76,37 @@ function ResultPanel({ result }: { result: PurchaseSimulationResult }) {
         )}
       </div>
 
-      {result.financing && (
-        <div className={styles.financingBox}>
-          <div>
-            <span>Cuota estimada</span>
-            <strong>{formatMoney(result.financing.monthlyPayment, result.currency)}</strong>
-          </div>
-          <div>
-            <span>Intereses estimados</span>
-            <strong>{formatMoney(result.financing.estimatedInterest, result.currency)}</strong>
-          </div>
-          <div>
-            <span>Costo total estimado</span>
-            <strong>{formatMoney(result.financing.totalCost, result.currency)}</strong>
-          </div>
-          <div>
-            <span>Plazo</span>
-            <strong>{result.financing.installments} cuotas</strong>
-          </div>
+      {result.budgets.length > 0 && (
+        <div className={styles.assumptions}>
+          <div className={styles.assumptionTitle}>Impacto en presupuestos</div>
+          <ul>
+            {result.budgets.map((budget) => (
+              <li key={budget.id}>
+                <strong>{budget.name}:</strong> quedaría en {formatMoney(budget.spentAfter, result.currency)} de {formatMoney(budget.amount, result.currency)} ({Math.round(Number(budget.percentageAfter))}%). {budget.statusAfter === 'EXCEEDED' ? 'Se excedería.' : budget.statusAfter === 'WARNING' ? 'Entraría en alerta.' : 'Seguiría dentro del límite.'}
+              </li>
+            ))}
+          </ul>
         </div>
+      )}
+
+      {result.financing && (
+        <>
+          <div className={styles.financingBox}>
+            <div><span>Cuota estimada</span><strong>{formatMoney(result.financing.monthlyPayment, result.currency)}</strong></div>
+            <div><span>Intereses estimados</span><strong>{formatMoney(result.financing.estimatedInterest, result.currency)}</strong></div>
+            <div><span>Costo total estimado</span><strong>{formatMoney(result.financing.totalCost, result.currency)}</strong></div>
+            <div><span>Plazo</span><strong>{result.financing.installments} cuotas</strong></div>
+          </div>
+          <div className={styles.assumptions}>
+            <div className={styles.assumptionTitle}>Compromisos futuros estimados</div>
+            <ul>
+              {result.financing.schedule.slice(0, 12).map((item) => (
+                <li key={item.installment}>Cuota {item.installment} · {formatDate(item.date)} · {formatMoney(item.amount, result.currency)}</li>
+              ))}
+              {result.financing.schedule.length > 12 && <li>Y {result.financing.schedule.length - 12} cuotas adicionales del mismo cronograma estimado.</li>}
+            </ul>
+          </div>
+        </>
       )}
 
       <div className={styles.assumptions}>
@@ -116,9 +123,11 @@ export function PurchaseSimulatorPage() {
   const workspaceId = activeWorkspaceId ?? ''
   const currency = activeWorkspace?.baseCurrency ?? 'COP'
   const accounts = useAccounts(workspaceId, Boolean(workspaceId))
+  const categories = useCategories(workspaceId, Boolean(workspaceId))
   const simulation = usePurchaseSimulation(workspaceId)
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
+  const [categoryId, setCategoryId] = useState('')
   const [method, setMethod] = useState<PurchasePaymentMethod>('CASH')
   const [accountId, setAccountId] = useState('')
   const [installments, setInstallments] = useState(1)
@@ -131,6 +140,11 @@ export function PurchaseSimulatorPage() {
       ? list.filter((account) => account.type === 'CREDIT_CARD' && account.isActive)
       : list.filter((account) => account.nature === 'ASSET' && account.type !== 'CREDIT_CARD' && account.isActive)
   }, [accounts.data, method])
+
+  const expenseCategories = useMemo(
+    () => (categories.data ?? []).filter((category) => category.type === 'EXPENSE' && category.isActive),
+    [categories.data],
+  )
 
   const changeMethod = (next: PurchasePaymentMethod) => {
     setMethod(next)
@@ -164,6 +178,7 @@ export function PurchaseSimulatorPage() {
       amount: numericAmount,
       paymentMethod: method,
       accountId: method === 'FINANCING' ? undefined : accountId,
+      categoryId: categoryId || undefined,
       installments: method === 'CASH' ? 1 : installments,
       monthlyRate: method === 'CASH' ? undefined : numericRate,
     })
@@ -186,10 +201,7 @@ export function PurchaseSimulatorPage() {
 
       <div className={styles.layout}>
         <form className={styles.formPanel} onSubmit={submit}>
-          <div className={styles.sectionHeading}>
-            <span>Paso 1</span>
-            <h2>Cuéntanos qué quieres comprar</h2>
-          </div>
+          <div className={styles.sectionHeading}><span>Paso 1</span><h2>Cuéntanos qué quieres comprar</h2></div>
           <label className={styles.field}>
             <span>¿Qué es? <small>Opcional</small></span>
             <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej. Computador, celular, viaje…" maxLength={120} />
@@ -198,17 +210,20 @@ export function PurchaseSimulatorPage() {
             <span>¿Cuánto cuesta?</span>
             <MoneyInput value={amount} onValueChange={setAmount} currency={currency} placeholder="$ 0" aria-label="Precio de la compra" />
           </label>
+          <label className={styles.field}>
+            <span>Categoría <small>Opcional, mejora el análisis</small></span>
+            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+              <option value="">Sin categoría</option>
+              {expenseCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+            <small className={styles.help}>Si la eliges, Fynar medirá también el impacto sobre tus presupuestos activos.</small>
+          </label>
 
-          <div className={styles.sectionHeading}>
-            <span>Paso 2</span>
-            <h2>¿Cómo lo pagarías?</h2>
-          </div>
+          <div className={styles.sectionHeading}><span>Paso 2</span><h2>¿Cómo lo pagarías?</h2></div>
           <div className={styles.methodGrid}>
             {paymentMethods.map(({ value, label, description, icon: Icon }) => (
               <button key={value} type="button" className={`${styles.methodCard} ${method === value ? styles.methodSelected : ''}`} onClick={() => changeMethod(value)} aria-pressed={method === value}>
-                <Icon size={21} />
-                <strong>{label}</strong>
-                <small>{description}</small>
+                <Icon size={21} /><strong>{label}</strong><small>{description}</small>
               </button>
             ))}
           </div>
@@ -246,27 +261,21 @@ export function PurchaseSimulatorPage() {
             </div>
           )}
 
-          {(formError || simulation.isError) && (
-            <div className={styles.errorBox}>{formError ?? (simulation.error instanceof Error ? simulation.error.message : 'No pudimos realizar la simulación.')}</div>
-          )}
-          <Button type="submit" size="large" loading={simulation.isPending} disabled={!workspaceId} className={styles.simulateButton}>
-            Simular impacto
-          </Button>
+          {(formError || simulation.isError) && <div className={styles.errorBox}>{formError ?? (simulation.error instanceof Error ? simulation.error.message : 'No pudimos realizar la simulación.')}</div>}
+          <Button type="submit" size="large" loading={simulation.isPending} disabled={!workspaceId} className={styles.simulateButton}>Simular impacto</Button>
           <p className={styles.safeNote}><ShieldCheck size={16} /> Simular no registra ninguna compra ni modifica tus saldos.</p>
         </form>
 
         <aside className={styles.previewPanel}>
-          {simulation.data ? (
-            <ResultPanel result={simulation.data} />
-          ) : (
+          {simulation.data ? <ResultPanel result={simulation.data} /> : (
             <div className={styles.emptyPreview}>
               <div className={styles.emptyIcon}><Sparkles size={28} /></div>
               <h2>Tu respuesta aparecerá aquí</h2>
               <p>Fynar comparará tu compra con la proyección del periodo y tus compromisos conocidos.</p>
               <div className={styles.previewItems}>
                 <span>Saldo proyectado antes y después</span>
-                <span>Impacto sobre tu margen</span>
-                <span>Cuota, intereses y costo total si financias</span>
+                <span>Impacto sobre tu margen y presupuestos</span>
+                <span>Cuota, intereses, costo total y cronograma si financias</span>
                 <span>Punto de menor liquidez del periodo</span>
               </div>
             </div>
