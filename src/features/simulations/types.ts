@@ -6,6 +6,7 @@ export interface PurchaseSimulationInput {
   amount: number
   paymentMethod: PurchasePaymentMethod
   accountId?: string
+  categoryId?: string
   installments: number
   monthlyRate?: number
 }
@@ -15,6 +16,7 @@ export interface PurchaseSimulationResult {
     name: string | null
     amount: string
     paymentMethod: PurchasePaymentMethod
+    categoryId: string | null
     account: { id: string; name: string; type: string; currency: string } | null
   }
   before: {
@@ -35,7 +37,18 @@ export interface PurchaseSimulationResult {
     monthlyPayment: string
     estimatedInterest: string
     totalCost: string
+    schedule: Array<{ installment: number; date: string; amount: string }>
   }
+  budgets: Array<{
+    id: string
+    name: string
+    amount: string
+    spentBefore: string
+    spentAfter: string
+    remainingAfter: string
+    percentageAfter: string
+    statusAfter: 'SAFE' | 'WARNING' | 'EXCEEDED'
+  }>
   impact: {
     level: SimulationImpactLevel
     headline: string
