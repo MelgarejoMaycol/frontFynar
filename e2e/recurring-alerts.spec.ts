@@ -85,7 +85,7 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
   await page.getByRole('button', { name: /iniciar sesión/i }).click()
   await expect(page).toHaveURL(/\/app\//)
 
-  await page.goto('/app/commitments')
+  await page.getByRole('link', { name: 'Créditos y deudas' }).click()
   await expect(page).toHaveURL(/\/app\/commitments$/)
   await expect(page.getByRole('heading', { name: 'Créditos, deudas y cobros' })).toBeVisible()
   expect(pageErrors, `Errores de runtime: ${pageErrors.join(' | ')}`).toEqual([])
@@ -117,18 +117,12 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
   await expect(dialog).toBeHidden()
   await expect(suggestions.getByText(merchantName)).toBeHidden()
 
-  const refreshAlerts = await request.post(`${api}/workspaces/${workspaceId}/notifications/refresh`, {
-    headers,
-    data: {},
-  })
-  expect(refreshAlerts.ok()).toBeTruthy()
-
-  await page.reload()
-  const bell = page.getByRole('button', { name: /Alertas: .* sin leer/i })
+  const bell = page.getByRole('button', { name: /^Alertas(?:\: .* sin leer)?$/i })
   await expect(bell).toBeVisible()
   await bell.click()
   const alertsDialog = page.getByRole('dialog', { name: 'Alertas' })
   await expect(alertsDialog).toBeVisible()
+  await alertsDialog.getByRole('button', { name: /Actualizar/i }).click()
   await expect(alertsDialog.getByText(/Pago próximo:/i).first()).toBeVisible()
   await expect(alertsDialog.getByRole('button', { name: 'Ver centro completo' })).toBeVisible()
 
