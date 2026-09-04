@@ -126,7 +126,7 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
         <span className={styles.compactFootnote}>
           Cierra el {formatDate(data.period.dateTo)} · no cambia tus saldos reales.
         </span>
-        <div className={styles.actions}>
+        <div className={styles.actions} style={{ gap: '.65rem' }}>
           <Button
             variant="secondary"
             onClick={() => navigate('/app/reports#month-end-projection')}
