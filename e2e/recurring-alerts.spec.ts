@@ -17,6 +17,9 @@ const tomorrowDate = () => {
 }
 
 test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', async ({ page, request }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+
   const loginResponse = await request.post(`${api}/auth/login`, {
     data: { email, password },
   })
@@ -83,6 +86,10 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
   await expect(page).toHaveURL(/\/app\//)
 
   await page.goto('/app/commitments')
+  await expect(page).toHaveURL(/\/app\/commitments$/)
+  await expect(page.getByRole('heading', { name: 'Créditos, deudas y cobros' })).toBeVisible()
+  expect(pageErrors, `Errores de runtime: ${pageErrors.join(' | ')}`).toEqual([])
+
   const suggestions = page.getByRole('region', { name: 'Sugerencias de pagos recurrentes' })
   await expect(suggestions).toBeVisible()
   await expect(suggestions.getByText(merchantName)).toBeVisible()
@@ -144,4 +151,6 @@ test('parte 5 y 6: detectar, confirmar y alertar funciona y es responsive', asyn
       ),
     ).toBe(true)
   }
+
+  expect(pageErrors, `Errores de runtime: ${pageErrors.join(' | ')}`).toEqual([])
 })
