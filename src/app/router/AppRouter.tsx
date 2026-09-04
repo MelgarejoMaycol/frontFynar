@@ -117,6 +117,11 @@ const ReportsPage = lazy(() =>
     default: module.ReportsPage,
   })),
 )
+const NotificationsPage = lazy(() =>
+  import('@/features/notifications').then((module) => ({
+    default: module.NotificationsPage,
+  })),
+)
 const CommitmentsPage = lazy(() =>
   import('@/features/commitments').then((module) => ({
     default: module.CommitmentsPage,
@@ -219,6 +224,10 @@ export function AppRoutes() {
               element={pending(<GoalDetailPage />)}
             />
             <Route path="reports" element={pending(<ReportsPage />)} />
+            <Route
+              path="notifications"
+              element={pending(<NotificationsPage />)}
+            />
             <Route path="commitments" element={pending(<CommitmentsPage />)} />
             <Route path="debts" element={pending(<LiabilitiesPage />)} />
             <Route path="debts/:debtId" element={pending(<DebtDetailPage />)} />

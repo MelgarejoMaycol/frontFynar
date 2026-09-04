@@ -3,6 +3,7 @@ import type { RefObject } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Avatar, Button, Dropdown, IconButton } from '@/components/ui'
 import { useLogout, useSession } from '@/features/auth'
+import { NotificationCenter } from '@/features/notifications'
 import { getRouteNavigation } from './navigation'
 import styles from './layouts.module.css'
 export function Header({
@@ -45,31 +46,36 @@ export function Header({
           </p>
         </div>
       </div>
-      <Dropdown
-        label="Menú de cuenta"
-        trigger={
-          <span className={styles.accountTrigger}>
-            <Avatar name={displayName} src={user?.avatarUrl ?? undefined} />
-            <span className={styles.accountName}>{displayName}</span>
-          </span>
-        }
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
       >
-        <Link className={styles.accountMenuLink} to="/app/settings">
-          Configuración
-        </Link>
-        <Button
-          className={styles.accountMenuButton}
-          variant="ghost"
-          loading={logout.isPending}
-          onClick={() => {
-            logout.mutate(undefined, {
-              onSettled: () => navigate('/login', { replace: true }),
-            })
-          }}
+        <NotificationCenter />
+        <Dropdown
+          label="Menú de cuenta"
+          trigger={
+            <span className={styles.accountTrigger}>
+              <Avatar name={displayName} src={user?.avatarUrl ?? undefined} />
+              <span className={styles.accountName}>{displayName}</span>
+            </span>
+          }
         >
-          Cerrar sesión
-        </Button>
-      </Dropdown>
+          <Link className={styles.accountMenuLink} to="/app/settings">
+            Configuración
+          </Link>
+          <Button
+            className={styles.accountMenuButton}
+            variant="ghost"
+            loading={logout.isPending}
+            onClick={() => {
+              logout.mutate(undefined, {
+                onSettled: () => navigate('/login', { replace: true }),
+              })
+            }}
+          >
+            Cerrar sesión
+          </Button>
+        </Dropdown>
+      </div>
     </header>
   )
 }
