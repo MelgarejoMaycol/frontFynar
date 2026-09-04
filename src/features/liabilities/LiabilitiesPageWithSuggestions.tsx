@@ -12,10 +12,7 @@ function RecurringSuggestionsPortal() {
   const isObligationsTab = params.get('tab') === 'obligations'
 
   useLayoutEffect(() => {
-    if (!isObligationsTab) {
-      setHost(null)
-      return
-    }
+    if (!isObligationsTab) return
 
     let container: HTMLDivElement | null = null
     let observer: MutationObserver | null = null
@@ -30,7 +27,9 @@ function RecurringSuggestionsPortal() {
       container = document.createElement('div')
       container.dataset.recurringSuggestionsHost = 'true'
       statusTabs.parentElement.insertBefore(container, statusTabs)
-      setHost(container)
+      queueMicrotask(() => {
+        if (container?.isConnected) setHost(container)
+      })
       return true
     }
 
@@ -44,7 +43,6 @@ function RecurringSuggestionsPortal() {
     return () => {
       observer?.disconnect()
       container?.remove()
-      setHost(null)
     }
   }, [isObligationsTab])
 
