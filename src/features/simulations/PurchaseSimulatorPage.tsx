@@ -208,7 +208,7 @@ export function PurchaseSimulatorPage() {
           </label>
           <label className={styles.field}>
             <span>¿Cuánto cuesta?</span>
-            <MoneyInput value={amount} onValueChange={setAmount} currency={currency} placeholder="$ 0" aria-label="Precio de la compra" />
+            <MoneyInput minorUnits value={amount} onValueChange={setAmount} currency={currency} placeholder="0,00" aria-label="Precio de la compra" />
           </label>
           <label className={styles.field}>
             <span>Categoría <small>Opcional, mejora el análisis</small></span>
