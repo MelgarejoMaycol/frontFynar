@@ -1,5 +1,6 @@
 import { APP_NAME } from '@/config/brand'
 import {
+  Bell,
   ChartNoAxesCombined,
   CircleDollarSign,
   FolderTree,
@@ -27,8 +28,17 @@ export const settingsNavigation = {
   label: 'Configuración',
   icon: Settings,
 }
+const notificationsNavigation = {
+  to: '/app/notifications',
+  label: 'Alertas',
+  icon: Bell,
+}
 
-export const appNavigation = [...mainNavigation, settingsNavigation]
+export const appNavigation = [
+  ...mainNavigation,
+  notificationsNavigation,
+  settingsNavigation,
+]
 
 const commitmentsNavigation = mainNavigation.find(
   (item) => item.to === '/app/commitments',
