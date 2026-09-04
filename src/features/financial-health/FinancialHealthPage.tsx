@@ -58,7 +58,11 @@ const moneyMetrics = new Set([
   'netSavingsFlow',
 ])
 
-function formatMetric(key: string, value: string | number | null, currency: string) {
+function formatMetric(
+  key: string,
+  value: string | number | null,
+  currency: string,
+) {
   if (value === null) return 'No disponible'
   if (percentageMetrics.has(key) && typeof value === 'number')
     return `${(value * 100).toLocaleString('es-CO', { maximumFractionDigits: 1 })}%`
@@ -85,15 +89,26 @@ function DimensionCard({
   onNavigate: (url: string) => void
 }) {
   return (
-    <article className={styles.dimension} aria-labelledby={`dimension-${dimension.id}`}>
+    <article
+      className={styles.dimension}
+      aria-labelledby={`dimension-${dimension.id}`}
+    >
       <div className={styles.dimensionHeader}>
         <div>
-          <h3 className={styles.dimensionTitle} id={`dimension-${dimension.id}`}>
+          <h3
+            className={styles.dimensionTitle}
+            id={`dimension-${dimension.id}`}
+          >
             {dimension.label}
           </h3>
-          <span className={styles.statusText}>{bandLabel[dimension.status]}</span>
+          <span className={styles.statusText}>
+            {bandLabel[dimension.status]}
+          </span>
         </div>
-        <div className={styles.dimensionScore} aria-label={`Puntuación ${dimension.label}`}>
+        <div
+          className={styles.dimensionScore}
+          aria-label={`Puntuación ${dimension.label}`}
+        >
           {dimension.score === null ? '—' : `${dimension.score}/100`}
         </div>
       </div>
@@ -111,8 +126,12 @@ function DimensionCard({
             ))}
           </dl>
           {dimension.action && (
-            <Button variant="secondary" onClick={() => onNavigate(dimension.action!.url)}>
-              {dimension.action.label} <ArrowRight size={16} aria-hidden="true" />
+            <Button
+              variant="secondary"
+              onClick={() => onNavigate(dimension.action!.url)}
+            >
+              {dimension.action.label}{' '}
+              <ArrowRight size={16} aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -148,25 +167,29 @@ export function FinancialHealthPage() {
 
   const data = health.data
   return (
-    <main className={styles.page} aria-labelledby="financial-health-title">
+    <main className={styles.page} aria-label="Salud financiera">
       <PageHeader
         title="Salud financiera"
         description="Una lectura explicable de tus datos actuales para entender dónde estás y qué merece atención."
       />
 
-      <section className={styles.hero} aria-label="Puntuación general de salud financiera">
+      <section
+        className={styles.hero}
+        aria-label="Puntuación general de salud financiera"
+      >
         <div className={styles.panel}>
-          <h1 id="financial-health-title" className="visually-hidden">
-            Salud financiera
-          </h1>
           <h2>Tu panorama actual</h2>
           <p>
-            La puntuación reúne únicamente las dimensiones que Fynar puede calcular con datos reales
-            suficientes. La fórmula actual es <strong>{data.version}</strong>.
+            La puntuación reúne únicamente las dimensiones que Fynar puede
+            calcular con datos reales suficientes. La fórmula actual es{' '}
+            <strong>{data.version}</strong>.
           </p>
           <p className={styles.disclaimer}>{data.methodology.disclaimer}</p>
           {data.dataQuality.notes.length > 0 && (
-            <ul className={styles.qualityNotes} aria-label="Limitaciones de datos">
+            <ul
+              className={styles.qualityNotes}
+              aria-label="Limitaciones de datos"
+            >
               {data.dataQuality.notes.map((note) => (
                 <li key={note}>{note}</li>
               ))}
@@ -176,11 +199,14 @@ export function FinancialHealthPage() {
         <div className={styles.scoreCard}>
           <div className={styles.score}>
             {data.score === null ? '—' : data.score}
-            {data.score !== null && <span className={styles.scoreSuffix}>/100</span>}
+            {data.score !== null && (
+              <span className={styles.scoreSuffix}>/100</span>
+            )}
           </div>
           <p className={styles.band}>{bandLabel[data.band]}</p>
           <p className={styles.coverage}>
-            {data.availableDimensions} de 5 dimensiones · {data.coverage}% de cobertura
+            {data.availableDimensions} de 5 dimensiones · {data.coverage}% de
+            cobertura
           </p>
           <Button variant="secondary" onClick={() => void health.refetch()}>
             <RefreshCw size={16} aria-hidden="true" /> Recalcular
@@ -192,7 +218,10 @@ export function FinancialHealthPage() {
         <div className={styles.sectionHeading}>
           <div>
             <h2 id="dimensions-heading">Tus cinco dimensiones</h2>
-            <p>Cada una muestra factores, datos usados y una explicación independiente.</p>
+            <p>
+              Cada una muestra factores, datos usados y una explicación
+              independiente.
+            </p>
           </div>
         </div>
         <div className={styles.dimensions}>
@@ -207,26 +236,38 @@ export function FinancialHealthPage() {
         </div>
       </section>
 
-      <section className={styles.panel} aria-labelledby="recommendations-heading">
+      <section
+        className={styles.panel}
+        aria-labelledby="recommendations-heading"
+      >
         <div className={styles.sectionHeading}>
           <div>
             <h2 id="recommendations-heading">Acciones que puedes revisar</h2>
-            <p>Se muestran solo cuando están vinculadas con una métrica concreta.</p>
+            <p>
+              Se muestran solo cuando están vinculadas con una métrica concreta.
+            </p>
           </div>
         </div>
         {data.recommendations.length === 0 ? (
-          <p>No hay una dimensión con prioridad alta que requiera una acción inmediata.</p>
+          <p>
+            No hay una dimensión con prioridad alta que requiera una acción
+            inmediata.
+          </p>
         ) : (
           <div className={styles.recommendations}>
             {data.recommendations.map((recommendation) => (
-              <article className={styles.recommendation} key={recommendation.dimension}>
+              <article
+                className={styles.recommendation}
+                key={recommendation.dimension}
+              >
                 <h3>{recommendation.title}</h3>
                 <p>{recommendation.detail}</p>
                 <Button
                   variant="secondary"
                   onClick={() => navigate(recommendation.action.url)}
                 >
-                  {recommendation.action.label} <ArrowRight size={16} aria-hidden="true" />
+                  {recommendation.action.label}{' '}
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Button>
               </article>
             ))}
@@ -254,13 +295,17 @@ export function FinancialHealthPage() {
           </div>
         ) : (
           <p role="status">
-            Aún no hay suficientes periodos comparables. Fynar no inventará una tendencia hasta
-            contar con al menos {data.history.minimumPeriods} periodos de la misma versión.
+            Aún no hay suficientes periodos comparables. Fynar no inventará una
+            tendencia hasta contar con al menos {data.history.minimumPeriods}{' '}
+            periodos de la misma versión.
           </p>
         )}
       </section>
 
-      <section className={styles.methodology} aria-labelledby="methodology-heading">
+      <section
+        className={styles.methodology}
+        aria-labelledby="methodology-heading"
+      >
         <h2 id="methodology-heading">Cómo funciona la versión actual</h2>
         <p>{data.methodology.aggregation}</p>
         <ul>
