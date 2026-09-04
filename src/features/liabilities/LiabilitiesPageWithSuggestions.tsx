@@ -12,21 +12,39 @@ function RecurringSuggestionsPortal() {
   const isObligationsTab = params.get('tab') === 'obligations'
 
   useLayoutEffect(() => {
-    if (!isObligationsTab) return
+    if (!isObligationsTab) {
+      setHost(null)
+      return
+    }
 
-    const statusTabs = document.querySelector<HTMLElement>(
-      '[aria-label="Estado de pagos recurrentes"]',
-    )
-    if (!statusTabs?.parentElement) return
+    let container: HTMLDivElement | null = null
+    let observer: MutationObserver | null = null
 
-    const container = document.createElement('div')
-    container.dataset.recurringSuggestionsHost = 'true'
-    statusTabs.parentElement.insertBefore(container, statusTabs)
+    const mount = () => {
+      if (container?.isConnected) return true
+      const statusTabs = document.querySelector<HTMLElement>(
+        '[aria-label="Estado de pagos recurrentes"]',
+      )
+      if (!statusTabs?.parentElement) return false
 
-    queueMicrotask(() => setHost(container))
+      container = document.createElement('div')
+      container.dataset.recurringSuggestionsHost = 'true'
+      statusTabs.parentElement.insertBefore(container, statusTabs)
+      setHost(container)
+      return true
+    }
+
+    if (!mount()) {
+      observer = new MutationObserver(() => {
+        if (mount()) observer?.disconnect()
+      })
+      observer.observe(document.body, { childList: true, subtree: true })
+    }
 
     return () => {
-      container.remove()
+      observer?.disconnect()
+      container?.remove()
+      setHost(null)
     }
   }, [isObligationsTab])
 
