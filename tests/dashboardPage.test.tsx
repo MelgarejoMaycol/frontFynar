@@ -15,6 +15,9 @@ vi.mock('@/features/dashboard/components/GoalsDashboardWidget', () => ({
 vi.mock('@/features/forecasts/components/MonthEndProjectionCard', () => ({
   MonthEndProjectionCard: () => <section>Proyección de fin de mes</section>,
 }))
+vi.mock('@/features/financial-health/FinancialHealthWidget', () => ({
+  FinancialHealthWidget: () => <section>Widget de salud financiera</section>,
+}))
 vi.mock('@/features/transactions/components/TransactionForm', () => ({
   TransactionForm: () => <form aria-label="Formulario de movimiento" />,
 }))
@@ -199,9 +202,10 @@ describe('DashboardPage', () => {
     )
     expect(screen.getByText('Empieza a organizar tus finanzas')).toBeVisible()
   })
-  it('presenta situación accionable, monedas, cuentas y movimientos', () => {
+  it('presenta situación accionable, salud, monedas, cuentas y movimientos', () => {
     view()
     expect(screen.getByText('Tu situación hoy')).toBeVisible()
+    expect(screen.getByText('Widget de salud financiera')).toBeVisible()
     expect(screen.getByText('Proyección de fin de mes')).toBeVisible()
     expect(screen.getByText('Valores en COP')).toBeVisible()
     expect(screen.getByText('Valores en USD')).toBeVisible()
