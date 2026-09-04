@@ -1,4 +1,4 @@
-export { LiabilitiesPage } from './LiabilitiesPage'
+export { LiabilitiesPageWithSuggestions as LiabilitiesPage } from './LiabilitiesPageWithSuggestions'
 export {
   DebtDetailPage,
   CardDetailPage,
