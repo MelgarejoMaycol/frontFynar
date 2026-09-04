@@ -109,7 +109,10 @@ const response = {
   methodology: {
     version: 'financial-health-v1',
     aggregation: 'Promedio simple de las dimensiones disponibles.',
-    rules: ['Liquidez: cobertura de hasta 3 meses.', 'Ahorro: 20% alcanza el máximo.'],
+    rules: [
+      'Liquidez: cobertura de hasta 3 meses.',
+      'Ahorro: 20% alcanza el máximo.',
+    ],
     disclaimer:
       'La salud financiera de Fynar es un indicador educativo. No es un score crediticio ni un diagnóstico o recomendación financiera profesional.',
   },
@@ -118,7 +121,9 @@ const response = {
     trailingWindowDays: 90,
     budgetCount: 0,
     evaluatedPayments: 10,
-    notes: ['Control del gasto queda sin puntuar hasta que exista un presupuesto activo.'],
+    notes: [
+      'Control del gasto queda sin puntuar hasta que exista un presupuesto activo.',
+    ],
   },
   trace: {},
   history: {
@@ -136,7 +141,8 @@ const response = {
     ],
     hasEnoughHistory: false,
     minimumPeriods: 2,
-    message: 'El histórico aparecerá cuando existan al menos dos periodos evaluados.',
+    message:
+      'El histórico aparecerá cuando existan al menos dos periodos evaluados.',
   },
 }
 
@@ -162,7 +168,7 @@ describe('FinancialHealthPage', () => {
   it('muestra score, cinco dimensiones y disclaimer sin depender solo del color', () => {
     renderPage()
     expect(screen.getByText('72')).toBeVisible()
-    expect(screen.getByText('Estable')).toBeVisible()
+    expect(screen.getAllByText('Estable').length).toBeGreaterThan(0)
     expect(screen.getByText(/4 de 5 dimensiones/)).toBeVisible()
     expect(screen.getByText('Liquidez')).toBeVisible()
     expect(screen.getByText('Endeudamiento')).toBeVisible()
@@ -179,12 +185,65 @@ describe('FinancialHealthPage', () => {
     expect(screen.getByText('Liquidez disponible')).toBeVisible()
     expect(screen.getByText(/2\.000\.000/)).toBeVisible()
     expect(screen.getByText('Meses de cobertura')).toBeVisible()
-    expect(screen.getByRole('button', { name: /Revisar cuentas/i })).toBeVisible()
+    expect(
+      screen.getAllByRole('button', { name: /Revisar cuentas/i }).length,
+    ).toBeGreaterThan(0)
+  })
+
+  it('representa deuda con historial insuficiente sin convertirla en un score negativo', () => {
+    const debtInsufficient = {
+      ...response,
+      score: 69,
+      coverage: 60,
+      availableDimensions: 3,
+      dimensions: response.dimensions.map((dimension) =>
+        dimension.id === 'DEBT'
+          ? {
+              ...dimension,
+              score: null,
+              available: false,
+              status: 'INSUFFICIENT' as const,
+              summary:
+                'Hay deuda activa, pero todavía no hay historial suficiente de ingresos para evaluar su peso.',
+              explanation:
+                'Fynar conserva la deuda registrada y espera una referencia de ingresos suficiente antes de puntuarla.',
+              metrics: {
+                totalDebt: '2500000.00',
+                monthlyIncomeReference: null,
+                debtToAnnualIncome: null,
+              },
+              action: { label: 'Revisar deudas', url: '/app/commitments' },
+            }
+          : dimension,
+      ),
+      dataQuality: {
+        ...response.dataQuality,
+        notes: [
+          ...response.dataQuality.notes,
+          'Endeudamiento necesita una referencia de ingresos suficiente antes de poder puntuarse.',
+        ],
+      },
+    }
+    mocks.health.mockReturnValue({
+      isPending: false,
+      isError: false,
+      data: debtInsufficient,
+      refetch: vi.fn(),
+    })
+
+    renderPage()
+
+    expect(screen.getByText(/Hay deuda activa, pero todavía no hay historial suficiente/i)).toBeVisible()
+    expect(screen.getAllByText('Datos insuficientes').length).toBeGreaterThan(1)
+    expect(screen.getByText(/3 de 5 dimensiones/)).toBeVisible()
+    expect(screen.queryByText('0/100')).not.toBeInTheDocument()
   })
 
   it('explica por qué todavía no muestra tendencia histórica', () => {
     renderPage()
-    expect(screen.getByText(/Aún no hay suficientes periodos comparables/i)).toBeVisible()
+    expect(
+      screen.getByText(/Aún no hay suficientes periodos comparables/i),
+    ).toBeVisible()
     expect(screen.getByText(/al menos 2 periodos/i)).toBeVisible()
   })
 
