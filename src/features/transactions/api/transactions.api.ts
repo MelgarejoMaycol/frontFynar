@@ -8,6 +8,7 @@ import type {
   UpdateTransactionInput,
   AdjustmentInput,
 } from '../types/transaction.types'
+import { lendingApi } from '@/features/lending/api'
 const base = (workspaceId: string) => `/workspaces/${workspaceId}/transactions`
 const query = (filters: TransactionFilters) => {
   const params = new URLSearchParams()
@@ -31,11 +32,24 @@ export const transactionsApi = {
       `${base(workspaceId)}/${transactionId}`,
       signal,
     ),
-  create: (workspaceId: string, input: CreateTransactionInput) => {
+  create: async (
+    workspaceId: string,
+    input: CreateTransactionInput,
+  ): Promise<ApiSuccess<unknown>> => {
+    if (input.type === 'LOAN_COLLECTION') {
+      return await lendingApi.collect(workspaceId, input.loanId, {
+        receivingAccountId: input.receivingAccountId,
+        amount: input.amount,
+        occurredAt: input.occurredAt,
+        notes: input.notes,
+        idempotencyKey: input.idempotencyKey,
+      })
+    }
     if (input.type === 'DEBT_PAYMENT') {
       const { debtId, installmentId, operation } = input
       if (operation === 'INSTALLMENT_PAYMENT') {
-        if (!installmentId) throw new Error('El crédito no tiene una cuota pendiente.')
+        if (!installmentId)
+          throw new Error('El crédito no tiene una cuota pendiente.')
         const paymentBody = {
           ...(input.accountId ? { accountId: input.accountId } : {}),
           amount: input.amount,
@@ -43,7 +57,10 @@ export const transactionsApi = {
           idempotencyKey: input.idempotencyKey,
           strategy: input.strategy,
         }
-        return httpClient.post<ApiSuccess<Transaction>, typeof paymentBody>(
+        return await httpClient.post<
+          ApiSuccess<Transaction>,
+          typeof paymentBody
+        >(
           `/workspaces/${workspaceId}/debts/${debtId}/installments/${installmentId}/payments`,
           paymentBody,
         )
@@ -55,27 +72,31 @@ export const transactionsApi = {
         idempotencyKey: input.idempotencyKey,
         strategy: input.strategy,
       }
-      return httpClient.post<ApiSuccess<Transaction>, typeof prepaymentBody>(
+      return await httpClient.post<
+        ApiSuccess<Transaction>,
+        typeof prepaymentBody
+      >(
         `/workspaces/${workspaceId}/debts/${debtId}/prepayments`,
         prepaymentBody,
       )
     }
     if (input.type === 'ADVANCE') {
-      const { accountId, destinationAccountId, amount, occurredAt, notes } = input
-      return httpClient.post<ApiSuccess<Transaction>, Record<string, unknown>>(
-        `/workspaces/${workspaceId}/cards/${accountId}/cash-advances`,
-        {
-          destinationAccountId,
-          amount,
-          feeAmount: '0',
-          occurredAt,
-          ...(notes ? { notes } : {}),
-          idempotencyKey: crypto.randomUUID(),
-        },
-      )
+      const { accountId, destinationAccountId, amount, occurredAt, notes } =
+        input
+      return await httpClient.post<
+        ApiSuccess<Transaction>,
+        Record<string, unknown>
+      >(`/workspaces/${workspaceId}/cards/${accountId}/cash-advances`, {
+        destinationAccountId,
+        amount,
+        feeAmount: '0',
+        occurredAt,
+        ...(notes ? { notes } : {}),
+        idempotencyKey: crypto.randomUUID(),
+      })
     }
     const { type, ...body } = input
-    return httpClient.post<ApiSuccess<Transaction>, typeof body>(
+    return await httpClient.post<ApiSuccess<Transaction>, typeof body>(
       `${base(workspaceId)}/${type.toLowerCase()}`,
       body,
     )

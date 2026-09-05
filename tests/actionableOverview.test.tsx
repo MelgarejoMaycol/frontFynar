@@ -26,6 +26,10 @@ const summaries = [
     totalExpenses: '900000.00',
     netCashFlow: '600000.00',
     netWorth: '1000000.00',
+    expectedCollections: '0.00',
+    scheduledPayments: '0.00',
+    projectedEndLiquidity: '800000.00',
+    forecastDate: '2026-09-30',
   },
 ]
 
@@ -189,8 +193,12 @@ describe('ActionableOverview', () => {
     })
     mocks.budgets.mockReturnValue({ isError: false, data: { items: [] } })
     renderOverview()
-    expect(screen.getByText('Tus compromisos superan lo disponible')).toBeVisible()
-    expect(screen.getByText(/revisa qué vence primero y cómo cubrirlo/i)).toBeVisible()
+    expect(
+      screen.getByText('Tus compromisos superan lo disponible'),
+    ).toBeVisible()
+    expect(
+      screen.getByText(/revisa qué vence primero y cómo cubrirlo/i),
+    ).toBeVisible()
   })
 
   it('degrada sin romper el inicio cuando una fuente secundaria falla', () => {

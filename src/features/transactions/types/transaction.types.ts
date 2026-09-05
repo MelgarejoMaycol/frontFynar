@@ -62,6 +62,15 @@ export type CreateTransactionInput =
   | ({ type: 'TRANSFER' } & TransferInput)
   | ({ type: 'ADVANCE' } & Omit<TransferInput, 'categoryId'>)
   | {
+      type: 'LOAN_COLLECTION'
+      loanId: string
+      receivingAccountId: string
+      amount: string
+      occurredAt: string
+      notes?: string | null
+      idempotencyKey: string
+    }
+  | {
       type: 'DEBT_PAYMENT'
       debtId: string
       installmentId?: string

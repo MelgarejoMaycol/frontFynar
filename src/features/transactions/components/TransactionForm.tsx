@@ -13,6 +13,7 @@ import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { useCards, useDebt, useDebts } from '@/features/liabilities/hooks'
+import { useLoans as useIssuedLoans } from '@/features/lending/hooks'
 import {
   transactionFormSchema,
   type TransactionFormValues,
@@ -103,6 +104,7 @@ export function TransactionForm({
       periodicRate: '',
       debtOperation: 'INSTALLMENT_PAYMENT',
       debtStrategy: 'REDUCE_TERM',
+      loanId: '',
       categoryRequired: true,
     },
   })
@@ -113,11 +115,25 @@ export function TransactionForm({
   const categoryId = useWatch({ control, name: 'categoryId' })
   const amount = useWatch({ control, name: 'amount' })
   const debtOperation = useWatch({ control, name: 'debtOperation' })
+  const loanId = useWatch({ control, name: 'loanId' })
   const categories = useCategories(workspaceId)
   const debts = useDebts(
     workspaceId,
     'status=ACTIVE&limit=100&sort=name&order=asc',
   )
+  const issuedLoans = useIssuedLoans(workspaceId, { status: 'ACTIVE' })
+  const activeIssuedLoans = Array.isArray(issuedLoans.data)
+    ? issuedLoans.data
+    : []
+  const selectedLoan = activeIssuedLoans.find((loan) => loan.id === loanId)
+  const selectedLoanPending = selectedLoan
+    ? Math.max(
+        0,
+        Number(selectedLoan.expectedTotal) -
+          Number(selectedLoan.principalReceived) -
+          Number(selectedLoan.interestReceived),
+      )
+    : 0
   const debtTargetValue =
     type === 'INCOME' ? sourceId : type === 'TRANSFER' ? destinationId : ''
   const debtId = debtTargetValue.startsWith('debt:')
@@ -188,7 +204,7 @@ export function TransactionForm({
     formContext === 'DEBT_INSTALLMENT_PAYMENT' ||
     formContext === 'DEBT_EXTRA_PAYMENT'
   const presentation = formContextPresentation(formContext)
-  const showCategory = contextNeedsCategory(formContext)
+  const showCategory = contextNeedsCategory(formContext) && !loanId
   const isCardPurchase =
     type === 'EXPENSE' && sourceAccount?.type === 'CREDIT_CARD'
   const availableCredit = sourceAccount?.creditLimit
@@ -244,6 +260,7 @@ export function TransactionForm({
     setValue('categoryId', '', { shouldValidate: false })
     setValue('debtOperation', 'INSTALLMENT_PAYMENT', { shouldValidate: false })
     setValue('debtStrategy', 'REDUCE_TERM', { shouldValidate: false })
+    setValue('loanId', '', { shouldValidate: false })
     setValue('installmentCount', 1, { shouldValidate: false })
     setValue('periodicRate', '', { shouldValidate: false })
     setValue('merchantName', '', { shouldValidate: false })
@@ -335,6 +352,18 @@ export function TransactionForm({
           : value.destinationAccountId
         ).slice(5)
       : ''
+    if (value.type === 'INCOME' && value.loanId) {
+      onSubmit({
+        type: 'LOAN_COLLECTION',
+        loanId: value.loanId,
+        receivingAccountId: value.accountId,
+        amount: common.amount,
+        occurredAt: common.occurredAt,
+        notes: common.notes,
+        idempotencyKey: crypto.randomUUID(),
+      })
+      return
+    }
     if (selectedDebtId) {
       onSubmit({
         type: 'DEBT_PAYMENT',
@@ -419,7 +448,11 @@ export function TransactionForm({
       {purchaseExceedsCredit && (
         <p role="alert">
           No tienes cupo suficiente. Disponible:{' '}
-          {formatMoney(availableCredit.toFixed(2), sourceAccount?.currency ?? 'COP')}.
+          {formatMoney(
+            availableCredit.toFixed(2),
+            sourceAccount?.currency ?? 'COP',
+          )}
+          .
         </p>
       )}
       <FormField
@@ -485,6 +518,56 @@ export function TransactionForm({
           />
         )}
       </FormField>
+      {type === 'INCOME' &&
+      !transaction &&
+      sourceAccount?.nature === 'ASSET' ? (
+        <FormField label="Categoría financiera" htmlFor="transaction-loan">
+          <Select id="transaction-loan" {...register('loanId')}>
+            <option value="">Ingreso normal</option>
+            <optgroup label="PRÉSTAMOS POR COBRAR">
+              {activeIssuedLoans.map((loan) => (
+                <option key={loan.id} value={loan.id}>
+                  Préstamo a {loan.personName} · pendiente{' '}
+                  {formatMoney(
+                    String(
+                      Math.max(
+                        0,
+                        Number(loan.expectedTotal) -
+                          Number(loan.principalReceived) -
+                          Number(loan.interestReceived),
+                      ),
+                    ),
+                    loan.currency,
+                  )}
+                </option>
+              ))}
+            </optgroup>
+          </Select>
+        </FormField>
+      ) : null}
+      {selectedLoan ? (
+        <div className={styles.specializedSummary} role="status">
+          <strong>Cobro vinculado a {selectedLoan.personName}</strong>
+          <span>
+            Pendiente total:{' '}
+            {formatMoney(String(selectedLoanPending), selectedLoan.currency)}
+          </span>
+          <small>
+            El dinero entrará a la cuenta seleccionada y reducirá el préstamo
+            exactamente una vez.
+          </small>
+          {sourceAccount && sourceAccount.currency !== selectedLoan.currency ? (
+            <span role="alert">
+              La cuenta y el préstamo deben usar la misma moneda.
+            </span>
+          ) : null}
+          {debtAmount > selectedLoanPending ? (
+            <span role="alert">
+              El cobro supera el total pendiente del préstamo.
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       {(type === 'TRANSFER' || type === 'ADVANCE') && (
         <FormField
           label={type === 'TRANSFER' ? 'Destino' : 'Cuenta destino'}
@@ -790,7 +873,10 @@ export function TransactionForm({
             debtExceedsBalance ||
             debtExceedsInstallment ||
             debtCurrencyMismatch ||
-            debtInsufficientFunds
+            debtInsufficientFunds ||
+            (Boolean(selectedLoan) &&
+              (debtAmount > selectedLoanPending ||
+                sourceAccount?.currency !== selectedLoan?.currency))
           }
         >
           {transaction ? 'Guardar cambios' : 'Registrar movimiento'}

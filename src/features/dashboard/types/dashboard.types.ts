@@ -28,6 +28,10 @@ export interface CurrencySummary {
   totalExpenses: string
   netCashFlow: string
   netWorth: string
+  expectedCollections: string
+  scheduledPayments: string
+  projectedEndLiquidity: string
+  forecastDate: string
 }
 export interface DashboardAccount {
   id: string

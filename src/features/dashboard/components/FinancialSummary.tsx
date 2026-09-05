@@ -3,6 +3,7 @@ import {
   ArrowUpCircle,
   Landmark,
   Scale,
+  CalendarClock,
 } from 'lucide-react'
 import { Card, HorizontalScrollArea } from '@/components/ui'
 import { Link } from 'react-router'
@@ -30,6 +31,13 @@ const values = [
   ],
   ['Flujo neto', 'netCashFlow', Landmark, 'summaryFlow', null],
   ['Patrimonio', 'netWorth', Scale, 'summaryWorth', '/app/accounts'],
+  [
+    'Liquidez al fin de mes',
+    'projectedEndLiquidity',
+    CalendarClock,
+    'summaryFlow',
+    null,
+  ],
 ] as const
 
 type SummaryKey = (typeof values)[number][1]
@@ -110,6 +118,18 @@ export function FinancialSummary({
                     : Number(summary[key]) < 0
                       ? 'Gastaste más de lo que ingresaste'
                       : 'Ingresos y gastos están equilibrados'}
+                </small>
+              )}
+              {key === 'projectedEndLiquidity' && (
+                <small>
+                  Actual {formatMoney(summary.availableMoney, summary.currency)}{' '}
+                  + cobros{' '}
+                  {formatMoney(summary.expectedCollections, summary.currency)} −
+                  pagos{' '}
+                  {formatMoney(summary.scheduledPayments, summary.currency)} ·{' '}
+                  {new Date(
+                    `${summary.forecastDate}T12:00:00`,
+                  ).toLocaleDateString('es-CO')}
                 </small>
               )}
             </Card>

@@ -20,6 +20,7 @@ export const transactionFormSchema = z
       .regex(/^$|^\d{1,3}(?:\.\d{1,7})?$/, 'Ingresa una tasa válida'),
     debtOperation: z.enum(['INSTALLMENT_PAYMENT', 'EXTRA_PAYMENT']).optional(),
     debtStrategy: z.enum(['REDUCE_TERM', 'REDUCE_PAYMENT']).optional(),
+    loanId: z.string().optional(),
     categoryRequired: z.boolean().optional(),
   })
   .superRefine((value, context) => {

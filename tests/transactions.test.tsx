@@ -12,6 +12,7 @@ import { ApiError, httpClient } from '@/services/http'
 import { accountsApi } from '@/features/accounts/api/accounts.api'
 import { categoriesApi } from '@/features/categories/api/categories.api'
 import { liabilitiesApi } from '@/features/liabilities/api'
+import { lendingApi } from '@/features/lending/api'
 import { TransactionFilters } from '@/features/transactions/components/TransactionFilters'
 import { TransactionForm } from '@/features/transactions/components/TransactionForm'
 import { TransactionList } from '@/features/transactions/components/TransactionList'
@@ -830,6 +831,72 @@ describe('movimientos', () => {
     expect(
       screen.getByPlaceholderText('Ej. Pago de nómina de agosto'),
     ).toBeVisible()
+  })
+  it('vincula un ingreso a un préstamo por cobrar sin duplicar el movimiento', async () => {
+    const user = userEvent.setup()
+    const { nequi } = mockDebtFormResources()
+    vi.spyOn(lendingApi, 'list').mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 'aaaaaaaa-1111-4111-8111-111111111111',
+          personId: 'bbbbbbbb-1111-4111-8111-111111111111',
+          personName: 'David',
+          currency: 'COP',
+          originalPrincipal: '100000.00',
+          currentPrincipal: '100000.00',
+          ratePercent: '0.00',
+          method: 'FIXED_PAYMENT',
+          frequency: 'MONTHLY',
+          termCount: 1,
+          installmentAmount: '100000.00',
+          expectedInterest: '0.00',
+          expectedTotal: '100000.00',
+          interestReceived: '0.00',
+          principalReceived: '0.00',
+          nextDueDate: '2026-09-30',
+          estimatedEndDate: '2026-09-30',
+          status: 'ACTIVE',
+        },
+      ],
+    })
+    const onSubmit = vi.fn()
+    render(
+      <TransactionForm
+        workspaceId="income-issued-loan"
+        timezone="America/Bogota"
+        pending={false}
+        error={null}
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+      />,
+      { wrapper: provider() },
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /Tipo/ }),
+      'INCOME',
+    )
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: /^Destino/ }),
+      nequi.id,
+    )
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: /Categoría financiera/ }),
+      'aaaaaaaa-1111-4111-8111-111111111111',
+    )
+    const amount = screen.getByLabelText(/Monto/)
+    await user.type(amount, '5000000')
+    await user.click(
+      screen.getByRole('button', { name: 'Registrar movimiento' }),
+    )
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'LOAN_COLLECTION',
+        loanId: 'aaaaaaaa-1111-4111-8111-111111111111',
+        receivingAccountId: nequi.id,
+        amount: '50000.00',
+      }),
+    )
   })
   it('interpreta fechas usando el timezone del workspace', () => {
     expect(workspaceDateTimeToIso('2026-08-10T20:30', 'America/Bogota')).toBe(

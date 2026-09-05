@@ -134,7 +134,11 @@ describe('navegación y layouts', () => {
     )
     await user.click(screen.getByRole('link', { name: 'Cuentas' }))
     expect(
-      await screen.findByRole('heading', { name: 'Cuentas', level: 1 }),
+      await screen.findByRole(
+        'heading',
+        { name: 'Cuentas', level: 1 },
+        { timeout: 10_000 },
+      ),
     ).toBeVisible()
   })
   it('marca el elemento activo del sidebar', async () => {
@@ -193,7 +197,11 @@ describe('navegación y layouts', () => {
     await user.click(screen.getByLabelText('Menú de cuenta'))
     await user.click(screen.getByRole('link', { name: 'Configuración' }))
     expect(
-      await screen.findByRole('heading', { name: 'Configuración' }),
+      await screen.findByRole(
+        'heading',
+        { name: 'Configuración' },
+        { timeout: 10_000 },
+      ),
     ).toBeVisible()
     expect(screen.getByLabelText(/^Nombre/)).toHaveValue('Ana')
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue(

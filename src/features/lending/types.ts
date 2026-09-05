@@ -1,14 +1,122 @@
-export type LendingMethod = 'FIXED_PAYMENT' | 'FIXED_PRINCIPAL' | 'INTEREST_ONLY'
+export type LendingMethod =
+  'FIXED_PAYMENT' | 'FIXED_PRINCIPAL' | 'INTEREST_ONLY'
 export type LendingFrequency = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
 export type LendingStatus = 'ACTIVE' | 'OVERDUE' | 'PAID' | 'ARCHIVED'
 export type InstallmentStatus = 'PENDING' | 'PARTIAL' | 'OVERDUE' | 'PAID'
-export type SimulationInput = { principal: string; ratePercent: number; termCount: number; method: LendingMethod; frequency: LendingFrequency; firstPaymentDate?: string }
-export type SimulationRow = { installmentNumber: number; dueDate: string | null; openingPrincipal: number; principalAmount: number; interestAmount: number; totalAmount: number; closingPrincipal: number }
-export type SimulationResult = { installmentAmount: number; totalInterest: number; totalReceivable: number; ratePeriod: LendingFrequency; schedule: SimulationRow[] }
-export type CreateLoanInput = SimulationInput & { personId: string; currency: string; sourceAccountId?: string | null; disbursementDate: string; firstPaymentDate: string; notes?: string | null }
-export type LoanListItem = { id: string; personId: string; personName: string; currency: string; originalPrincipal: string; currentPrincipal: string; ratePercent: string; method: LendingMethod; frequency: LendingFrequency; termCount: number; installmentAmount: string; expectedInterest: string; expectedTotal: string; interestReceived: string; principalReceived: string; nextDueDate: string | null; estimatedEndDate: string; status: LendingStatus }
-export type LoanInstallment = { id: string; installmentNumber: number; dueDate: string; openingPrincipal: string; principalAmount: string; interestAmount: string; totalAmount: string; principalPaid: string; interestPaid: string; totalPaid: string; closingPrincipal: string; status: InstallmentStatus; paidAt: string | null }
-export type LoanPayment = { id: string; installmentId: string; receivingAccountId: string; totalReceived: string; principalReceived: string; interestReceived: string; occurredAt: string; notes: string | null; reversedAt: string | null; reversalReason: string | null }
-export type LoanDetail = LoanListItem & { relationship: string | null; receivableAccountId: string; receivableAccountName: string; sourceAccountId: string | null; sourceAccountName: string | null; disbursementDate: string; firstPaymentDate: string; notes: string | null; installments: LoanInstallment[]; payments: LoanPayment[] }
-export type LendingSummary = { currencies: Array<{ currency: string; principalPending: string; interestPending: string; interestReceived: string; activeCount: number }>; upcoming: Array<{ loanId: string; personName: string; installmentId: string; dueDate: string; amount: string; currency: string; status: InstallmentStatus }> }
-export type LoanPaymentInput = { receivingAccountId: string; amount: string; occurredAt?: string; notes?: string | null; idempotencyKey: string }
+export type SimulationInput = {
+  principal: string
+  ratePercent: number
+  termCount: number
+  method: LendingMethod
+  frequency: LendingFrequency
+  firstPaymentDate?: string
+}
+export type SimulationRow = {
+  installmentNumber: number
+  dueDate: string | null
+  openingPrincipal: number
+  principalAmount: number
+  interestAmount: number
+  totalAmount: number
+  closingPrincipal: number
+}
+export type SimulationResult = {
+  installmentAmount: number
+  totalInterest: number
+  totalReceivable: number
+  ratePeriod: LendingFrequency
+  schedule: SimulationRow[]
+}
+export type CreateLoanInput = SimulationInput & {
+  personId: string
+  currency: string
+  sourceAccountId?: string | null
+  disbursementDate: string
+  firstPaymentDate: string
+  notes?: string | null
+}
+export type UpdateLoanInput = { personId?: string; notes?: string | null }
+export type LoanListItem = {
+  id: string
+  personId: string
+  personName: string
+  currency: string
+  originalPrincipal: string
+  currentPrincipal: string
+  ratePercent: string
+  method: LendingMethod
+  frequency: LendingFrequency
+  termCount: number
+  installmentAmount: string
+  expectedInterest: string
+  expectedTotal: string
+  interestReceived: string
+  principalReceived: string
+  nextDueDate: string | null
+  estimatedEndDate: string
+  status: LendingStatus
+}
+export type LoanInstallment = {
+  id: string
+  installmentNumber: number
+  dueDate: string
+  openingPrincipal: string
+  principalAmount: string
+  interestAmount: string
+  totalAmount: string
+  principalPaid: string
+  interestPaid: string
+  totalPaid: string
+  closingPrincipal: string
+  status: InstallmentStatus
+  paidAt: string | null
+}
+export type LoanPayment = {
+  id: string
+  installmentId: string
+  receivingAccountId: string
+  totalReceived: string
+  principalReceived: string
+  interestReceived: string
+  occurredAt: string
+  notes: string | null
+  reversedAt: string | null
+  reversalReason: string | null
+}
+export type LoanDetail = LoanListItem & {
+  relationship: string | null
+  receivableAccountId: string
+  receivableAccountName: string
+  sourceAccountId: string | null
+  sourceAccountName: string | null
+  disbursementDate: string
+  firstPaymentDate: string
+  notes: string | null
+  installments: LoanInstallment[]
+  payments: LoanPayment[]
+}
+export type LendingSummary = {
+  currencies: Array<{
+    currency: string
+    principalPending: string
+    interestPending: string
+    interestReceived: string
+    activeCount: number
+  }>
+  upcoming: Array<{
+    loanId: string
+    personName: string
+    installmentId: string
+    dueDate: string
+    amount: string
+    currency: string
+    status: InstallmentStatus
+  }>
+}
+export type LoanPaymentInput = {
+  receivingAccountId: string
+  amount: string
+  occurredAt?: string
+  notes?: string | null
+  idempotencyKey: string
+}
