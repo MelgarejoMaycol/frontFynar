@@ -3,6 +3,8 @@
   grid-template-columns: minmax(0, 0.95fr) minmax(21rem, 1.05fr);
   gap: clamp(1rem, 2.2vw, 1.75rem);
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .introCopy {
@@ -10,6 +12,7 @@
   align-content: start;
   gap: var(--space-3);
   min-width: 0;
+  max-width: 100%;
 }
 
 .introCopy > header {
@@ -21,8 +24,11 @@
   isolation: isolate;
   overflow: hidden;
   display: grid;
-  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  gap: 1rem;
   padding: clamp(1rem, 1.7vw, 1.35rem);
   border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
   border-radius: calc(var(--radius-large) + 0.2rem);
@@ -35,21 +41,30 @@
   content: '';
   position: absolute;
   z-index: -1;
-  width: 15rem;
-  height: 15rem;
-  right: -7rem;
-  top: -8rem;
-  transform: rotate(22deg);
+  width: 9rem;
+  height: 9rem;
+  right: 0;
+  top: 0;
+  transform: translate(38%, -42%) rotate(22deg);
+  transform-origin: center;
   border-radius: 32%;
   background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
   pointer-events: none;
 }
 
+.moneySnapshot > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .moneyTopline {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .moneyKicker,
@@ -59,6 +74,7 @@
 }
 
 .moneyKicker {
+  min-width: 0;
   color: var(--color-primary);
   letter-spacing: 0.045em;
   text-transform: uppercase;
@@ -77,6 +93,7 @@
   display: grid;
   gap: 0.16rem;
   min-width: 0;
+  max-width: 100%;
 }
 
 .availableBlock span {
@@ -86,12 +103,16 @@
 }
 
 .availableAmount {
+  display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   font-size: clamp(1.75rem, 1.15rem + 2vw, 3rem);
   line-height: 1.02;
   letter-spacing: -0.045em;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
+  white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -105,8 +126,12 @@
 
 .moneyMetrics {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
+  overflow: hidden;
 }
 
 .moneyMetric {
@@ -114,7 +139,11 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.18rem 0.5rem;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
   padding: 0.72rem;
   border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
   border-radius: var(--radius-medium);
@@ -137,17 +166,22 @@
 
 .moneyMetric strong {
   min-width: 0;
+  max-width: 100%;
   font-size: clamp(0.8rem, 0.72rem + 0.25vw, 0.96rem);
   line-height: 1.15;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
+  white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .sectionBand {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   padding: clamp(0.8rem, 1.5vw, 1.2rem);
   border: 1px solid transparent;
   border-radius: calc(var(--radius-large) + 0.15rem);
@@ -179,6 +213,7 @@
 
 .sectionBand > * {
   min-width: 0;
+  max-width: 100%;
 }
 
 @media (max-width: 1080px) {
@@ -187,18 +222,15 @@
   }
 
   .moneySnapshot {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    align-items: end;
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .moneyTopline,
-  .availableBlock {
-    grid-column: 1;
-  }
-
+  .availableBlock,
   .moneyMetrics {
-    grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-column: 1;
+    grid-row: auto;
   }
 }
 
@@ -208,16 +240,7 @@
   }
 
   .moneySnapshot {
-    display: grid;
-    grid-template-columns: 1fr;
     padding: 0.9rem;
-  }
-
-  .moneyTopline,
-  .availableBlock,
-  .moneyMetrics {
-    grid-column: 1;
-    grid-row: auto;
   }
 
   .sectionBand {
