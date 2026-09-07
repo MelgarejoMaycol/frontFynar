@@ -26,7 +26,7 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
         type: 'E_WALLET',
         nature: 'ASSET',
         currency: 'COP',
-        openingBalance: '150000.00',
+        openingBalance: '999999999999.99',
       },
     },
   )
@@ -41,6 +41,9 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
   await page.getByRole('link', { name: 'Inicio', exact: true }).click()
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Inicio' })).toBeVisible()
+  await expect(page.getByText('Tu dinero hoy')).toBeVisible()
+  await expect(page.getByText('Tienes en total')).toBeVisible()
+  await expect(page.getByText('Pagos programados')).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Tu situación hoy' }),
   ).toBeVisible()
@@ -59,6 +62,7 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport)
+    await expect(page.getByText('Tu dinero hoy')).toBeVisible()
     await expect(
       page.getByRole('heading', { name: 'Tu situación hoy' }),
     ).toBeVisible()
