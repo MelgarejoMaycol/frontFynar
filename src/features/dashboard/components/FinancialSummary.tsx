@@ -12,6 +12,7 @@ import type {
   DashboardComparison,
 } from '../types/dashboard.types'
 import styles from './dashboard.module.css'
+import visualStyles from './FinancialSummaryVisual.module.css'
 
 const values = [
   [
@@ -19,6 +20,7 @@ const values = [
     'totalIncome',
     ArrowUpCircle,
     'summaryIncome',
+    'income',
     '/app/transactions?type=INCOME',
   ],
   [
@@ -26,10 +28,11 @@ const values = [
     'totalExpenses',
     ArrowDownCircle,
     'summaryExpense',
+    'expense',
     '/app/transactions?type=EXPENSE',
   ],
-  ['Flujo neto', 'netCashFlow', Landmark, 'summaryFlow', null],
-  ['Patrimonio', 'netWorth', Scale, 'summaryWorth', '/app/accounts'],
+  ['Flujo neto', 'netCashFlow', Landmark, 'summaryFlow', 'flow', null],
+  ['Patrimonio', 'netWorth', Scale, 'summaryWorth', 'worth', '/app/accounts'],
 ] as const
 
 type SummaryKey = (typeof values)[number][1]
@@ -80,7 +83,7 @@ export function FinancialSummary({
 
   return (
     <section
-      className={styles.dashboardSection}
+      className={`${styles.dashboardSection} ${visualStyles.section}`}
       aria-labelledby={`currency-${summary.currency}`}
     >
       <div className={styles.summaryHeading}>
@@ -94,13 +97,15 @@ export function FinancialSummary({
         className={styles.summaryGrid}
         label={`actividad financiera en ${summary.currency}`}
       >
-        {values.map(([label, key, Icon, tone, to]) => {
+        {values.map(([label, key, Icon, tone, visualTone, to]) => {
           const comparisonText = comparisonLabel(key, comparison)
           const content = (
-            <Card className={`${styles.summaryCard} ${styles[tone]}`}>
+            <Card
+              className={`${styles.summaryCard} ${styles[tone]} ${visualStyles.card} ${visualStyles[visualTone]}`}
+            >
               <Icon aria-hidden="true" />
               <span>{label}</span>
-              <strong>{signed(key)}</strong>
+              <strong className={visualStyles.amount}>{signed(key)}</strong>
               {comparisonText && <small>{comparisonText}</small>}
               {key === 'netWorth' && <small>Patrimonio actual</small>}
               {key === 'netCashFlow' && (
