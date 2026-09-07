@@ -102,10 +102,16 @@ export function FinancialSummary({
           const content = (
             <Card
               className={`${styles.summaryCard} ${styles[tone]} ${visualStyles.card} ${visualStyles[visualTone]}`}
+              data-testid={`summary-card-${key}`}
             >
               <Icon aria-hidden="true" />
               <span>{label}</span>
-              <strong className={visualStyles.amount}>{signed(key)}</strong>
+              <strong
+                className={visualStyles.amount}
+                data-testid={`summary-amount-${key}`}
+              >
+                {signed(key)}
+              </strong>
               {comparisonText && <small>{comparisonText}</small>}
               {key === 'netWorth' && <small>Patrimonio actual</small>}
               {key === 'netCashFlow' && (
