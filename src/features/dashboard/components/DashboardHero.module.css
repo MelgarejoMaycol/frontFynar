@@ -41,14 +41,12 @@
   content: '';
   position: absolute;
   z-index: -1;
-  width: 9rem;
-  height: 9rem;
-  right: 0;
-  top: 0;
-  transform: translate(38%, -42%) rotate(22deg);
-  transform-origin: center;
+  width: 7rem;
+  height: 7rem;
+  right: 0.75rem;
+  top: 0.75rem;
   border-radius: 32%;
-  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-secondary) 9%, transparent);
   pointer-events: none;
 }
 
