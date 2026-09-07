@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 const email = 'e2e-fynar@example.com'
 const password = 'E2E secure password 1!'
 
+const fitsOwnBox = async (locator: ReturnType<Parameters<typeof test>[0]>) => locator
+
 test('usuario autenticado puede consultar inicio y cuentas', async ({
   page,
   request,
@@ -66,6 +68,7 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
     await expect(
       page.getByRole('heading', { name: 'Tu situación hoy' }),
     ).toBeVisible()
+
     expect(
       await page.evaluate(
         () =>
@@ -73,6 +76,43 @@ test('usuario autenticado puede consultar inicio y cuentas', async ({
           document.documentElement.clientWidth,
       ),
     ).toBe(true)
+
+    const hero = page.getByTestId('hero-money-snapshot')
+    const heroAmount = page.getByTestId('hero-available-amount')
+    await expect(hero).toBeVisible()
+    await expect(heroAmount).toBeVisible()
+    expect(
+      await hero.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth + 1,
+      ),
+    ).toBe(true)
+    expect(
+      await heroAmount.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth + 1,
+      ),
+    ).toBe(true)
+
+    for (const key of [
+      'totalIncome',
+      'totalExpenses',
+      'netCashFlow',
+      'netWorth',
+    ]) {
+      const card = page.getByTestId(`summary-card-${key}`).first()
+      const amount = page.getByTestId(`summary-amount-${key}`).first()
+      await expect(card).toBeVisible()
+      await expect(amount).toBeVisible()
+      expect(
+        await card.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth + 1,
+        ),
+      ).toBe(true)
+      expect(
+        await amount.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth + 1,
+        ),
+      ).toBe(true)
+    }
   }
 
   const accounts = page.getByRole('region', { name: 'cuentas disponibles' })
