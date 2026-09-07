@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  BarChart3,
+  CalendarClock,
   Landmark,
+  PiggyBank,
   Plus,
-  ShieldCheck,
   Sparkles,
   TrendingUp,
+  WalletCards,
 } from 'lucide-react'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
@@ -19,6 +20,7 @@ import { FinancialHealthWidget } from '@/features/financial-health'
 import { MonthEndProjectionCard } from '@/features/forecasts/components/MonthEndProjectionCard'
 import { TransactionForm } from '@/features/transactions/components/TransactionForm'
 import { useCreateTransaction } from '@/features/transactions/hooks/transactions.hooks'
+import { formatMoney } from '@/features/transactions/transactions.format'
 import type { CreateTransactionInput } from '@/features/transactions/types/transaction.types'
 import {
   useActiveWorkspace,
@@ -49,6 +51,8 @@ const customError = (params: DashboardParams) => {
     return 'La fecha desde no puede ser posterior a la fecha hasta.'
   return undefined
 }
+
+const numberValue = (value: string | null | undefined) => Number(value ?? 0)
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -83,6 +87,41 @@ export function DashboardPage() {
   const categories = useCategories(workspace.id, canReadCategories)
   const createTransaction = useCreateTransaction(workspace.id)
   const createAccount = useCreateAccount(workspace.id)
+
+  const primarySummary =
+    dashboard.data?.summariesByCurrency.find(
+      (summary) => summary.currency === dashboard.data?.baseCurrency,
+    ) ?? dashboard.data?.summariesByCurrency[0]
+  const heroCurrency = primarySummary?.currency ?? workspace.baseCurrency
+  const heroAssetAccounts =
+    dashboard.data?.accountBalances.filter(
+      (account) => account.nature === 'ASSET' && account.currency === heroCurrency,
+    ) ?? []
+  const heroTotalMoney =
+    primarySummary?.totalMoney ??
+    String(
+      heroAssetAccounts.reduce(
+        (total, account) => total + numberValue(account.currentBalance),
+        0,
+      ),
+    )
+  const heroReserved =
+    primarySummary?.reservedForGoals ??
+    String(
+      heroAssetAccounts.reduce(
+        (total, account) => total + numberValue(account.reservedForGoals),
+        0,
+      ),
+    )
+
+  const heroMoney = (value: string | undefined) =>
+    value === undefined ? '—' : formatMoney(value, heroCurrency)
+  const heroFlow = primarySummary
+    ? `${numberValue(primarySummary.netCashFlow) > 0 ? '+' : numberValue(primarySummary.netCashFlow) < 0 ? '−' : ''}${formatMoney(
+        String(Math.abs(numberValue(primarySummary.netCashFlow))),
+        heroCurrency,
+      )}`
+    : '—'
 
   const closeTransaction = () => {
     setCreatingTransaction(false)
@@ -122,63 +161,82 @@ export function DashboardPage() {
               </div>
               <PageHeader
                 title="Inicio"
-                description="Entiende lo importante, detecta lo que requiere atención y decide con más claridad."
+                description="Tu dinero, tus compromisos y el movimiento del período en un solo vistazo."
               />
+
+              <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
+                <DashboardPeriodFilter
+                  value={params}
+                  onChange={setSelectedParams}
+                  error={validationError}
+                  financialCycleConfigured={Boolean(
+                    preferences.data?.financialCycleStartDay,
+                  )}
+                  onConfigureCycle={() => navigate('/app/settings#preferences')}
+                />
+              </FilterPanel>
+
+              <div className={styles.quickActions} aria-label="Acciones rápidas">
+                {canCreateTransactions && (
+                  <Button onClick={openTransaction}>
+                    <Plus size={18} aria-hidden="true" /> Nuevo movimiento
+                  </Button>
+                )}
+                {canCreateAccounts && (
+                  <Button variant="secondary" onClick={openAccount}>
+                    <Landmark size={18} aria-hidden="true" /> Crear cuenta
+                  </Button>
+                )}
+                {canReadDebts && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate('/app/commitments')}
+                  >
+                    Ver créditos y deudas
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <aside className={heroStyles.visual} aria-label="Enfoque de Fynar">
-              <div className={heroStyles.visualBrand}>
-                <BarChart3 size={16} aria-hidden="true" />
-                Fynar
+            <aside className={heroStyles.moneySnapshot} aria-label="Resumen de tu dinero">
+              <div className={heroStyles.moneyTopline}>
+                <span className={heroStyles.moneyKicker}>Tu dinero hoy</span>
+                <span className={heroStyles.moneyCurrency}>{heroCurrency}</span>
               </div>
-              <strong>Tu dinero, más claro.</strong>
-              <p>
-                Un inicio pensado para mostrar primero lo que importa y dejar el detalle a un clic.
-              </p>
-              <div className={heroStyles.visualTags}>
-                <span className={heroStyles.visualTag}>
-                  <ShieldCheck size={14} aria-hidden="true" /> Control
-                </span>
-                <span className={heroStyles.visualTag}>
-                  <TrendingUp size={14} aria-hidden="true" /> Progreso
-                </span>
-                <span className={heroStyles.visualTag}>
-                  <Sparkles size={14} aria-hidden="true" /> Claridad
-                </span>
+
+              <div className={heroStyles.availableBlock}>
+                <span>Disponible para usar</span>
+                <strong className={heroStyles.availableAmount}>
+                  {heroMoney(primarySummary?.availableMoney)}
+                </strong>
+                <p className={heroStyles.availableHint}>
+                  Es lo que puedes usar sin contar el dinero que ya está reservado en metas.
+                </p>
+              </div>
+
+              <div className={heroStyles.moneyMetrics}>
+                <div className={heroStyles.moneyMetric}>
+                  <WalletCards aria-hidden="true" />
+                  <span>Tienes en total</span>
+                  <strong>{dashboard.data ? heroMoney(heroTotalMoney) : '—'}</strong>
+                </div>
+                <div className={heroStyles.moneyMetric}>
+                  <PiggyBank aria-hidden="true" />
+                  <span>Reservado en metas</span>
+                  <strong>{dashboard.data ? heroMoney(heroReserved) : '—'}</strong>
+                </div>
+                <div className={heroStyles.moneyMetric}>
+                  <TrendingUp aria-hidden="true" />
+                  <span>Flujo del período</span>
+                  <strong>{heroFlow}</strong>
+                </div>
+                <div className={heroStyles.moneyMetric}>
+                  <CalendarClock aria-hidden="true" />
+                  <span>Pagos programados</span>
+                  <strong>{heroMoney(primarySummary?.scheduledPayments)}</strong>
+                </div>
               </div>
             </aside>
-          </div>
-
-          <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
-            <DashboardPeriodFilter
-              value={params}
-              onChange={setSelectedParams}
-              error={validationError}
-              financialCycleConfigured={Boolean(
-                preferences.data?.financialCycleStartDay,
-              )}
-              onConfigureCycle={() => navigate('/app/settings#preferences')}
-            />
-          </FilterPanel>
-          <div className={styles.quickActions} aria-label="Acciones rápidas">
-            {canCreateTransactions && (
-              <Button onClick={openTransaction}>
-                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
-              </Button>
-            )}
-            {canCreateAccounts && (
-              <Button variant="secondary" onClick={openAccount}>
-                <Landmark size={18} aria-hidden="true" /> Crear cuenta
-              </Button>
-            )}
-            {canReadDebts && (
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/app/commitments')}
-              >
-                Ver créditos y deudas
-              </Button>
-            )}
           </div>
         </div>
       </section>
@@ -219,24 +277,31 @@ export function DashboardPage() {
               timezone={workspace.timezone}
             />
 
-            <div className={styles.currencySections}>
-              {dashboard.data.summariesByCurrency.map((summary) => (
-                <FinancialSummary
-                  key={summary.currency}
-                  summary={summary}
-                  comparison={dashboard.data.comparisonByCurrency.find(
-                    (item) => item.currency === summary.currency,
-                  )}
-                />
-              ))}
+            <div className={`${heroStyles.sectionBand} ${heroStyles.activityBand}`}>
+              <div className={styles.currencySections}>
+                {dashboard.data.summariesByCurrency.map((summary) => (
+                  <FinancialSummary
+                    key={summary.currency}
+                    summary={summary}
+                    comparison={dashboard.data.comparisonByCurrency.find(
+                      (item) => item.currency === summary.currency,
+                    )}
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className={heroStyles.insightsGrid}>
+            <div className={`${heroStyles.sectionBand} ${heroStyles.projectionBand}`}>
               <MonthEndProjectionCard workspaceId={workspace.id} />
+            </div>
+
+            <div className={`${heroStyles.sectionBand} ${heroStyles.healthBand}`}>
               <FinancialHealthWidget workspaceId={workspace.id} />
             </div>
 
-            <LiabilitiesDashboardWidget />
+            <div className={`${heroStyles.sectionBand} ${heroStyles.commitmentsBand}`}>
+              <LiabilitiesDashboardWidget />
+            </div>
 
             <div className={planningStyles.grid}>
               <BudgetDashboardWidget />
