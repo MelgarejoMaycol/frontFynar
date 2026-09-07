@@ -71,13 +71,17 @@ export function FinancialSummary({
   comparison?: DashboardComparison
 }) {
   const signed = (key: SummaryKey) => {
-    const formatted = formatMoney(summary[key], summary.currency)
-    if (key === 'totalIncome' && Number(summary[key]) > 0)
+    const raw = summary[key]
+    const formatted = formatMoney(raw, summary.currency)
+    if (key === 'totalIncome' && !raw.startsWith('-') && raw !== '0' && raw !== '0.00')
       return `+${formatted}`
-    if (key === 'totalExpenses' && Number(summary[key]) > 0)
+    if (key === 'totalExpenses' && !raw.startsWith('-') && raw !== '0' && raw !== '0.00')
       return `−${formatted}`
-    if (key === 'netCashFlow' && Number(summary[key]) !== 0)
-      return `${Number(summary[key]) > 0 ? '+' : '−'}${formatMoney(String(Math.abs(Number(summary[key]))), summary.currency)}`
+    if (key === 'netCashFlow' && raw !== '0' && raw !== '0.00') {
+      const negative = raw.startsWith('-')
+      const absolute = negative ? raw.slice(1) : raw
+      return `${negative ? '−' : '+'}${formatMoney(absolute, summary.currency)}`
+    }
     return formatted
   }
 
