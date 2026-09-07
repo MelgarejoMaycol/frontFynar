@@ -1,0 +1,101 @@
+.section {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.card {
+  min-height: 9.8rem;
+  border-width: 1px;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.card::after {
+  opacity: 1;
+}
+
+.income {
+  border-top-color: transparent;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-success) 17%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-success) 5%, var(--color-surface)) 100%);
+}
+
+.income::after {
+  width: 7rem;
+  height: 7rem;
+  right: -2.5rem;
+  top: -2.8rem;
+  bottom: auto;
+  border: 0;
+  border-radius: 36% 64% 58% 42%;
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  transform: rotate(18deg);
+}
+
+.expense {
+  border-top-color: transparent;
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--color-error) 13%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-error) 4%, var(--color-surface)) 100%);
+}
+
+.expense::after {
+  width: 8rem;
+  height: 1.4rem;
+  right: -1rem;
+  bottom: 1rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-error) 9%, transparent);
+  transform: rotate(-18deg);
+}
+
+.flow {
+  border-top-color: transparent;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-info) 14%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-info) 3%, var(--color-surface)) 100%);
+}
+
+.flow::after {
+  width: 6.2rem;
+  height: 6.2rem;
+  right: -2rem;
+  bottom: -2.1rem;
+  border: 1.05rem solid color-mix(in srgb, var(--color-info) 8%, transparent);
+  border-radius: 1.4rem;
+  transform: rotate(28deg);
+}
+
+.worth {
+  border-top-color: transparent;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--color-secondary) 16%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-secondary) 4%, var(--color-surface)) 100%);
+}
+
+.worth::after {
+  width: 8.5rem;
+  height: 8.5rem;
+  right: -3.6rem;
+  bottom: -4rem;
+  border: 0;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 8%, transparent) 0 0.42rem, transparent 0.42rem 0.82rem);
+}
+
+.amount {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.08;
+}
+
+@media (max-width: 600px) {
+  .card {
+    min-height: 9rem;
+  }
+}
