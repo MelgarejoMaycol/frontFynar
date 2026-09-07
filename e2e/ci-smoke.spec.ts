@@ -3,8 +3,6 @@ import { expect, test } from '@playwright/test'
 const email = 'e2e-fynar@example.com'
 const password = 'E2E secure password 1!'
 
-const fitsOwnBox = async (locator: ReturnType<Parameters<typeof test>[0]>) => locator
-
 test('usuario autenticado puede consultar inicio y cuentas', async ({
   page,
   request,
