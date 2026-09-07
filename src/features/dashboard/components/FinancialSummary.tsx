@@ -139,7 +139,7 @@ export function FinancialSummary({
               {content}
             </Link>
           ) : (
-            <div key={key} style={{ display: 'grid' }}>
+            <div key={key} className={styles.summaryLink}>
               {content}
             </div>
           )
