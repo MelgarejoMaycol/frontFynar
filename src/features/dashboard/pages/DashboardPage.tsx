@@ -198,7 +198,11 @@ export function DashboardPage() {
               </div>
             </div>
 
-            <aside className={heroStyles.moneySnapshot} aria-label="Resumen de tu dinero">
+            <aside
+              className={heroStyles.moneySnapshot}
+              aria-label="Resumen de tu dinero"
+              data-testid="hero-money-snapshot"
+            >
               <div className={heroStyles.moneyTopline}>
                 <span className={heroStyles.moneyKicker}>Tu dinero hoy</span>
                 <span className={heroStyles.moneyCurrency}>{heroCurrency}</span>
@@ -206,7 +210,10 @@ export function DashboardPage() {
 
               <div className={heroStyles.availableBlock}>
                 <span>Disponible para usar</span>
-                <strong className={heroStyles.availableAmount}>
+                <strong
+                  className={heroStyles.availableAmount}
+                  data-testid="hero-available-amount"
+                >
                   {heroMoney(primarySummary?.availableMoney)}
                 </strong>
                 <p className={heroStyles.availableHint}>
