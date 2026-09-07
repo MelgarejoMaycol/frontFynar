@@ -1,0 +1,101 @@
+.widget {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-width: 0;
+  padding: clamp(0.95rem, 1.5vw, 1.2rem);
+  border-color: color-mix(in srgb, var(--color-secondary) 18%, var(--color-border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 9%, var(--color-surface)) 0%, var(--color-surface) 65%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-secondary) 6%, transparent);
+}
+
+.widget::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: 8rem;
+  height: 8rem;
+  right: -4.5rem;
+  bottom: -4.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-secondary) 7%, transparent);
+  pointer-events: none;
+}
+
+.score {
+  position: relative;
+  z-index: 1;
+  width: 4.2rem;
+  height: 4.2rem;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 16%, var(--color-border));
+  background: color-mix(in srgb, var(--color-secondary) 11%, var(--color-surface));
+  color: var(--color-secondary);
+  font-size: 1.15rem;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.titleRow h2 {
+  margin: 0;
+}
+
+.band {
+  padding: 0.22rem 0.5rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface));
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.recommendation {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
+}
+
+.action {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 700px) {
+  .widget {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .action {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .action button {
+    width: 100%;
+  }
+}
