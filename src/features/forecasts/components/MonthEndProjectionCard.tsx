@@ -11,6 +11,7 @@ import { formatCurrency } from '@/features/accounts/accounts.format'
 import { Button } from '@/components/ui'
 import { useMonthEndForecast } from '../hooks/forecasts.hooks'
 import styles from './forecast.module.css'
+import dashboardStyles from './MonthEndProjectionDashboard.module.css'
 
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' }).format(
@@ -23,7 +24,10 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
 
   if (query.isPending)
     return (
-      <section className={styles.card} aria-label="Proyección financiera">
+      <section
+        className={`${styles.card} ${dashboardStyles.card}`}
+        aria-label="Proyección financiera"
+      >
         <div className={styles.cardBackdrop} aria-hidden="true">
           <LineChart />
         </div>
@@ -34,7 +38,10 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
 
   if (query.isError || !query.data)
     return (
-      <section className={styles.card} aria-label="Proyección financiera">
+      <section
+        className={`${styles.card} ${dashboardStyles.card}`}
+        aria-label="Proyección financiera"
+      >
         <div className={styles.cardBackdrop} aria-hidden="true">
           <LineChart />
         </div>
@@ -44,7 +51,7 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
         <p className={styles.muted}>
           No pudimos calcularla ahora. Tus demás datos siguen disponibles.
         </p>
-        <div className={styles.actions}>
+        <div className={`${styles.actions} ${dashboardStyles.actions}`}>
           <Button variant="secondary" onClick={() => void query.refetch()}>
             Reintentar
           </Button>
@@ -64,7 +71,10 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
   const projectionTitle = cycleProjection ? 'Proyección al cierre de tu ciclo' : 'Proyección de fin de mes'
 
   return (
-    <section className={styles.card} aria-labelledby="month-end-title">
+    <section
+      className={`${styles.card} ${dashboardStyles.card}`}
+      aria-labelledby="month-end-title"
+    >
       <div className={styles.cardBackdrop} aria-hidden="true">
         <LineChart />
       </div>
@@ -77,12 +87,15 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
         </span>
       </div>
 
-      <div className={styles.compactMain}>
-        <div className={styles.compactAmountBlock}>
+      <div className={`${styles.compactMain} ${dashboardStyles.main}`}>
+        <div className={`${styles.compactAmountBlock} ${dashboardStyles.amountBlock}`}>
           <span className={styles.compactLabel}>
             {partial ? 'Después de compromisos conocidos' : 'Saldo estimado al cierre'}
           </span>
-          <h2 id="month-end-title" className={styles.amount}>
+          <h2
+            id="month-end-title"
+            className={`${styles.amount} ${dashboardStyles.amount}`}
+          >
             {formatCurrency(forecast.projectedClosingBalance, forecast.currency)}
           </h2>
           <p className={styles.compactHint}>
@@ -94,15 +107,18 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
           </p>
         </div>
 
-        <div className={styles.compactMetrics} aria-label="Resumen de la proyección">
-          <div className={styles.compactMetric}>
+        <div
+          className={`${styles.compactMetrics} ${dashboardStyles.metrics}`}
+          aria-label="Resumen de la proyección"
+        >
+          <div className={`${styles.compactMetric} ${dashboardStyles.metric}`}>
             <WalletCards size={16} aria-hidden="true" />
-            <span>Hoy</span>
+            <span>Disponible hoy</span>
             <strong>{formatCurrency(forecast.currentAvailable, forecast.currency)}</strong>
           </div>
-          <div className={styles.compactMetric}>
+          <div className={`${styles.compactMetric} ${dashboardStyles.metric}`}>
             <CalendarRange size={16} aria-hidden="true" />
-            <span>Por pagar</span>
+            <span>Compromisos conocidos</span>
             <strong>{formatCurrency(forecast.knownCommitments, forecast.currency)}</strong>
           </div>
         </div>
@@ -122,11 +138,11 @@ export function MonthEndProjectionCard({ workspaceId }: { workspaceId: string })
         </div>
       )}
 
-      <div className={styles.compactFooter}>
+      <div className={`${styles.compactFooter} ${dashboardStyles.footer}`}>
         <span className={styles.compactFootnote}>
-          Cierra el {formatDate(data.period.dateTo)} · no cambia tus saldos reales.
+          Cierra el {formatDate(data.period.dateTo)} · la proyección no cambia tus saldos reales.
         </span>
-        <div className={styles.actions} style={{ gap: '.65rem' }}>
+        <div className={`${styles.actions} ${dashboardStyles.actions}`}>
           <Button
             variant="secondary"
             onClick={() => navigate('/app/reports#month-end-projection')}
