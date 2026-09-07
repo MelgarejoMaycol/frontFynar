@@ -1,124 +1,184 @@
 .introGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
-  gap: clamp(1rem, 2.4vw, 2rem);
+  grid-template-columns: minmax(0, 0.95fr) minmax(21rem, 1.05fr);
+  gap: clamp(1rem, 2.2vw, 1.75rem);
   align-items: stretch;
 }
 
 .introCopy {
   display: grid;
-  align-content: center;
+  align-content: start;
   gap: var(--space-3);
   min-width: 0;
 }
 
-.visual {
+.introCopy > header {
+  margin-bottom: 0;
+}
+
+.moneySnapshot {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   display: grid;
-  align-content: center;
-  gap: var(--space-3);
-  min-height: 13rem;
-  padding: 1.2rem;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
-  border-radius: calc(var(--radius-large) + 0.15rem);
+  gap: 1rem;
+  min-width: 0;
+  padding: clamp(1rem, 1.7vw, 1.35rem);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
+  border-radius: calc(var(--radius-large) + 0.2rem);
   background:
-    radial-gradient(circle at 86% 12%, color-mix(in srgb, var(--color-secondary) 22%, transparent), transparent 34%),
-    linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 13%, var(--color-surface)), color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface)));
-  box-shadow: 0 16px 38px color-mix(in srgb, var(--color-primary) 10%, transparent);
+    linear-gradient(120deg, color-mix(in srgb, var(--color-primary) 16%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 58%, color-mix(in srgb, var(--color-secondary) 12%, var(--color-surface)) 100%);
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
-.visual::before,
-.visual::after {
+.moneySnapshot::before {
   content: '';
   position: absolute;
   z-index: -1;
-  border-radius: 50%;
+  width: 15rem;
+  height: 15rem;
+  right: -7rem;
+  top: -8rem;
+  transform: rotate(22deg);
+  border-radius: 32%;
+  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
   pointer-events: none;
 }
 
-.visual::before {
-  width: 9rem;
-  height: 9rem;
-  right: -3rem;
-  bottom: -3.5rem;
-  border: 1.15rem solid color-mix(in srgb, var(--color-primary) 7%, transparent);
-}
-
-.visual::after {
-  width: 5.5rem;
-  height: 5.5rem;
-  left: -2.2rem;
-  top: -2rem;
-  background: color-mix(in srgb, var(--color-secondary) 8%, transparent);
-}
-
-.visualBrand {
-  display: inline-flex;
-  width: fit-content;
+.moneyTopline {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.38rem 0.65rem;
-  border-radius: var(--radius-pill);
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.moneyKicker,
+.moneyCurrency {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
+}
+
+.moneyKicker {
+  color: var(--color-primary);
+  letter-spacing: 0.045em;
   text-transform: uppercase;
 }
 
-.visual strong {
-  max-width: 13ch;
-  font-size: clamp(1.45rem, 1.15rem + 0.9vw, 2rem);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
-}
-
-.visual p {
-  max-width: 34ch;
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-}
-
-.visualTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.visualTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.38rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
+.moneyCurrency {
+  flex: none;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
   border-radius: var(--radius-pill);
   color: var(--color-text-secondary);
   background: color-mix(in srgb, var(--color-surface) 76%, transparent);
-  font-size: var(--font-size-xs);
+}
+
+.availableBlock {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.availableBlock span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
 
-.visualTag svg {
+.availableAmount {
+  min-width: 0;
+  font-size: clamp(1.75rem, 1.15rem + 2vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.availableHint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.35;
+}
+
+.moneyMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.moneyMetric {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.18rem 0.5rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.moneyMetric svg {
+  grid-row: 1 / span 2;
+  width: 1.05rem;
+  height: 1.05rem;
   color: var(--color-primary);
 }
 
-.insightsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-  align-items: stretch;
-  width: 100%;
+.moneyMetric span {
   min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
 }
 
-.insightsGrid > * {
+.moneyMetric strong {
   min-width: 0;
-  height: 100%;
+  font-size: clamp(0.8rem, 0.72rem + 0.25vw, 0.96rem);
+  line-height: 1.15;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.sectionBand {
+  position: relative;
+  min-width: 0;
+  padding: clamp(0.8rem, 1.5vw, 1.2rem);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-large) + 0.15rem);
+}
+
+.activityBand {
+  border-color: color-mix(in srgb, var(--color-success) 15%, var(--color-border));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--color-success) 8%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-success) 3%, var(--color-surface)) 100%);
+}
+
+.projectionBand {
+  border-color: color-mix(in srgb, var(--color-info) 15%, var(--color-border));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--color-info) 7%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-primary) 3%, var(--color-surface)) 100%);
+}
+
+.healthBand {
+  border-color: color-mix(in srgb, var(--color-secondary) 16%, var(--color-border));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-secondary) 3%, var(--color-surface)) 100%);
+}
+
+.commitmentsBand {
+  border-color: color-mix(in srgb, var(--color-warning) 18%, var(--color-border));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--color-warning) 9%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-warning) 3%, var(--color-surface)) 100%);
+}
+
+.sectionBand > * {
+  min-width: 0;
 }
 
 @media (max-width: 1080px) {
@@ -126,27 +186,52 @@
     grid-template-columns: 1fr;
   }
 
-  .visual {
-    min-height: auto;
+  .moneySnapshot {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: end;
+  }
+
+  .moneyTopline,
+  .availableBlock {
+    grid-column: 1;
+  }
+
+  .moneyMetrics {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 }
 
-@media (max-width: 1024px) {
-  .insightsGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .introGrid {
     gap: var(--space-3);
   }
 
-  .visual {
-    display: none;
+  .moneySnapshot {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0.9rem;
   }
 
-  .insightsGrid {
-    gap: var(--space-3);
+  .moneyTopline,
+  .availableBlock,
+  .moneyMetrics {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .sectionBand {
+    padding: 0.7rem;
+    border-radius: var(--radius-large);
+  }
+}
+
+@media (max-width: 430px) {
+  .moneyMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .availableAmount {
+    font-size: clamp(1.55rem, 8vw, 2.15rem);
   }
 }
