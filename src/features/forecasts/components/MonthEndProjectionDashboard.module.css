@@ -1,0 +1,124 @@
+.card {
+  min-height: 18rem;
+  padding: clamp(1.15rem, 2vw, 1.7rem);
+  gap: 1.15rem;
+  border-color: color-mix(in srgb, var(--color-info) 18%, var(--color-border));
+  background:
+    linear-gradient(130deg, color-mix(in srgb, var(--color-info) 8%, var(--color-surface)) 0%, var(--color-surface) 52%, color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)) 100%);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--color-info) 7%, transparent);
+}
+
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: clamp(1rem, 2vw, 1.6rem);
+  align-items: stretch;
+}
+
+.amountBlock {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  padding: clamp(0.85rem, 1.4vw, 1.15rem);
+  border: 1px solid color-mix(in srgb, var(--color-info) 11%, var(--color-border));
+  border-radius: var(--radius-large);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+}
+
+.amount {
+  max-width: 100%;
+  margin-top: 0.35rem;
+  font-size: clamp(2rem, 1.25rem + 2.4vw, 3.6rem);
+  line-height: 1.02;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-content: stretch;
+  width: 100%;
+  max-width: none;
+  flex: none;
+}
+
+.metric {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 0.25rem 0.65rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.metric svg {
+  grid-row: 1 / span 2;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.metric strong {
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: clamp(0.95rem, 0.85rem + 0.35vw, 1.15rem);
+}
+
+.footer {
+  align-items: center;
+  padding-top: 0.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-info) 10%, var(--color-border));
+}
+
+.actions {
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+@media (max-width: 900px) {
+  .card {
+    min-height: 0;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .card {
+    padding: 0.95rem;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    align-items: stretch;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}
