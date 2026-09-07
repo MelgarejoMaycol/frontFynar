@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Landmark, Plus, Sparkles } from 'lucide-react'
+import {
+  BarChart3,
+  Landmark,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { Button, Dialog, FilterPanel, PageHeader } from '@/components/ui'
@@ -29,6 +36,7 @@ import { useDashboard } from '../hooks/dashboard.hooks'
 import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDashboardWidget'
 import type { DashboardParams } from '../types/dashboard.types'
 import styles from '../components/dashboard.module.css'
+import heroStyles from '../components/DashboardHero.module.css'
 import planningStyles from '../components/DashboardPlanning.module.css'
 import { BudgetDashboardWidget } from '../components/BudgetDashboardWidget'
 import { GoalsDashboardWidget } from '../components/GoalsDashboardWidget'
@@ -106,14 +114,41 @@ export function DashboardPage() {
       <section className={styles.topPanel} aria-label="Resumen de inicio">
         <div className={styles.topPanelGlow} aria-hidden="true" />
         <div className={styles.topPanelContent}>
-          <div className={styles.dashboardEyebrow}>
-            <Sparkles size={15} aria-hidden="true" />
-            Tu panorama financiero
+          <div className={heroStyles.introGrid}>
+            <div className={heroStyles.introCopy}>
+              <div className={styles.dashboardEyebrow}>
+                <Sparkles size={15} aria-hidden="true" />
+                Tu panorama financiero
+              </div>
+              <PageHeader
+                title="Inicio"
+                description="Entiende lo importante, detecta lo que requiere atención y decide con más claridad."
+              />
+            </div>
+
+            <aside className={heroStyles.visual} aria-label="Enfoque de Fynar">
+              <div className={heroStyles.visualBrand}>
+                <BarChart3 size={16} aria-hidden="true" />
+                Fynar
+              </div>
+              <strong>Tu dinero, más claro.</strong>
+              <p>
+                Un inicio pensado para mostrar primero lo que importa y dejar el detalle a un clic.
+              </p>
+              <div className={heroStyles.visualTags}>
+                <span className={heroStyles.visualTag}>
+                  <ShieldCheck size={14} aria-hidden="true" /> Control
+                </span>
+                <span className={heroStyles.visualTag}>
+                  <TrendingUp size={14} aria-hidden="true" /> Progreso
+                </span>
+                <span className={heroStyles.visualTag}>
+                  <Sparkles size={14} aria-hidden="true" /> Claridad
+                </span>
+              </div>
+            </aside>
           </div>
-          <PageHeader
-            title="Inicio"
-            description="Así están tus finanzas actualmente."
-          />
+
           <FilterPanel title="Periodo" active={params.period === 'MY_CYCLE'}>
             <DashboardPeriodFilter
               value={params}
@@ -184,10 +219,6 @@ export function DashboardPage() {
               timezone={workspace.timezone}
             />
 
-            <MonthEndProjectionCard workspaceId={workspace.id} />
-
-            <FinancialHealthWidget workspaceId={workspace.id} />
-
             <div className={styles.currencySections}>
               {dashboard.data.summariesByCurrency.map((summary) => (
                 <FinancialSummary
@@ -198,6 +229,11 @@ export function DashboardPage() {
                   )}
                 />
               ))}
+            </div>
+
+            <div className={heroStyles.insightsGrid}>
+              <MonthEndProjectionCard workspaceId={workspace.id} />
+              <FinancialHealthWidget workspaceId={workspace.id} />
             </div>
 
             <LiabilitiesDashboardWidget />
