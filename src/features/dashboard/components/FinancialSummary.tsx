@@ -139,7 +139,9 @@ export function FinancialSummary({
               {content}
             </Link>
           ) : (
-            <div key={key}>{content}</div>
+            <div key={key} style={{ display: 'grid' }}>
+              {content}
+            </div>
           )
         })}
       </HorizontalScrollArea>
