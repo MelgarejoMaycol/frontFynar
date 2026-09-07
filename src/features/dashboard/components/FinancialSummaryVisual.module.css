@@ -6,13 +6,19 @@
 }
 
 .card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 9.8rem;
+  box-sizing: border-box;
+  overflow: hidden;
   border-width: 1px;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--color-text) 5%, transparent);
 }
 
 .card::after {
   opacity: 1;
+  pointer-events: none;
 }
 
 .income {
@@ -22,15 +28,15 @@
 }
 
 .income::after {
-  width: 7rem;
-  height: 7rem;
-  right: -2.5rem;
-  top: -2.8rem;
+  width: 5rem;
+  height: 5rem;
+  right: 0.65rem;
+  top: 0.65rem;
   bottom: auto;
   border: 0;
   border-radius: 36% 64% 58% 42%;
-  background: color-mix(in srgb, var(--color-success) 10%, transparent);
-  transform: rotate(18deg);
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  transform: none;
 }
 
 .expense {
@@ -40,14 +46,14 @@
 }
 
 .expense::after {
-  width: 8rem;
-  height: 1.4rem;
-  right: -1rem;
+  width: 5.5rem;
+  height: 1.15rem;
+  right: 0.65rem;
   bottom: 1rem;
   border: 0;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-error) 9%, transparent);
-  transform: rotate(-18deg);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-error) 3%, transparent), color-mix(in srgb, var(--color-error) 11%, transparent));
+  transform: none;
 }
 
 .flow {
@@ -57,13 +63,13 @@
 }
 
 .flow::after {
-  width: 6.2rem;
-  height: 6.2rem;
-  right: -2rem;
-  bottom: -2.1rem;
-  border: 1.05rem solid color-mix(in srgb, var(--color-info) 8%, transparent);
-  border-radius: 1.4rem;
-  transform: rotate(28deg);
+  width: 4.5rem;
+  height: 4.5rem;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  border: 0.8rem solid color-mix(in srgb, var(--color-info) 8%, transparent);
+  border-radius: 1.2rem;
+  transform: none;
 }
 
 .worth {
@@ -73,19 +79,21 @@
 }
 
 .worth::after {
-  width: 8.5rem;
-  height: 8.5rem;
-  right: -3.6rem;
-  bottom: -4rem;
+  width: 5rem;
+  height: 5rem;
+  right: 0.65rem;
+  bottom: 0.65rem;
   border: 0;
   border-radius: 50%;
   background:
-    repeating-radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 8%, transparent) 0 0.42rem, transparent 0.42rem 0.82rem);
+    repeating-radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 8%, transparent) 0 0.34rem, transparent 0.34rem 0.68rem);
 }
 
 .amount {
-  min-width: 0;
+  display: block;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
