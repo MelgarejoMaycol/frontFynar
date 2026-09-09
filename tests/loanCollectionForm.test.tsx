@@ -11,7 +11,7 @@ import { LoanCollectionForm } from '@/features/transactions/components/LoanColle
 const account: Account = {
   id: '11111111-1111-4111-8111-111111111111',
   name: 'Nequi',
-  type: 'DIGITAL_WALLET',
+  type: 'E_WALLET',
   nature: 'ASSET',
   institutionName: null,
   currency: 'COP',
