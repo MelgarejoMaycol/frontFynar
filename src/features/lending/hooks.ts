@@ -30,12 +30,15 @@ export const useLoans = (
       (await lendingApi.list(w, filters, signal)).data,
     enabled: Boolean(w),
   })
-export const useLoan = (w: string, id: string) =>
-  useQuery({
-    queryKey: lendingKeys.detail(w, id),
-    queryFn: async ({ signal }) => (await lendingApi.get(w, id, signal)).data,
-    enabled: Boolean(w && id),
+export const useLoan = (w: string, id?: string) => {
+  const safeId = id ?? ''
+  return useQuery({
+    queryKey: lendingKeys.detail(w, safeId),
+    queryFn: async ({ signal }) =>
+      (await lendingApi.get(w, safeId, signal)).data,
+    enabled: Boolean(w && safeId),
   })
+}
 export const useAssetAccounts = (w: string) =>
   useQuery({
     queryKey: ['accounts', w, 'lending-assets'],
