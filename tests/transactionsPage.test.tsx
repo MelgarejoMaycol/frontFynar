@@ -89,6 +89,9 @@ vi.mock('@/features/transactions/components/TransactionForm', () => ({
     </button>
   ),
 }))
+vi.mock('@/features/transactions/components/LoanCollectionForm', () => ({
+  LoanCollectionForm: () => <div data-testid="loan-collection-form" />,
+}))
 
 describe('TransactionsPage', () => {
   beforeEach(() => {
