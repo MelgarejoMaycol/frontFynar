@@ -137,9 +137,7 @@
 }
 .loan {
   display: grid;
-  gap: var(--space-3);
-  min-height: 11rem;
-  padding: var(--space-4);
+  overflow: hidden;
   color: inherit;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-large);
@@ -149,7 +147,6 @@
     color-mix(in srgb, var(--color-primary-soft) 34%, var(--color-surface))
   );
   box-shadow: 0 0.25rem 0.9rem rgb(13 43 40 / 4%);
-  text-align: left;
   transition:
     border-color var(--duration-normal),
     box-shadow var(--duration-normal),
@@ -164,6 +161,23 @@
   box-shadow: var(--shadow-soft);
   transform: translateY(-2px);
 }
+.loanMain {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 13.5rem;
+  padding: var(--space-4);
+  color: inherit;
+  border: 0;
+  outline: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.loanMain:focus-visible {
+  box-shadow: inset 0 0 0 3px
+    color-mix(in srgb, var(--color-focus) 24%, transparent);
+}
 .loanHead > div {
   display: grid;
   gap: 0.15rem;
@@ -172,6 +186,50 @@
 .loanFoot {
   color: var(--color-text-muted);
   font-size: 0.76rem;
+}
+.loanPrimary {
+  display: grid;
+  gap: 0.15rem;
+}
+.loanPrimary small {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+.loanPrimary h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+}
+.loanBreakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.loanBreakdown > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+}
+.loanBreakdown small {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+}
+.loanBreakdown strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.loanQuickActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--space-4) var(--space-4);
+}
+.loanQuickActions button {
+  width: 100%;
 }
 .status {
   padding: 0.25rem 0.5rem;
@@ -325,11 +383,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-large);
   background: var(--color-surface);
+  overscroll-behavior-inline: contain;
 }
 .table table {
   width: 100%;
   min-width: 47.5rem;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.8rem;
 }
 .table th,
@@ -344,14 +404,41 @@
   background: var(--color-surface-muted);
   font-weight: 700;
 }
-.table tbody tr:hover {
-  background: color-mix(in srgb, var(--color-primary-soft) 55%, transparent);
+.table tbody tr:hover td {
+  background: color-mix(in srgb, var(--color-primary-soft) 55%, var(--color-surface));
 }
 .table th:first-child,
 .table td:first-child,
 .table th:nth-child(2),
 .table td:nth-child(2) {
   text-align: left;
+}
+.installmentsTable table {
+  min-width: 43rem;
+}
+.installmentsTable th:last-child,
+.installmentsTable td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  min-width: 6.2rem;
+  text-align: center;
+  background: var(--color-surface);
+  box-shadow: -0.5rem 0 0.8rem rgb(13 43 40 / 5%);
+}
+.installmentsTable th:last-child {
+  z-index: 3;
+  background: var(--color-surface-muted);
+}
+.installmentsTable tbody tr:hover td:last-child {
+  background: color-mix(in srgb, var(--color-primary-soft) 55%, var(--color-surface));
+}
+.tableAction {
+  min-width: 0;
+  white-space: nowrap;
+}
+.tableEmptyAction {
+  color: var(--color-text-muted);
 }
 .simForm {
   display: grid;
@@ -373,6 +460,66 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-2);
+}
+.detailMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.detailMetrics > div,
+.collectionSummary > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: color-mix(
+    in srgb,
+    var(--color-surface) 92%,
+    var(--color-primary-soft)
+  );
+}
+.detailMetrics span,
+.collectionSummary span {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+.detailMetrics strong,
+.collectionSummary strong {
+  overflow: hidden;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detailMetrics small {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+}
+.currentInstallment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--color-primary-soft) 45%, var(--color-surface));
+}
+.currentInstallment span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+.collectionSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.collectionSummary > small {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
 }
 .payments {
   display: grid;
@@ -405,13 +552,18 @@
   .loans {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .detailMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 40.625rem) {
   .grid,
   .loans,
   .cols,
   .simForm,
-  .personCreator {
+  .personCreator,
+  .detailMetrics,
+  .collectionSummary {
     grid-template-columns: 1fr;
   }
   .toolbar {
@@ -437,8 +589,15 @@
   .card {
     min-height: 6.5rem;
   }
-  .loan {
+  .loanMain {
     min-height: 0;
+    padding: var(--space-3);
+  }
+  .loanBreakdown {
+    grid-template-columns: 1fr;
+  }
+  .loanQuickActions {
+    padding: 0 var(--space-3) var(--space-3);
   }
   .actions button {
     flex: 1;
@@ -453,6 +612,16 @@
   }
   .detailActions button {
     flex: 1;
+  }
+  .currentInstallment {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .collectionSummary > small {
+    grid-column: auto;
+  }
+  .installmentsTable table {
+    min-width: 39rem;
   }
 }
 @media print {
