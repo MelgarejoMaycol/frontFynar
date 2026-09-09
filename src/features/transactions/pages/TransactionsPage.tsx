@@ -15,6 +15,7 @@ import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { useActiveWorkspace, usePermission } from '@/features/workspace'
 import { TransactionFilters } from '../components/TransactionFilters'
 import { TransactionForm } from '../components/TransactionForm'
+import { LoanCollectionForm } from '../components/LoanCollectionForm'
 import { TransactionList } from '../components/TransactionList'
 import {
   useCancelTransaction,
@@ -47,6 +48,7 @@ export function TransactionsPage() {
   const [creating, setCreating] = useState(
       () => new URLSearchParams(window.location.search).get('new') === '1',
     ),
+    [collectingLoan, setCollectingLoan] = useState(false),
     [selected, setSelected] = useState<Transaction | null>(null),
     [editing, setEditing] = useState(false),
     [cancelling, setCancelling] = useState(false),
@@ -101,6 +103,7 @@ export function TransactionsPage() {
   const close = () => {
     if (requestedId) window.history.replaceState({}, '', '/app/transactions')
     setCreating(false)
+    setCollectingLoan(false)
     setEditing(false)
     setCancelling(false)
     setSelected(null)
@@ -119,22 +122,41 @@ export function TransactionsPage() {
     id === null
       ? 'Sin categoría'
       : (categories.data.find((x) => x.id === id)?.name ?? 'No disponible')
+  const lendingRoleLabel = (role: unknown) => {
+    if (role === 'DISBURSEMENT') return 'Desembolso del préstamo'
+    if (role === 'PRINCIPAL_COLLECTION') return 'Recuperación de capital'
+    if (role === 'INTEREST_INCOME') return 'Interés recibido'
+    return 'Movimiento del préstamo'
+  }
   return (
     <div className={styles.page}>
       <PageHeader
         title="Movimientos"
-        description="Registra y consulta ingresos, gastos y transferencias del workspace."
+        description="Registra y consulta ingresos, gastos, transferencias y cobros de préstamos del workspace."
         actions={
           canWrite ? (
-            <Button
-              disabled={!accounts.data.some((account) => account.isActive)}
-              onClick={() => {
-                setMessage('')
-                setCreating(true)
-              }}
-            >
-              Registrar movimiento
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setMessage('')
+                  setCreating(false)
+                  setCollectingLoan(true)
+                }}
+              >
+                Cobro de préstamo
+              </Button>
+              <Button
+                disabled={!accounts.data.some((account) => account.isActive)}
+                onClick={() => {
+                  setMessage('')
+                  setCollectingLoan(false)
+                  setCreating(true)
+                }}
+              >
+                Registrar movimiento
+              </Button>
+            </>
           ) : undefined
         }
       />
@@ -201,6 +223,18 @@ export function TransactionsPage() {
         />
       </Dialog>
       <Dialog
+        open={collectingLoan}
+        title="Registrar cobro de préstamo"
+        onClose={close}
+      >
+        <LoanCollectionForm
+          workspaceId={workspace.id}
+          timezone={workspace.timezone}
+          onCancel={close}
+          onSuccess={() => success('Cobro de préstamo registrado.')}
+        />
+      </Dialog>
+      <Dialog
         open={Boolean(selected || requestedId) && !editing && !cancelling}
         title="Detalle del movimiento"
         onClose={close}
@@ -211,7 +245,8 @@ export function TransactionsPage() {
           current.type !== 'ADJUSTMENT' &&
           current.type !== 'DEBT_PAYMENT' &&
           current.metadata?.obligationOccurrenceId == null &&
-          current.metadata?.cardCashAdvance !== true ? (
+          current.metadata?.cardCashAdvance !== true &&
+          current.metadata?.lending !== true ? (
             <>
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 Editar
@@ -276,7 +311,7 @@ export function TransactionsPage() {
               )}
               <div>
                 <dt>Categoría</dt>
-                <dd>{current.type === 'DEBT_PAYMENT' ? 'Operación financiera especializada' : categoryName(current.categoryId)}</dd>
+                <dd>{current.metadata?.lending === true ? 'Operación de préstamo' : current.type === 'DEBT_PAYMENT' ? 'Operación financiera especializada' : categoryName(current.categoryId)}</dd>
               </div>
               {current.type === 'DEBT_PAYMENT' && (
                 <>
@@ -286,6 +321,21 @@ export function TransactionsPage() {
                   {current.metadata?.balanceAfter != null && <div><dt>Saldo posterior</dt><dd>{formatMoney(String(current.metadata.balanceAfter), current.currency)}</dd></div>}
                   {current.metadata?.strategy != null && <div><dt>Estrategia</dt><dd>{current.metadata.strategy === 'REDUCE_PAYMENT' ? 'Reducir cuota' : 'Reducir plazo'}</dd></div>}
                   {current.metadata?.debtId != null && <div><dt>Navegación</dt><dd><Link to={`/app/debts/${String(current.metadata.debtId)}`}>Ver crédito</Link></dd></div>}
+                </>
+              )}
+              {current.metadata?.lending === true && (
+                <>
+                  <div>
+                    <dt>Operación del préstamo</dt>
+                    <dd>{lendingRoleLabel(current.metadata?.role)}</dd>
+                  </div>
+                  <div>
+                    <dt>Movimiento protegido</dt>
+                    <dd>
+                      Este movimiento fue generado por el módulo de préstamos. Para mantener correctos el capital, los intereses y el saldo por cobrar, gestiona el cobro desde Préstamos.{' '}
+                      <Link to="/app/lending">Ver préstamos</Link>
+                    </dd>
+                  </div>
                 </>
               )}
               {current.metadata?.obligationOccurrenceId != null && (
