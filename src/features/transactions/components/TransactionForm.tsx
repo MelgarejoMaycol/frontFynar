@@ -13,7 +13,13 @@ import { canonicalMoneyInput } from '@/components/ui/money-input.utils'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { useCards, useDebt, useDebts } from '@/features/liabilities/hooks'
-import { useLoans as useIssuedLoans } from '@/features/lending/hooks'
+import { useLoan, useLoans as useIssuedLoans } from '@/features/lending/hooks'
+import {
+  getInstallmentInterestPending,
+  getInstallmentPending,
+  getInstallmentPrincipalPending,
+  getLoanTotalPending,
+} from '@/features/lending/lending.utils'
 import {
   transactionFormSchema,
   type TransactionFormValues,
@@ -126,14 +132,24 @@ export function TransactionForm({
     ? issuedLoans.data
     : []
   const selectedLoan = activeIssuedLoans.find((loan) => loan.id === loanId)
-  const selectedLoanPending = selectedLoan
-    ? Math.max(
-        0,
-        Number(selectedLoan.expectedTotal) -
-          Number(selectedLoan.principalReceived) -
-          Number(selectedLoan.interestReceived),
-      )
+  const selectedLoanDetail = useLoan(workspaceId, loanId)
+  const selectedLoanInstallment = selectedLoanDetail.data?.installments.find(
+    (installment) => ['PENDING', 'PARTIAL', 'OVERDUE'].includes(installment.status),
+  )
+  const selectedLoanInstallmentPending = selectedLoanInstallment
+    ? getInstallmentPending(selectedLoanInstallment)
     : 0
+  const selectedLoanInstallmentCapital = selectedLoanInstallment
+    ? getInstallmentPrincipalPending(selectedLoanInstallment)
+    : 0
+  const selectedLoanInstallmentInterest = selectedLoanInstallment
+    ? getInstallmentInterestPending(selectedLoanInstallment)
+    : 0
+  const selectedLoanPending = selectedLoanDetail.data
+    ? getLoanTotalPending(selectedLoanDetail.data)
+    : selectedLoan
+      ? getLoanTotalPending(selectedLoan)
+      : 0
   const debtTargetValue =
     type === 'INCOME' ? sourceId : type === 'TRANSFER' ? destinationId : ''
   const debtId = debtTargetValue.startsWith('debt:')
@@ -251,6 +267,7 @@ export function TransactionForm({
   )
   const previousType = useRef(type)
   const previousDebtSuggestion = useRef('')
+  const previousLoanSuggestion = useRef('')
   useEffect(() => {
     if (previousType.current === type) return
     const oldDebtTarget =
@@ -268,6 +285,7 @@ export function TransactionForm({
       setValue('accountId', '', { shouldValidate: false })
     if (oldDebtTarget) setValue('amount', '', { shouldValidate: false })
     previousDebtSuggestion.current = ''
+    previousLoanSuggestion.current = ''
     previousType.current = type
   }, [getValues, setValue, type])
   useEffect(() => {
@@ -334,6 +352,39 @@ export function TransactionForm({
     }
     previousDebtSuggestion.current = suggestionContext
   }, [debtOperation, installmentPending, setValue, suggestionContext])
+  const loanSuggestionContext = loanId
+    ? `${loanId}:${selectedLoanInstallment?.id ?? 'none'}:${selectedLoanInstallmentPending}:${selectedLoanPending}`
+    : ''
+  useEffect(() => {
+    if (!loanId) {
+      if (previousLoanSuggestion.current)
+        setValue('amount', '', { shouldValidate: false })
+      previousLoanSuggestion.current = ''
+      return
+    }
+    if (selectedLoanDetail.isPending) return
+    if (previousLoanSuggestion.current === loanSuggestionContext) return
+    const suggested =
+      selectedLoanInstallmentPending > 0
+        ? selectedLoanInstallmentPending.toFixed(2)
+        : selectedLoan
+          ? Math.min(
+              Number(selectedLoan.installmentAmount),
+              selectedLoanPending,
+            ).toFixed(2)
+          : ''
+    if (suggested && Number(suggested) > 0)
+      setValue('amount', suggested, { shouldValidate: true })
+    previousLoanSuggestion.current = loanSuggestionContext
+  }, [
+    loanId,
+    loanSuggestionContext,
+    selectedLoan,
+    selectedLoanDetail.isPending,
+    selectedLoanInstallmentPending,
+    selectedLoanPending,
+    setValue,
+  ])
   const submit = (value: TransactionFormValues) => {
     const common = {
       accountId: value.accountId,
@@ -529,14 +580,7 @@ export function TransactionForm({
                 <option key={loan.id} value={loan.id}>
                   Préstamo a {loan.personName} · pendiente{' '}
                   {formatMoney(
-                    String(
-                      Math.max(
-                        0,
-                        Number(loan.expectedTotal) -
-                          Number(loan.principalReceived) -
-                          Number(loan.interestReceived),
-                      ),
-                    ),
+                    String(getLoanTotalPending(loan)),
                     loan.currency,
                   )}
                 </option>
@@ -549,9 +593,44 @@ export function TransactionForm({
         <div className={styles.specializedSummary} role="status">
           <strong>Cobro vinculado a {selectedLoan.personName}</strong>
           <span>
-            Pendiente total:{' '}
+            Deuda total pendiente:{' '}
             {formatMoney(String(selectedLoanPending), selectedLoan.currency)}
           </span>
+          {selectedLoanDetail.isPending ? (
+            <span>Consultando la cuota pendiente actual…</span>
+          ) : selectedLoanInstallment ? (
+            <>
+              <span>
+                Cuota pendiente actual:{' '}
+                {formatMoney(
+                  String(selectedLoanInstallmentPending),
+                  selectedLoan.currency,
+                )}{' '}
+                · vence{' '}
+                {new Date(
+                  `${selectedLoanInstallment.dueDate}T12:00:00`,
+                ).toLocaleDateString('es-CO')}
+              </span>
+              <small>
+                Capital{' '}
+                {formatMoney(
+                  String(selectedLoanInstallmentCapital),
+                  selectedLoan.currency,
+                )}{' '}
+                · interés{' '}
+                {formatMoney(
+                  String(selectedLoanInstallmentInterest),
+                  selectedLoan.currency,
+                )}
+              </small>
+            </>
+          ) : (
+            <span>No hay una cuota pendiente en el plan.</span>
+          )}
+          <small>
+            El monto se sugiere con la cuota pendiente actual, pero puedes
+            modificarlo para registrar un pago parcial o un abono mayor.
+          </small>
           <small>
             El dinero entrará a la cuenta seleccionada y reducirá el préstamo
             exactamente una vez.
@@ -725,12 +804,21 @@ export function TransactionForm({
             />
           )}
         />
-        {formContext === 'DEBT_INSTALLMENT_PAYMENT' && installmentPending && (
+        {selectedLoan && selectedLoanInstallmentPending > 0 ? (
+          <small>
+            Se sugirió la cuota pendiente actual de{' '}
+            {formatMoney(
+              String(selectedLoanInstallmentPending),
+              selectedLoan.currency,
+            )}
+            . Puedes modificar el monto.
+          </small>
+        ) : formContext === 'DEBT_INSTALLMENT_PAYMENT' && installmentPending ? (
           <small>
             Valor sugerido para cubrir la próxima cuota. Puedes modificarlo para
             registrar un pago parcial.
           </small>
-        )}
+        ) : null}
       </FormField>
       {isPartialInstallment && (
         <p role="status">Este pago cubrirá parcialmente la cuota.</p>
