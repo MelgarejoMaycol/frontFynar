@@ -25,6 +25,15 @@ import {
   useSimulation,
   useUpdateLoan,
 } from './hooks'
+import {
+  getInstallmentInterestPending,
+  getInstallmentPending,
+  getInstallmentPrincipalPending,
+  getLoanInterestPending,
+  getLoanTotalPending,
+  installmentStatusLabel,
+  lendingStatusLabel,
+} from './lending.utils'
 import type {
   LendingFrequency,
   LendingMethod,
@@ -37,6 +46,12 @@ import type {
 import styles from './lending.module.css'
 
 type Tab = 'summary' | 'loans' | 'simulator'
+type PaymentTarget = {
+  loanId: string
+  currency: string
+  title: string
+}
+
 const today = () => new Date().toISOString().slice(0, 10)
 const nextMonth = () => {
   const value = new Date()
@@ -68,10 +83,14 @@ const methodLabel: Record<LendingMethod, string> = {
 
 function LoanCard({
   loan,
+  canWrite,
   onOpen,
+  onCollect,
 }: {
   loan: LoanListItem
+  canWrite: boolean
   onOpen: () => void
+  onCollect: () => void
 }) {
   const progress = Math.min(
     100,
@@ -79,30 +98,61 @@ function LoanCard({
       Math.max(1, Number(loan.originalPrincipal))) *
       100,
   )
+  const interestPending = getLoanInterestPending(loan)
+  const totalPending = getLoanTotalPending(loan)
+  const collectable =
+    canWrite &&
+    (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') &&
+    totalPending > 0
+
   return (
-    <button type="button" className={styles.loan} onClick={onOpen}>
-      <div className={styles.loanHead}>
-        <div>
-          <strong>{loan.personName}</strong>
+    <article className={styles.loan}>
+      <button
+        type="button"
+        className={styles.loanMain}
+        onClick={onOpen}
+        aria-label={`Ver préstamo de ${loan.personName}`}
+      >
+        <div className={styles.loanHead}>
+          <div>
+            <strong>{loan.personName}</strong>
+            <span>
+              {Number(loan.ratePercent)} % por periodo ·{' '}
+              {frequencyLabel[loan.frequency]}
+            </span>
+          </div>
+          <span className={styles.status}>{lendingStatusLabel[loan.status]}</span>
+        </div>
+        <div className={styles.loanPrimary}>
+          <small>Capital pendiente</small>
+          <h3>{money(loan.currentPrincipal, loan.currency)}</h3>
+        </div>
+        <div className={styles.loanBreakdown}>
           <span>
-            {Number(loan.ratePercent)} % por periodo ·{' '}
-            {frequencyLabel[loan.frequency]}
+            <small>Intereses pendientes</small>
+            <strong>{money(interestPending, loan.currency)}</strong>
+          </span>
+          <span>
+            <small>Total por cobrar</small>
+            <strong>{money(totalPending, loan.currency)}</strong>
           </span>
         </div>
-        <span className={styles.status}>{loan.status}</span>
-      </div>
-      <div>
-        <small>Capital pendiente</small>
-        <h3>{money(loan.currentPrincipal, loan.currency)}</h3>
-      </div>
-      <div className={styles.progress}>
-        <i style={{ width: `${progress}%` }} />
-      </div>
-      <div className={styles.loanFoot}>
-        <span>Cuota {money(loan.installmentAmount, loan.currency)}</span>
-        <span>{loan.nextDueDate ? date(loan.nextDueDate) : 'Finalizado'}</span>
-      </div>
-    </button>
+        <div className={styles.progress}>
+          <i style={{ width: `${progress}%` }} />
+        </div>
+        <div className={styles.loanFoot}>
+          <span>Cuota {money(loan.installmentAmount, loan.currency)}</span>
+          <span>{loan.nextDueDate ? date(loan.nextDueDate) : 'Finalizado'}</span>
+        </div>
+      </button>
+      {collectable ? (
+        <div className={styles.loanQuickActions}>
+          <Button type="button" size="small" onClick={onCollect}>
+            Cobrar próxima cuota
+          </Button>
+        </div>
+      ) : null}
+    </article>
   )
 }
 
@@ -496,98 +546,147 @@ function PaymentDialog({
   workspaceId,
   loanId,
   currency,
-  pending,
   title,
   onClose,
 }: {
   workspaceId: string
   loanId: string
   currency: string
-  pending: string
   title: string
   onClose: () => void
 }) {
   const accounts = useAssetAccounts(workspaceId)
+  const loan = useLoan(workspaceId, loanId)
   const pay = useCollectLoan(workspaceId, loanId)
-  const [amount, setAmount] = useState(pending)
+  const [amountOverride, setAmountOverride] = useState<string | null>(null)
   const [accountId, setAccountId] = useState('')
   const [notes, setNotes] = useState('')
+  const nextPendingInstallment = loan.data?.installments.find(
+    (installment) => installment.status !== 'PAID',
+  )
+  const installmentPending = nextPendingInstallment
+    ? getInstallmentPending(nextPendingInstallment)
+    : 0
+  const totalPending = loan.data ? getLoanTotalPending(loan.data) : 0
+  const suggestedAmount =
+    installmentPending > 0
+      ? installmentPending.toFixed(2)
+      : totalPending > 0
+        ? totalPending.toFixed(2)
+        : ''
+  const amount = amountOverride ?? suggestedAmount
+  const numericAmount = Number(amount || 0)
+  const exceedsTotal = totalPending > 0 && numericAmount > totalPending + 0.005
+  const exceedsInstallment =
+    installmentPending > 0 && numericAmount > installmentPending + 0.005
+
   return (
     <Dialog open title={title} onClose={onClose}>
-      <form
-        className={styles.form}
-        onSubmit={(event) => {
-          event.preventDefault()
-          pay.mutate(
-            {
-              amount,
-              receivingAccountId: accountId,
-              notes: notes || null,
-              idempotencyKey: crypto.randomUUID(),
-            },
-            { onSuccess: onClose },
-          )
-        }}
-      >
-        <p>
-          Monto pendiente seleccionado:{' '}
-          <strong>{money(pending, currency)}</strong>. Se aplica en orden de
-          cuotas, primero a interés y luego a capital.
+      {loan.isPending || accounts.isPending ? (
+        <PageLoader />
+      ) : loan.isError || accounts.isError || !loan.data ? (
+        <p className={styles.error}>
+          No fue posible cargar el préstamo o las cuentas disponibles.
         </p>
-        <label>
-          <span>Monto recibido</span>
-          <MoneyInput
-            value={amount}
-            onValueChange={setAmount}
-            currency={currency}
-            minorUnits
-          />
-        </label>
-        <label>
-          <span>Cuenta receptora</span>
-          <select
-            required
-            value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
-          >
-            <option value="">Selecciona una cuenta</option>
-            {accounts.data
-              ?.filter((a) => a.currency === currency)
-              .map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} · disponible {money(a.currentBalance, a.currency)}
-                </option>
-              ))}
-          </select>
-        </label>
-        <label>
-          <span>Nota</span>
-          <Textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
-        {pay.isError ? (
-          <p className={styles.error}>{pay.error.message}</p>
-        ) : null}
-        <div className={styles.actions}>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={
-              !accountId ||
-              Number(amount) <= 0 ||
-              Number(amount) > Number(pending)
-            }
-            loading={pay.isPending}
-          >
-            Registrar cobro
-          </Button>
-        </div>
-      </form>
+      ) : (
+        <form
+          className={styles.form}
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (!accountId || numericAmount <= 0 || exceedsTotal) return
+            pay.mutate(
+              {
+                amount,
+                receivingAccountId: accountId,
+                notes: notes || null,
+                idempotencyKey: crypto.randomUUID(),
+              },
+              { onSuccess: onClose },
+            )
+          }}
+        >
+          <div className={styles.collectionSummary}>
+            <div>
+              <span>Deuda total pendiente</span>
+              <strong>{money(totalPending, currency)}</strong>
+            </div>
+            <div>
+              <span>Cuota pendiente actual</span>
+              <strong>{money(installmentPending, currency)}</strong>
+            </div>
+            {nextPendingInstallment ? (
+              <small>
+                Cuota #{nextPendingInstallment.installmentNumber} · vence{' '}
+                {date(nextPendingInstallment.dueDate)}
+              </small>
+            ) : null}
+          </div>
+          <p className={styles.hint}>
+            El monto se sugiere con la cuota pendiente actual. Puedes cambiarlo
+            para registrar un pago parcial o un abono mayor, sin superar el total
+            pendiente del préstamo.
+          </p>
+          <label>
+            <span>Monto recibido</span>
+            <MoneyInput
+              value={amount}
+              onValueChange={setAmountOverride}
+              currency={currency}
+              minorUnits
+            />
+          </label>
+          {exceedsInstallment && !exceedsTotal ? (
+            <p className={styles.hint}>
+              El excedente se aplicará a las siguientes cuotas en orden.
+            </p>
+          ) : null}
+          {exceedsTotal ? (
+            <p className={styles.error}>
+              El monto no puede superar {money(totalPending, currency)}.
+            </p>
+          ) : null}
+          <label>
+            <span>Cuenta donde llegó el dinero</span>
+            <select
+              required
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+            >
+              <option value="">Selecciona una cuenta</option>
+              {accounts.data
+                ?.filter((a) => a.currency === currency)
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} · disponible {money(a.currentBalance, a.currency)}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label>
+            <span>Nota</span>
+            <Textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
+          {pay.isError ? (
+            <p className={styles.error}>{pay.error.message}</p>
+          ) : null}
+          <div className={styles.actions}>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!accountId || numericAmount <= 0 || exceedsTotal}
+              loading={pay.isPending}
+            >
+              Registrar cobro
+            </Button>
+          </div>
+        </form>
+      )}
     </Dialog>
   )
 }
@@ -662,10 +761,7 @@ export function LendingPage() {
   const [detailId, setDetailId] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [preset, setPreset] = useState<SimulationInput | null>(null)
-  const [payment, setPayment] = useState<{
-    pending: string
-    title: string
-  } | null>(null)
+  const [payment, setPayment] = useState<PaymentTarget | null>(null)
   const [editing, setEditing] = useState(false)
   const summary = useLendingSummary(workspaceId)
   const loans = useLoans(workspaceId, { q: search || undefined, status })
@@ -698,16 +794,25 @@ export function LendingPage() {
     setPreset(value ?? null)
     setCreateOpen(true)
   }
+  const openCollection = (loan: LoanListItem, title = 'Cobrar próxima cuota') =>
+    setPayment({ loanId: loan.id, currency: loan.currency, title })
   const nextPendingInstallment = detail.data?.installments.find(
     (installment) => installment.status !== 'PAID',
   )
-  const totalPending = (
-    detail.data?.installments.reduce(
-      (total, installment) =>
-        total + Number(installment.totalAmount) - Number(installment.totalPaid),
-      0,
-    ) ?? 0
-  ).toFixed(2)
+  const detailInterestPending = detail.data
+    ? getLoanInterestPending(detail.data)
+    : 0
+  const detailTotalPending = detail.data ? getLoanTotalPending(detail.data) : 0
+  const detailInstallmentPending = nextPendingInstallment
+    ? getInstallmentPending(nextPendingInstallment)
+    : 0
+  const detailInstallmentCapital = nextPendingInstallment
+    ? getInstallmentPrincipalPending(nextPendingInstallment)
+    : 0
+  const detailInstallmentInterest = nextPendingInstallment
+    ? getInstallmentInterestPending(nextPendingInstallment)
+    : 0
+
   return (
     <div className={styles.page}>
       <PageHeader
@@ -802,7 +907,9 @@ export function LendingPage() {
                   <LoanCard
                     key={loan.id}
                     loan={loan}
+                    canWrite={canWrite}
                     onOpen={() => setDetailId(loan.id)}
+                    onCollect={() => openCollection(loan)}
                   />
                 ))}
               </div>
@@ -850,7 +957,9 @@ export function LendingPage() {
                 <LoanCard
                   key={loan.id}
                   loan={loan}
+                  canWrite={canWrite}
                   onOpen={() => setDetailId(loan.id)}
+                  onCollect={() => openCollection(loan)}
                 />
               ))}
             </div>
@@ -886,13 +995,15 @@ export function LendingPage() {
                 <div>
                   <h2>{detail.data.personName}</h2>
                   <p>
-                    {money(detail.data.currentPrincipal, detail.data.currency)}{' '}
-                    pendiente · {Number(detail.data.ratePercent)} % por{' '}
-                    {frequencyLabel[detail.data.frequency].toLowerCase()}
+                    {Number(detail.data.ratePercent)} % por{' '}
+                    {frequencyLabel[detail.data.frequency].toLowerCase()} · total
+                    pendiente {money(detailTotalPending, detail.data.currency)}
                   </p>
                 </div>
                 <div className={styles.detailActions}>
-                  <span className={styles.status}>{detail.data.status}</span>
+                  <span className={styles.status}>
+                    {lendingStatusLabel[detail.data.status]}
+                  </span>
                   {canWrite ? (
                     <Button
                       type="button"
@@ -905,19 +1016,48 @@ export function LendingPage() {
                   {canWrite && nextPendingInstallment ? (
                     <Button
                       type="button"
-                      onClick={() =>
-                        setPayment({
-                          pending: totalPending,
-                          title: 'Cobrar préstamo',
-                        })
-                      }
+                      onClick={() => openCollection(detail.data!, 'Cobrar próxima cuota')}
                     >
-                      Cobrar ahora
+                      Cobrar próxima cuota
                     </Button>
                   ) : null}
                 </div>
               </div>
-              <div className={styles.table}>
+              <div className={styles.detailMetrics}>
+                <div>
+                  <span>Capital pendiente</span>
+                  <strong>
+                    {money(detail.data.currentPrincipal, detail.data.currency)}
+                  </strong>
+                </div>
+                <div>
+                  <span>Intereses pendientes</span>
+                  <strong>{money(detailInterestPending, detail.data.currency)}</strong>
+                </div>
+                <div>
+                  <span>Total por cobrar</span>
+                  <strong>{money(detailTotalPending, detail.data.currency)}</strong>
+                </div>
+                <div>
+                  <span>Cuota pendiente actual</span>
+                  <strong>
+                    {money(detailInstallmentPending, detail.data.currency)}
+                  </strong>
+                  {nextPendingInstallment ? (
+                    <small>Vence {date(nextPendingInstallment.dueDate)}</small>
+                  ) : null}
+                </div>
+              </div>
+              {nextPendingInstallment ? (
+                <div className={styles.currentInstallment}>
+                  <strong>Composición de la cuota pendiente</strong>
+                  <span>
+                    Capital {money(detailInstallmentCapital, detail.data.currency)} ·
+                    interés {money(detailInstallmentInterest, detail.data.currency)}
+                  </span>
+                </div>
+              ) : null}
+              <div className={`${styles.table} ${styles.installmentsTable}`}>
                 <table>
                   <thead>
                     <tr>
@@ -927,7 +1067,7 @@ export function LendingPage() {
                       <th>Interés</th>
                       <th>Pendiente</th>
                       <th>Estado</th>
-                      <th />
+                      <th>Acción</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -943,28 +1083,29 @@ export function LendingPage() {
                         </td>
                         <td>
                           {money(
-                            Number(row.totalAmount) - Number(row.totalPaid),
+                            getInstallmentPending(row),
                             detail.data!.currency,
                           )}
                         </td>
-                        <td>{row.status}</td>
+                        <td>{installmentStatusLabel[row.status]}</td>
                         <td>
                           {canWrite && row.id === nextPendingInstallment?.id ? (
                             <Button
                               type="button"
+                              size="small"
+                              className={styles.tableAction}
                               onClick={() =>
-                                setPayment({
-                                  pending: (
-                                    Number(row.totalAmount) -
-                                    Number(row.totalPaid)
-                                  ).toFixed(2),
-                                  title: `Cobrar cuota ${row.installmentNumber}`,
-                                })
+                                openCollection(
+                                  detail.data!,
+                                  `Cobrar cuota ${row.installmentNumber}`,
+                                )
                               }
                             >
-                              Registrar cobro
+                              Cobrar
                             </Button>
-                          ) : null}
+                          ) : (
+                            <span className={styles.tableEmptyAction}>—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1047,12 +1188,12 @@ export function LendingPage() {
           )}
         </Dialog>
       ) : null}
-      {payment && detail.data ? (
+      {payment ? (
         <PaymentDialog
+          key={`${payment.loanId}-${payment.title}`}
           workspaceId={workspaceId}
-          loanId={detail.data.id}
-          currency={detail.data.currency}
-          pending={payment.pending}
+          loanId={payment.loanId}
+          currency={payment.currency}
           title={payment.title}
           onClose={() => setPayment(null)}
         />
