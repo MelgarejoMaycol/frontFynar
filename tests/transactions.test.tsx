@@ -35,6 +35,7 @@ import {
 import type { Account } from '@/features/accounts/types/account.types'
 import type { Category } from '@/features/categories/types/category.types'
 import type { Debt } from '@/features/liabilities/types'
+import type { LoanDetail, LoanListItem } from '@/features/lending/types'
 import type { Transaction } from '@/features/transactions/types/transaction.types'
 
 const account: Account = {
@@ -832,33 +833,65 @@ describe('movimientos', () => {
       screen.getByPlaceholderText('Ej. Pago de nómina de agosto'),
     ).toBeVisible()
   })
-  it('vincula un ingreso a un préstamo por cobrar sin duplicar el movimiento', async () => {
+  it('sugiere la cuota pendiente del préstamo y permite modificarla', async () => {
     const user = userEvent.setup()
     const { nequi } = mockDebtFormResources()
-    vi.spyOn(lendingApi, 'list').mockResolvedValue({
-      success: true,
-      data: [
+    const issuedLoan: LoanListItem = {
+      id: 'aaaaaaaa-1111-4111-8111-111111111111',
+      personId: 'bbbbbbbb-1111-4111-8111-111111111111',
+      personName: 'David',
+      currency: 'COP',
+      originalPrincipal: '100000.00',
+      currentPrincipal: '80000.00',
+      ratePercent: '20.00',
+      method: 'FIXED_PAYMENT',
+      frequency: 'MONTHLY',
+      termCount: 1,
+      installmentAmount: '120000.00',
+      expectedInterest: '20000.00',
+      expectedTotal: '120000.00',
+      interestReceived: '20000.00',
+      principalReceived: '20000.00',
+      nextDueDate: '2026-09-30',
+      estimatedEndDate: '2026-09-30',
+      status: 'ACTIVE',
+    }
+    const issuedLoanDetail: LoanDetail = {
+      ...issuedLoan,
+      relationship: 'Amigo',
+      receivableAccountId: 'cccccccc-1111-4111-8111-111111111111',
+      receivableAccountName: 'Préstamo a David',
+      sourceAccountId: nequi.id,
+      sourceAccountName: nequi.name,
+      disbursementDate: '2026-08-30',
+      firstPaymentDate: '2026-09-30',
+      notes: null,
+      installments: [
         {
-          id: 'aaaaaaaa-1111-4111-8111-111111111111',
-          personId: 'bbbbbbbb-1111-4111-8111-111111111111',
-          personName: 'David',
-          currency: 'COP',
-          originalPrincipal: '100000.00',
-          currentPrincipal: '100000.00',
-          ratePercent: '0.00',
-          method: 'FIXED_PAYMENT',
-          frequency: 'MONTHLY',
-          termCount: 1,
-          installmentAmount: '100000.00',
-          expectedInterest: '0.00',
-          expectedTotal: '100000.00',
-          interestReceived: '0.00',
-          principalReceived: '0.00',
-          nextDueDate: '2026-09-30',
-          estimatedEndDate: '2026-09-30',
-          status: 'ACTIVE',
+          id: 'dddddddd-1111-4111-8111-111111111111',
+          installmentNumber: 1,
+          dueDate: '2026-09-30',
+          openingPrincipal: '100000.00',
+          principalAmount: '100000.00',
+          interestAmount: '20000.00',
+          totalAmount: '120000.00',
+          principalPaid: '20000.00',
+          interestPaid: '20000.00',
+          totalPaid: '40000.00',
+          closingPrincipal: '0.00',
+          status: 'PARTIAL',
+          paidAt: null,
         },
       ],
+      payments: [],
+    }
+    vi.spyOn(lendingApi, 'list').mockResolvedValue({
+      success: true,
+      data: [issuedLoan],
+    })
+    vi.spyOn(lendingApi, 'get').mockResolvedValue({
+      success: true,
+      data: issuedLoanDetail,
     })
     const onSubmit = vi.fn()
     render(
@@ -882,17 +915,22 @@ describe('movimientos', () => {
     )
     await user.selectOptions(
       await screen.findByRole('combobox', { name: /Categoría financiera/ }),
-      'aaaaaaaa-1111-4111-8111-111111111111',
+      issuedLoan.id,
     )
     const amount = screen.getByLabelText(/Monto/)
+    await waitFor(() => expect(amount).toHaveValue('80.000,00'))
+    expect(screen.getByText(/Deuda total pendiente:/)).toBeVisible()
+    expect(screen.getByText(/Cuota pendiente actual:/)).toBeVisible()
+    await user.clear(amount)
     await user.type(amount, '5000000')
+    expect(amount).toHaveValue('50.000,00')
     await user.click(
       screen.getByRole('button', { name: 'Registrar movimiento' }),
     )
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'LOAN_COLLECTION',
-        loanId: 'aaaaaaaa-1111-4111-8111-111111111111',
+        loanId: issuedLoan.id,
         receivingAccountId: nequi.id,
         amount: '50000.00',
       }),
