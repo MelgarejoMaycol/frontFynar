@@ -89,9 +89,6 @@ vi.mock('@/features/transactions/components/TransactionForm', () => ({
     </button>
   ),
 }))
-vi.mock('@/features/transactions/components/LoanCollectionForm', () => ({
-  LoanCollectionForm: () => <div data-testid="loan-collection-form" />,
-}))
 
 describe('TransactionsPage', () => {
   beforeEach(() => {
@@ -197,6 +194,7 @@ describe('TransactionsPage', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Registrar movimiento' }),
     )
+    expect(screen.getByText('Nuevo movimiento')).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Enviar creación' }))
     expect(mocks.createMutate).toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
