@@ -14,17 +14,15 @@ import {
   useLoan,
   useLoans,
 } from '@/features/lending/hooks'
-import { formatMoney, workspaceDateTimeToIso } from '../transactions.format'
+import {
+  formatMoney,
+  isoToWorkspaceDateTimeValue,
+  workspaceDateTimeToIso,
+} from '../transactions.format'
 import { getTransactionErrorMessage } from '../transactions.errors'
 import styles from './transactions.module.css'
 
 type CollectionMode = 'INSTALLMENT' | 'CUSTOM' | 'FULL'
-
-const nowForInput = () => {
-  const date = new Date()
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return local.toISOString().slice(0, 16)
-}
 
 const pendingAmount = (total: string, paid: string) =>
   Math.max(0, Number(total) - Number(paid))
@@ -46,7 +44,9 @@ export function LoanCollectionForm({
   const [receivingAccountId, setReceivingAccountId] = useState('')
   const [mode, setMode] = useState<CollectionMode>('INSTALLMENT')
   const [amount, setAmount] = useState('')
-  const [occurredAt, setOccurredAt] = useState(nowForInput)
+  const [occurredAt, setOccurredAt] = useState(() =>
+    isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+  )
   const [notes, setNotes] = useState('')
   const loanDetail = useLoan(workspaceId, loanId)
   const collect = useCollectLoan(workspaceId, loanId)
@@ -90,7 +90,6 @@ export function LoanCollectionForm({
   useEffect(() => {
     setMode('INSTALLMENT')
     setAmount('')
-    collect.reset()
   }, [loanId])
 
   useEffect(() => {
@@ -168,7 +167,10 @@ export function LoanCollectionForm({
         <Select
           id="loan-collection-loan"
           value={loanId}
-          onChange={(event) => setLoanId(event.target.value)}
+          onChange={(event) => {
+            collect.reset()
+            setLoanId(event.target.value)
+          }}
           required
         >
           <option value="">Selecciona un préstamo</option>
