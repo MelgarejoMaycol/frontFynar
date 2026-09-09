@@ -92,7 +92,7 @@ export function PersonSelectWithCreate({
             <span>Nombre</span>
             <Input
               autoFocus
-              required
+              aria-required="true"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Ej. David"
