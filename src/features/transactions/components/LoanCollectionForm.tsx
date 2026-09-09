@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import {
   Button,
   FormField,
@@ -43,7 +43,7 @@ export function LoanCollectionForm({
   const [loanId, setLoanId] = useState('')
   const [receivingAccountId, setReceivingAccountId] = useState('')
   const [mode, setMode] = useState<CollectionMode>('INSTALLMENT')
-  const [amount, setAmount] = useState('')
+  const [amountOverride, setAmountOverride] = useState<string | null>(null)
   const [occurredAt, setOccurredAt] = useState(() =>
     isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
   )
@@ -87,36 +87,27 @@ export function LoanCollectionForm({
         )
       : 0
 
-  useEffect(() => {
-    setMode('INSTALLMENT')
-    setAmount('')
-  }, [loanId])
-
-  useEffect(() => {
-    if (!selectedLoan) {
-      setReceivingAccountId('')
-      return
-    }
-    if (
-      receivingAccountId &&
-      compatibleAccounts.some((account) => account.id === receivingAccountId)
-    )
-      return
-    setReceivingAccountId(compatibleAccounts[0]?.id ?? '')
-  }, [compatibleAccounts, receivingAccountId, selectedLoan])
-
-  useEffect(() => {
-    if (!loanId || loanDetail.isPending) return
-    if (mode === 'INSTALLMENT')
-      setAmount(nextPending > 0 ? nextPending.toFixed(2) : '')
-    if (mode === 'FULL')
-      setAmount(totalPending > 0 ? totalPending.toFixed(2) : '')
-  }, [loanDetail.isPending, loanId, mode, nextPending, totalPending])
+  const suggestedAmount =
+    mode === 'INSTALLMENT'
+      ? nextPending > 0
+        ? nextPending.toFixed(2)
+        : ''
+      : mode === 'FULL'
+        ? totalPending > 0
+          ? totalPending.toFixed(2)
+          : ''
+        : ''
+  const amount = amountOverride ?? suggestedAmount
+  const effectiveReceivingAccountId =
+    receivingAccountId &&
+    compatibleAccounts.some((account) => account.id === receivingAccountId)
+      ? receivingAccountId
+      : (compatibleAccounts[0]?.id ?? '')
 
   const numericAmount = Number(canonicalMoneyInput(amount || '0'))
   const exceedsPending = totalPending > 0 && numericAmount > totalPending + 0.005
   const canSubmit =
-    Boolean(loanId && receivingAccountId) &&
+    Boolean(loanId && effectiveReceivingAccountId) &&
     numericAmount > 0 &&
     !exceedsPending &&
     !collect.isPending &&
@@ -127,7 +118,7 @@ export function LoanCollectionForm({
     if (!canSubmit) return
     collect.mutate(
       {
-        receivingAccountId,
+        receivingAccountId: effectiveReceivingAccountId,
         amount: canonicalMoneyInput(amount),
         occurredAt: workspaceDateTimeToIso(occurredAt, timezone),
         notes: notes.trim() || null,
@@ -163,13 +154,20 @@ export function LoanCollectionForm({
         <p role="alert">{getTransactionErrorMessage(collect.error)}</p>
       ) : null}
 
-      <FormField label="Préstamo que te pagaron" htmlFor="loan-collection-loan" required>
+      <FormField
+        label="Préstamo que te pagaron"
+        htmlFor="loan-collection-loan"
+        required
+      >
         <Select
           id="loan-collection-loan"
           value={loanId}
           onChange={(event) => {
             collect.reset()
             setLoanId(event.target.value)
+            setMode('INSTALLMENT')
+            setAmountOverride(null)
+            setReceivingAccountId('')
           }}
           required
         >
@@ -196,22 +194,29 @@ export function LoanCollectionForm({
           </span>
           {nextInstallment ? (
             <span>
-              Próxima cuota: {formatMoney(String(nextPending), selectedLoan.currency)} · vence{' '}
-              {new Date(`${nextInstallment.dueDate}T12:00:00`).toLocaleDateString('es-CO')}
+              Próxima cuota:{' '}
+              {formatMoney(String(nextPending), selectedLoan.currency)} · vence{' '}
+              {new Date(
+                `${nextInstallment.dueDate}T12:00:00`,
+              ).toLocaleDateString('es-CO')}
             </span>
           ) : null}
         </div>
       ) : null}
 
       {selectedLoan ? (
-        <FormField label="¿Qué pago recibiste?" htmlFor="loan-collection-mode" required>
+        <FormField
+          label="¿Qué pago recibiste?"
+          htmlFor="loan-collection-mode"
+          required
+        >
           <Select
             id="loan-collection-mode"
             value={mode}
             onChange={(event) => {
               const nextMode = event.target.value as CollectionMode
               setMode(nextMode)
-              if (nextMode === 'CUSTOM') setAmount('')
+              setAmountOverride(nextMode === 'CUSTOM' ? '' : null)
             }}
           >
             <option value="INSTALLMENT" disabled={!nextInstallment}>
@@ -224,33 +229,43 @@ export function LoanCollectionForm({
       ) : null}
 
       {selectedLoan ? (
-        <FormField label="Cuenta donde recibiste el dinero" htmlFor="loan-collection-account" required>
+        <FormField
+          label="Cuenta donde recibiste el dinero"
+          htmlFor="loan-collection-account"
+          required
+        >
           <Select
             id="loan-collection-account"
-            value={receivingAccountId}
+            value={effectiveReceivingAccountId}
             onChange={(event) => setReceivingAccountId(event.target.value)}
             required
           >
             <option value="">Selecciona una cuenta</option>
             {compatibleAccounts.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.name} · saldo {formatMoney(account.currentBalance, account.currency)}
+                {account.name} · saldo{' '}
+                {formatMoney(account.currentBalance, account.currency)}
               </option>
             ))}
           </Select>
           {!compatibleAccounts.length ? (
             <small role="alert">
-              No hay una cuenta activa en {selectedLoan.currency} disponible para recibir este cobro.
+              No hay una cuenta activa en {selectedLoan.currency} disponible
+              para recibir este cobro.
             </small>
           ) : null}
         </FormField>
       ) : null}
 
-      <FormField label="Monto recibido" htmlFor="loan-collection-amount" required>
+      <FormField
+        label="Monto recibido"
+        htmlFor="loan-collection-amount"
+        required
+      >
         <MoneyInput
           id="loan-collection-amount"
           value={amount}
-          onValueChange={setAmount}
+          onValueChange={setAmountOverride}
           currency={selectedLoan?.currency}
           minorUnits
           disabled={!selectedLoan || mode === 'FULL'}
@@ -278,12 +293,19 @@ export function LoanCollectionForm({
         <div className={styles.specializedSummary}>
           <strong>Cómo se aplicará</strong>
           <small>
-            El cobro se aplica desde la cuota pendiente más antigua. Dentro de cada cuota se cubre primero el interés programado y después el capital. El dinero aumenta la cuenta que selecciones y el saldo por cobrar del préstamo se reduce automáticamente.
+            El cobro se aplica desde la cuota pendiente más antigua. Dentro de
+            cada cuota se cubre primero el interés programado y después el
+            capital. El dinero aumenta la cuenta que selecciones y el saldo por
+            cobrar del préstamo se reduce automáticamente.
           </small>
         </div>
       ) : null}
 
-      <FormField label="Fecha y hora del pago" htmlFor="loan-collection-date" required>
+      <FormField
+        label="Fecha y hora del pago"
+        htmlFor="loan-collection-date"
+        required
+      >
         <Input
           id="loan-collection-date"
           type="datetime-local"
