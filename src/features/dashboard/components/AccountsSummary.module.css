@@ -1,7 +1,8 @@
 .accountLink {
-  --account-value-width: 12ch;
-  width: max(18rem, calc(var(--account-value-width) + 8rem));
-  min-width: 18rem;
+  width: 20rem;
+  min-width: 20rem;
+  max-width: none;
+  flex: 0 0 20rem;
   align-self: stretch;
 }
 
@@ -82,9 +83,9 @@
 
 .accountCard .balanceBlock strong {
   display: block;
-  width: 100%;
+  width: max-content;
   min-width: 0;
-  max-width: 100%;
+  max-width: none;
   margin: 0;
   color: var(--color-text);
   font-size: clamp(1.05rem, 1.45vw, 1.32rem);
@@ -174,8 +175,10 @@
 
 @media (max-width: 600px) {
   .accountLink {
-    width: max(18rem, calc(var(--account-value-width) + 8rem));
-    min-width: 18rem;
+    width: 20rem;
+    min-width: 20rem;
+    max-width: none;
+    flex-basis: 20rem;
   }
 
   .accountCard {
@@ -196,7 +199,9 @@
 
 @media (max-width: 410px) {
   .accountLink {
-    min-width: 18rem;
+    width: 20rem;
+    min-width: 20rem;
+    max-width: none;
   }
 
   .accountCard {
