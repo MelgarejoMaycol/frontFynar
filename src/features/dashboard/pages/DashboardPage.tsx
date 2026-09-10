@@ -306,6 +306,8 @@ export function DashboardPage() {
               <FinancialHealthWidget workspaceId={workspace.id} />
             </div>
 
+            <AccountsSummary accounts={dashboard.data.accountBalances} />
+
             <div className={`${heroStyles.sectionBand} ${heroStyles.commitmentsBand}`}>
               <LiabilitiesDashboardWidget />
             </div>
@@ -315,7 +317,6 @@ export function DashboardPage() {
               <GoalsDashboardWidget />
             </div>
 
-            <AccountsSummary accounts={dashboard.data.accountBalances} />
             {dashboard.data.recentTransactions.length === 0 ? (
               <EmptyState
                 title="Registra tu primer movimiento"
