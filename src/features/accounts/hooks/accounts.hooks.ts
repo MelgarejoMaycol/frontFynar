@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { forecastKeys } from '@/features/forecasts/hooks/forecasts.hooks'
 import { accountsApi } from '../api/accounts.api'
 import type { AccountInput, UpdateAccountInput } from '../types/account.types'
 import type { Account } from '../types/account.types'
@@ -37,6 +38,7 @@ const useRefreshAccounts = (workspaceId: string) => {
     await Promise.all([
       client.invalidateQueries({ queryKey: accountsKeys.all(workspaceId) }),
       client.invalidateQueries({ queryKey: ['dashboard', workspaceId] }),
+      client.invalidateQueries({ queryKey: forecastKeys.all(workspaceId) }),
       ...(accountId
         ? [
             client.invalidateQueries({
