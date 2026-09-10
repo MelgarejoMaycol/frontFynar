@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { PiggyBank, Star } from 'lucide-react'
 import { Link } from 'react-router'
 import { Card, HorizontalScrollArea } from '@/components/ui'
@@ -31,11 +32,25 @@ export function AccountsSummary({
             const available = account.availableBalance ?? account.currentBalance
             const hasReservations =
               account.nature === 'ASSET' && Number(reserved) > 0
+            const formattedAvailable = formatMoney(available, account.currency)
+            const formattedTotal = formatMoney(account.currentBalance, account.currency)
+            const formattedReserved = hasReservations
+              ? formatMoney(reserved, account.currency)
+              : ''
+            const longestMoneyLength = Math.max(
+              formattedAvailable.length,
+              formattedTotal.length,
+              formattedReserved.length,
+            )
+            const accountCardStyle = {
+              '--account-value-width': `${longestMoneyLength}ch`,
+            } as CSSProperties
 
             return (
               <Link
                 key={account.id}
                 className={`${styles.accountLink} ${accountStyles.accountLink}`}
+                style={accountCardStyle}
                 to={`/app/accounts/${account.id}`}
               >
                 <Card className={`${styles.account} ${accountStyles.accountCard}`}>
@@ -64,7 +79,7 @@ export function AccountsSummary({
 
                   <div className={accountStyles.balanceBlock}>
                     <span>Disponible</span>
-                    <strong>{formatMoney(available, account.currency)}</strong>
+                    <strong>{formattedAvailable}</strong>
                   </div>
 
                   {hasReservations ? (
@@ -74,16 +89,16 @@ export function AccountsSummary({
                         En metas
                       </span>
                       <span className={accountStyles.reservedAmount}>
-                        {formatMoney(reserved, account.currency)}
+                        {formattedReserved}
                       </span>
                       <span className={accountStyles.totalBalance}>
-                        Total {formatMoney(account.currentBalance, account.currency)}
+                        Total {formattedTotal}
                       </span>
                     </div>
                   ) : (
                     <div className={accountStyles.noReservationRow}>
                       <span>Saldo total</span>
-                      <span>{formatMoney(account.currentBalance, account.currency)}</span>
+                      <span>{formattedTotal}</span>
                     </div>
                   )}
                 </Card>
