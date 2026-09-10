@@ -37,37 +37,40 @@
   word-break: break-word;
 }
 
-.metrics {
+.card .metrics {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem;
   align-content: stretch;
   width: 100%;
   max-width: none;
+  min-width: 0;
   flex: none;
 }
 
-.metric {
+.card .metric {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: auto auto;
   gap: 0.25rem 0.65rem;
   align-items: center;
   min-width: 0;
+  max-width: 100%;
   padding: 0.9rem 1rem;
   border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
   border-radius: var(--radius-medium);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
 }
 
-.metric svg {
+.card .metric svg {
   grid-row: 1 / span 2;
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.metric strong {
+.card .metric strong {
   min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
@@ -97,14 +100,15 @@
     grid-template-columns: 1fr;
   }
 
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .card .metrics {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 620px) {
   .card {
-    padding: 0.95rem;
+    padding: 0.85rem;
+    gap: 0.85rem;
   }
 
   .amountBlock {
@@ -112,23 +116,44 @@
   }
 
   .amount {
-    font-size: clamp(1.7rem, 8vw, 2.35rem);
+    font-size: clamp(1.6rem, 7vw, 2.15rem);
     overflow-wrap: normal;
     word-break: normal;
   }
 
-  .metrics {
+  .card .metrics {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .card .metric {
+    grid-template-columns: 1.1rem minmax(0, 1fr) auto;
+    grid-template-rows: auto;
     gap: 0.55rem;
+    align-items: center;
+    width: 100%;
+    padding: 0.72rem 0.78rem;
   }
 
-  .metric {
-    padding: 0.75rem 0.8rem;
-    gap: 0.2rem 0.55rem;
+  .card .metric svg {
+    grid-row: auto;
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
-  .metric strong {
-    font-size: clamp(0.92rem, 4.2vw, 1.05rem);
+  .card .metric span {
+    min-width: 0;
+    font-size: 0.76rem;
+    line-height: 1.2;
+  }
+
+  .card .metric strong {
+    justify-self: end;
+    min-width: 0;
+    max-width: 11rem;
+    text-align: right;
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    line-height: 1.2;
   }
 
   .footer {
@@ -144,24 +169,15 @@
   }
 }
 
-@media (max-width: 410px) {
-  .metric {
-    grid-template-columns: 1.1rem minmax(0, 1fr);
+@media (max-width: 360px) {
+  .card .metric {
+    grid-template-columns: 1.05rem minmax(0, 1fr);
   }
 
-  .metric svg {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
-  .metric span {
-    min-width: 0;
-    font-size: 0.76rem;
-    line-height: 1.2;
-  }
-
-  .metric strong {
-    font-size: 0.95rem;
-    line-height: 1.2;
+  .card .metric strong {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    text-align: left;
   }
 }
