@@ -17,6 +17,7 @@
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)) 0%, var(--color-surface) 55%),
     var(--color-surface);
+  animation: dashboardAccountIn 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .topRow {
@@ -84,6 +85,7 @@
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .reservationRow {
@@ -150,6 +152,17 @@
   white-space: nowrap;
 }
 
+@keyframes dashboardAccountIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 600px) {
   .accountLink {
     width: min(17rem, calc(100vw - 2.5rem));
@@ -162,14 +175,41 @@
   }
 
   .balanceBlock {
-    gap: 0.6rem;
+    display: grid;
+    justify-content: stretch;
+    gap: 0.2rem;
   }
 
   .balanceBlock strong {
-    font-size: 1.2rem;
+    width: 100%;
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: clamp(1.02rem, 5vw, 1.2rem);
   }
 
   .reservationRow {
     gap: 0.25rem 0.45rem;
+  }
+}
+
+@media (max-width: 410px) {
+  .accountLink {
+    width: min(16.5rem, calc(100vw - 2.25rem));
+  }
+
+  .accountCard {
+    padding: 0.75rem 0.8rem;
+  }
+
+  .balanceBlock strong {
+    font-size: 1.05rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accountCard {
+    animation: none;
   }
 }
