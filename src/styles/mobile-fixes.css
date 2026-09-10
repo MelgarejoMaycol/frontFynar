@@ -39,6 +39,52 @@ input[type='datetime-local']::-webkit-date-and-time-value {
     min-inline-size: 0;
   }
 
+  /* globals.css usa una regla genérica [class*=metrics] con !important en móvil.
+     Esta excepción semántica mantiene la proyección en una sola columna y evita
+     que sus importes vuelvan a comprimirse en iPhone. */
+  [aria-label='Resumen de la proyección'] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  [aria-label='Resumen de la proyección'] > div {
+    display: grid !important;
+    grid-template-columns: 1.1rem minmax(0, 1fr) auto !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    min-height: 0 !important;
+    gap: 0.55rem !important;
+  }
+
+  [aria-label='Resumen de la proyección'] > div > svg {
+    grid-row: auto !important;
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  [aria-label='Resumen de la proyección'] > div > span {
+    min-width: 0;
+    line-height: 1.2;
+  }
+
+  [aria-label='Resumen de la proyección'] > div > strong {
+    justify-self: end;
+    min-width: 0;
+    max-width: 11rem;
+    margin: 0;
+    text-align: right;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.2;
+  }
+
   /* En el detalle de pagos recurrentes, el historial es una tercera zona de la
      tarjeta. Debe bajar a una fila propia en lugar de comprimirse junto al
      monto y el estado. La especificidad y !important son deliberadas porque
@@ -125,6 +171,17 @@ input[type='datetime-local']::-webkit-date-and-time-value {
 }
 
 @media (max-width: 22rem) {
+  [aria-label='Resumen de la proyección'] > div {
+    grid-template-columns: 1.05rem minmax(0, 1fr) !important;
+  }
+
+  [aria-label='Resumen de la proyección'] > div > strong {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    text-align: left;
+  }
+
   #history > div > div > div:nth-child(3) > div > div {
     grid-template-columns: 1fr;
   }
