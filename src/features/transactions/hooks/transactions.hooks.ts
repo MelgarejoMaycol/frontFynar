@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { accountsKeys } from '@/features/accounts/hooks/accounts.hooks'
+import { forecastKeys } from '@/features/forecasts/hooks/forecasts.hooks'
 import { transactionsApi } from '../api/transactions.api'
 import type {
   CreateTransactionInput,
@@ -66,6 +67,7 @@ const useRefreshFinancialData = (workspaceId: string) => {
       client.invalidateQueries({ queryKey: transactionKeys.all(workspaceId) }),
       client.invalidateQueries({ queryKey: accountsKeys.all(workspaceId) }),
       client.invalidateQueries({ queryKey: ['dashboard', workspaceId] }),
+      client.invalidateQueries({ queryKey: forecastKeys.all(workspaceId) }),
       client.invalidateQueries({ queryKey: ['budgets', workspaceId] }),
       client.invalidateQueries({ queryKey: ['reports', workspaceId] }),
       client.invalidateQueries({ queryKey: ['liabilities', workspaceId] }),
