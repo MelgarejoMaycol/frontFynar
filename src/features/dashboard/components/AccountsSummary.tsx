@@ -9,6 +9,19 @@ import type { DashboardAccount } from '../types/dashboard.types'
 import styles from './dashboard.module.css'
 import accountStyles from './AccountsSummary.module.css'
 
+const ACCOUNT_CARD_MIN_WIDTH = 320
+const ACCOUNT_CARD_BASE_CONTENT_WIDTH = 190
+const ACCOUNT_CARD_CHARACTER_WIDTH = 13
+
+function getAccountCardWidth(values: string[]) {
+  const longestMoneyLength = Math.max(...values.map((value) => value.length), 0)
+
+  return Math.max(
+    ACCOUNT_CARD_MIN_WIDTH,
+    ACCOUNT_CARD_BASE_CONTENT_WIDTH + longestMoneyLength * ACCOUNT_CARD_CHARACTER_WIDTH,
+  )
+}
+
 export function AccountsSummary({
   accounts,
 }: {
@@ -37,14 +50,17 @@ export function AccountsSummary({
             const formattedReserved = hasReservations
               ? formatMoney(reserved, account.currency)
               : ''
-            const longestMoneyLength = Math.max(
-              formattedAvailable.length,
-              formattedTotal.length,
-              formattedReserved.length,
-            )
-            const accountCardStyle = {
-              '--account-value-width': `${longestMoneyLength}ch`,
-            } as CSSProperties
+            const cardWidth = getAccountCardWidth([
+              formattedAvailable,
+              formattedTotal,
+              formattedReserved,
+            ])
+            const accountCardStyle: CSSProperties = {
+              width: `${cardWidth}px`,
+              minWidth: `${cardWidth}px`,
+              maxWidth: 'none',
+              flex: `0 0 ${cardWidth}px`,
+            }
 
             return (
               <Link
