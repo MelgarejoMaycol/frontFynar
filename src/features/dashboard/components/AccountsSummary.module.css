@@ -1,5 +1,7 @@
 .accountLink {
-  width: clamp(15.5rem, 24vw, 18.5rem);
+  --account-value-width: 12ch;
+  width: max(18rem, calc(var(--account-value-width) + 8rem));
+  min-width: 18rem;
   align-self: stretch;
 }
 
@@ -88,8 +90,9 @@
   font-size: clamp(1.05rem, 1.45vw, 1.32rem);
   line-height: 1.08;
   text-align: left;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: visible;
+  overflow-wrap: normal;
   word-break: normal;
   font-variant-numeric: tabular-nums;
 }
@@ -150,11 +153,11 @@
 
 .noReservationRow span:last-child {
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   color: var(--color-text-secondary);
   font-weight: 600;
   text-align: right;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -171,7 +174,8 @@
 
 @media (max-width: 600px) {
   .accountLink {
-    width: min(18rem, calc(100vw - 2.75rem));
+    width: max(18rem, calc(var(--account-value-width) + 8rem));
+    min-width: 18rem;
   }
 
   .accountCard {
@@ -192,7 +196,7 @@
 
 @media (max-width: 410px) {
   .accountLink {
-    width: min(17.5rem, calc(100vw - 2.5rem));
+    min-width: 18rem;
   }
 
   .accountCard {
