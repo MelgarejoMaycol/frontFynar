@@ -38,4 +38,94 @@ input[type='datetime-local']::-webkit-date-and-time-value {
     max-inline-size: 100%;
     min-inline-size: 0;
   }
+
+  /* En el detalle de pagos recurrentes, el historial es una tercera zona de la
+     tarjeta. Debe bajar a una fila propia en lugar de comprimirse junto al
+     monto y el estado. La especificidad y !important son deliberadas porque
+     estas reglas corrigen mínimos intrínsecos del módulo cargado dinámicamente. */
+  #history > div > div {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap !important;
+  }
+
+  #history > div > div > div:first-child {
+    min-width: 0;
+    flex: 1 1 12rem;
+  }
+
+  #history > div > div > div:nth-child(2) {
+    min-width: 0 !important;
+    max-width: 100%;
+    flex: 0 1 auto;
+  }
+
+  #history > div > div > div:nth-child(3) {
+    width: 100%;
+    min-width: 100% !important;
+    max-width: 100%;
+    flex: 1 0 100% !important;
+  }
+
+  #history > div > div > div:nth-child(3) > div,
+  #history > div > div > div:nth-child(3) > div > span {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #history > div > div > div:nth-child(3) > div > span {
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 35.99rem) {
+  /* En teléfonos como iPhone 12 cada periodo pasa a flujo vertical. Así fecha,
+     monto, estado, cuenta y acciones nunca comparten una columna insuficiente. */
+  #history > div > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  #history > div > div > div:first-child,
+  #history > div > div > div:nth-child(2),
+  #history > div > div > div:nth-child(3) {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  #history > div > div > div:nth-child(2) {
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  #history > div > div > div:nth-child(3) > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 0.65rem !important;
+  }
+
+  #history > div > div > div:nth-child(3) > div > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 0.5rem !important;
+  }
+
+  #history > div > div > div:nth-child(3) > div > div > button {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+@media (max-width: 22rem) {
+  #history > div > div > div:nth-child(3) > div > div {
+    grid-template-columns: 1fr;
+  }
 }
