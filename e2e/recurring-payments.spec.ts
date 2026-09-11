@@ -133,7 +133,19 @@ test('recurrentes, menús, tarjeta y calendario en todos los viewports', async (
     await expect(card.getByText('5/09/2026')).toBeVisible()
     await expect(card.getByRole('link', { name: 'Ver detalles' })).toBeVisible()
     await expect(card.getByRole('button', { name: 'Eliminar' })).toHaveCount(0)
-    await card.getByLabel(`Acciones de ${obligationName}`).click()
+    const actionMenu = card.getByLabel(`Acciones de ${obligationName}`)
+    await expect(actionMenu).toBeVisible()
+    await expect
+      .poll(() =>
+        actionMenu.evaluate((node) => node.closest('[inert]') === null),
+      )
+      .toBe(true)
+    if (viewport.width <= 430) {
+      const actionBox = await actionMenu.boundingBox()
+      expect(actionBox?.width ?? 0).toBeGreaterThanOrEqual(44)
+      expect(actionBox?.height ?? 0).toBeGreaterThanOrEqual(44)
+    }
+    await actionMenu.click()
     await expect(
       card.getByRole('link', { name: 'Registrar pago' }),
     ).toBeVisible()
