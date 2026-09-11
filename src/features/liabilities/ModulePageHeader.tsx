@@ -113,7 +113,15 @@ function enhanceResourceCard(card: HTMLElement) {
 
   let sibling = details.nextElementSibling
   while (sibling) {
-    if (sibling instanceof HTMLElement) sibling.dataset.liabilityDetail = 'true'
+    if (sibling instanceof HTMLElement) {
+      const keepObligationActionsVisible =
+        kind === 'obligation' &&
+        sibling.matches('[class*="_obligationActions_"]')
+
+      if (!keepObligationActionsVisible) {
+        sibling.dataset.liabilityDetail = 'true'
+      }
+    }
     sibling = sibling.nextElementSibling
   }
 
