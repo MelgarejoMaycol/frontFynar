@@ -235,6 +235,18 @@
   gap: 0.65rem;
 }
 
+.dateWithAction {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dateWithAction button {
+  min-height: 2.55rem;
+  white-space: nowrap;
+}
+
 .dialogActions,
 .detailActions {
   display: flex;
@@ -527,7 +539,8 @@
 
 @media (max-width: 480px) {
   .directionGrid,
-  .twoColumns {
+  .twoColumns,
+  .dateWithAction {
     grid-template-columns: 1fr;
   }
 

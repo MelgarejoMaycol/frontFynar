@@ -223,6 +223,34 @@ describe('DashboardPage', () => {
       '/app/transactions?transactionId=t',
     )
   })
+  it('abre gráficas de ingresos, egresos y gastos por categoría', () => {
+    mocks.dashboard.mockReturnValue({
+      isPending: false,
+      isError: false,
+      data: {
+        ...data,
+        expensesByCategory: [
+          {
+            categoryId: 'food',
+            categoryName: 'Alimentación',
+            icon: null,
+            color: null,
+            currency: 'COP',
+            amount: '80.00',
+            percentage: '80.00',
+          },
+        ],
+      },
+      refetch: mocks.refetch,
+    })
+    view()
+    fireEvent.click(screen.getByRole('button', { name: 'Ver gráficas' }))
+    expect(screen.getByText('Gráficas financieras')).toBeVisible()
+    expect(screen.getAllByText('Ingresos vs egresos').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Gastos por categoría').length).toBeGreaterThan(0)
+    expect(screen.getByText('Alimentación')).toBeVisible()
+  })
+
   it('limita los movimientos recientes a cinco', () => {
     mocks.dashboard.mockReturnValue({
       isPending: false,

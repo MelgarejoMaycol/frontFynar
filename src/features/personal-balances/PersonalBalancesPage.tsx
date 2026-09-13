@@ -135,7 +135,13 @@ function CreateDialog({ open, workspaceCurrency, pending, error, onClose, onSubm
       </label> : null}
       <div className={styles.twoColumns}>
         <label className={styles.field}><span>Fecha</span><Input type="date" value={occurredOn} onChange={(event) => setOccurredOn(event.target.value)} required /></label>
-        <label className={styles.field}><span>Fecha esperada de pago (opcional)</span><Input type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} /></label>
+        <div className={styles.field}>
+          <label htmlFor="personal-balance-due-on">Fecha esperada de pago (opcional)</label>
+          <div className={styles.dateWithAction}>
+            <Input id="personal-balance-due-on" type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} />
+            {dueOn ? <Button type="button" variant="secondary" aria-label="Limpiar fecha esperada de pago" onClick={() => setDueOn('')}>Limpiar</Button> : null}
+          </div>
+        </div>
       </div>
       <label className={styles.field}><span>Notas</span><Textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Opcional" rows={3} /></label>
       {error && <p className={styles.error}>{error.message}</p>}
@@ -220,7 +226,13 @@ function EditDialog({ item, pending, error, onClose, onSubmit, people, accounts 
         <small>{sourceAlreadyApplied ? `Ya fue descontado de ${openingEntry?.accountName ?? 'la cuenta registrada'}.` : 'Si este préstamo es reciente, selecciona la cuenta y al guardar se descontará el monto original. Si es histórico, puedes dejarlo sin cuenta.'}</small>
       </label> : null}
       <label className={styles.field}><span>Concepto</span><Input value={description} onChange={(event) => setDescription(event.target.value)} /></label>
-      <label className={styles.field}><span>Fecha esperada de pago (opcional)</span><Input type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} /></label>
+      <div className={styles.field}>
+        <label htmlFor="personal-balance-edit-due-on">Fecha esperada de pago (opcional)</label>
+        <div className={styles.dateWithAction}>
+          <Input id="personal-balance-edit-due-on" type="date" value={dueOn} onChange={(event) => setDueOn(event.target.value)} />
+          {dueOn ? <Button type="button" variant="secondary" aria-label="Limpiar fecha esperada de pago" onClick={() => setDueOn('')}>Limpiar</Button> : null}
+        </div>
+      </div>
       <label className={styles.field}><span>Notas</span><Textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} /></label>
       {error && <p className={styles.error}>{error.message}</p>}
       <div className={styles.dialogActions}><Button type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancelar</Button><Button type="submit" loading={pending}>Guardar cambios</Button></div>

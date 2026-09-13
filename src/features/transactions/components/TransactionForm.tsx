@@ -571,7 +571,8 @@ export function TransactionForm({
       </FormField>
       {type === 'INCOME' &&
       !transaction &&
-      sourceAccount?.nature === 'ASSET' ? (
+      sourceAccount?.nature === 'ASSET' &&
+      activeIssuedLoans.length > 0 ? (
         <FormField label="Categoría financiera" htmlFor="transaction-loan">
           <Select id="transaction-loan" {...register('loanId')}>
             <option value="">Ingreso normal</option>
