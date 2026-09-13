@@ -28,6 +28,7 @@ export function AuthLayout() {
             <NavLink to="/login">Iniciar sesión</NavLink>
             <NavLink to="/register">Crear cuenta</NavLink>
             <NavLink to="/forgot-password">Recuperar contraseña</NavLink>
+            <a href="/demo">Ver demo</a>
           </nav>
         </div>
       </main>
