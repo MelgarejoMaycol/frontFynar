@@ -31,6 +31,10 @@ export function SessionInitializer({
     [queryClient],
   )
   useEffect(() => {
+    if (window.location.pathname === '/demo' || window.location.pathname.startsWith('/demo/')) {
+      useAuthStore.getState().setStatus('unauthenticated')
+      return
+    }
     if (initializationStarted.current) return
     initializationStarted.current = true
     const initialize = async () => {
