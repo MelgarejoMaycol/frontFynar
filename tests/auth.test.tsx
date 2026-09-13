@@ -211,6 +211,28 @@ describe('autenticación', () => {
       expect(useAuthStore.getState().status).toBe('unauthenticated'),
     )
   })
+  it('omite refresh y usuario actual cuando entra directamente a la demo local', async () => {
+    window.history.pushState({}, '', '/demo')
+    useAuthStore.getState().setStatus('checking')
+    const refresh = vi.fn(async () => 'access')
+    const loadUser = vi.fn()
+
+    render(
+      provider(
+        <SessionInitializer refresh={refresh} loadUser={loadUser}>
+          <p>Demo</p>
+        </SessionInitializer>,
+      ),
+    )
+
+    await waitFor(() =>
+      expect(useAuthStore.getState().status).toBe('unauthenticated'),
+    )
+    expect(refresh).not.toHaveBeenCalled()
+    expect(loadUser).not.toHaveBeenCalled()
+    window.history.pushState({}, '', '/')
+  })
+
   it('restaura la sesión mediante refresh y usuario actual', async () => {
     useAuthStore.getState().setStatus('checking')
     const user = {
