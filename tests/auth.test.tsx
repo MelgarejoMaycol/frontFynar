@@ -215,11 +215,9 @@ describe('autenticación', () => {
     window.history.pushState({}, '', '/demo')
     useAuthStore.getState().setStatus('checking')
     const refresh = vi.fn(async () => 'access')
-    const loadUser = vi.fn()
-
     render(
       provider(
-        <SessionInitializer refresh={refresh} loadUser={loadUser}>
+        <SessionInitializer refresh={refresh}>
           <p>Demo</p>
         </SessionInitializer>,
       ),
@@ -229,7 +227,6 @@ describe('autenticación', () => {
       expect(useAuthStore.getState().status).toBe('unauthenticated'),
     )
     expect(refresh).not.toHaveBeenCalled()
-    expect(loadUser).not.toHaveBeenCalled()
     window.history.pushState({}, '', '/')
   })
 
