@@ -93,15 +93,18 @@ function renderRoute(
 }
 
 describe('navegación y layouts', () => {
-  it('redirige la raíz al acceso público y renderiza AuthLayout', async () => {
+  it('renderiza el inicio público con acceso a la demo', async () => {
     renderRoute('/')
     expect(
-      await screen.findByRole('heading', { name: 'Iniciar sesión' }),
+      await screen.findByRole('heading', {
+        name: 'Entiende tu dinero antes de tomar decisiones.',
+      }),
     ).toBeInTheDocument()
-    expect(screen.getByLabelText('Navegación de acceso')).toBeVisible()
-    expect(
-      screen.getByLabelText('Navegación de acceso').closest('[data-bs-theme]'),
-    ).toHaveAttribute('data-bs-theme', 'light')
+    expect(screen.getByRole('link', { name: 'Explorar demo' })).toHaveAttribute(
+      'href',
+      '/demo',
+    )
+    expect(screen.getByText(/La demo carga localmente/)).toBeVisible()
   })
   it('navega entre rutas públicas', async () => {
     const user = userEvent.setup()
