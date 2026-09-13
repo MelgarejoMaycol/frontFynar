@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes } from 'react-router'
 import { PageLoader } from '@/components/feedback/PageLoader'
 import { NotFoundPage } from '@/components/feedback/NotFoundPage'
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth'
@@ -7,6 +7,16 @@ import { AppLayout } from '@/layouts/AppLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { InitialPrivateRedirect, WorkspaceGate } from '@/features/workspace'
 
+const LandingPage = lazy(() =>
+  import('@/features/demo').then((module) => ({
+    default: module.LandingPage,
+  })),
+)
+const DemoPage = lazy(() =>
+  import('@/features/demo').then((module) => ({
+    default: module.DemoPage,
+  })),
+)
 const LoginPage = lazy(() =>
   import('@/features/auth/pages/AuthPages').then((module) => ({
     default: module.LoginPage,
@@ -172,8 +182,9 @@ const publicLight = (page: ReactNode) => (
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={publicLight(<LandingPage />)} />
+      <Route path="/demo" element={publicLight(<DemoPage />)} />
       <Route element={<PublicOnlyRoute />}>
-        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={pending(<LoginPage />)} />
           <Route path="/register" element={pending(<RegisterPage />)} />
