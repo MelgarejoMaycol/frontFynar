@@ -15,7 +15,7 @@ describe('demo pública', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Demo local')).toBeVisible()
+    expect(screen.getAllByText('Demo local')[0]).toBeVisible()
     expect(screen.getByText(/Disponible para usar/)).toBeVisible()
     expect(screen.getByText('Ingresos y egresos')).toBeVisible()
     expect(screen.getByText('Mercado semanal')).toBeVisible()
