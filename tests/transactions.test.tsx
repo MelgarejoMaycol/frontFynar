@@ -833,6 +833,39 @@ describe('movimientos', () => {
       screen.getByPlaceholderText('Ej. Pago de nómina de agosto'),
     ).toBeVisible()
   })
+  it('oculta Categoría financiera cuando no hay préstamos por cobrar', async () => {
+    const user = userEvent.setup()
+    const { nequi } = mockDebtFormResources()
+    vi.spyOn(lendingApi, 'list').mockResolvedValue({
+      success: true,
+      data: [],
+    })
+    render(
+      <TransactionForm
+        workspaceId="income-without-issued-loans"
+        timezone="America/Bogota"
+        pending={false}
+        error={null}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+      { wrapper: provider() },
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /Tipo/ }),
+      'INCOME',
+    )
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: /^Destino/ }),
+      nequi.id,
+    )
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('combobox', { name: /Categoría financiera/ }),
+      ).not.toBeInTheDocument(),
+    )
+  })
+
   it('sugiere la cuota pendiente del préstamo y permite modificarla', async () => {
     const user = userEvent.setup()
     const { nequi } = mockDebtFormResources()
