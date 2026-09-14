@@ -129,6 +129,7 @@ export interface InvestmentFinancialImpactInput {
   currency: string
   initialAmount: string
   recurringContribution: string
+  contributionFrequency: InvestmentContributionFrequency
 }
 
 export interface InvestmentFinancialImpactResult {
