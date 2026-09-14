@@ -3,10 +3,18 @@ import { expect, test, type Page } from '@playwright/test'
 async function enterDemo(page: Page) {
   await page.goto('/demo')
   await expect(
-    page.getByRole('heading', { name: 'Entrar a la cuenta demo' }),
+    page.getByRole('heading', { name: 'Iniciar sesión en la demo' }),
   ).toBeVisible()
   await expect(page.getByText('Andrea Demo')).toBeVisible()
-  await page.getByRole('button', { name: 'Entrar al demo' }).click()
+  await expect(page.getByLabel('Correo electrónico demo')).toHaveValue(
+    'demo@fynar.app',
+  )
+  await expect(page.getByLabel('Contraseña demo')).toHaveValue(
+    'fynar-demo-2026',
+  )
+  await page
+    .getByRole('button', { name: 'Iniciar sesión en la cuenta demo' })
+    .click()
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(
     page.getByRole('heading', { name: 'Inicio', exact: true }),
@@ -86,6 +94,33 @@ test('la cuenta demo permite registrar un movimiento con los formularios reales'
   expect(apiRequests).toEqual([])
 })
 
+test('la demo expone módulos reales con datos preparados', async ({ page }) => {
+  await enterDemo(page)
+
+  await page.goto('/app/categories')
+  await expect(
+    page.getByRole('heading', { name: 'Categorías', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText('Alimentación').first()).toBeVisible()
+  await expect(page.getByText('Salario').first()).toBeVisible()
+
+  await page.goto('/app/budgets')
+  await expect(
+    page.getByRole('heading', { name: 'Presupuestos', exact: true }),
+  ).toBeVisible()
+
+  await page.goto('/app/goals')
+  await expect(
+    page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText('Fondo de emergencia').first()).toBeVisible()
+
+  await page.goto('/app/reports')
+  await expect(
+    page.getByRole('heading', { name: 'Análisis financiero', exact: true }),
+  ).toBeVisible()
+})
+
 test('el acceso público lleva al login demo y la experiencia real es responsive', async ({
   page,
 }) => {
@@ -100,17 +135,21 @@ test('el acceso público lleva al login demo y la experiencia real es responsive
   ).toHaveAttribute('href', '/demo')
 
   await page.goto('/login')
-  const demoLink = page.getByRole('link', { name: 'Ver demo completa' })
+  const demoLink = page.getByRole('link', {
+    name: /Probar Fynar con una cuenta demo/i,
+  })
   await expect(demoLink).toBeVisible()
   const box = await demoLink.boundingBox()
-  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(70)
 
   await page.setViewportSize({ width: 320, height: 760 })
   await demoLink.click()
   await expect(
-    page.getByRole('heading', { name: 'Entrar a la cuenta demo' }),
+    page.getByRole('heading', { name: 'Iniciar sesión en la demo' }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Entrar al demo' }).click()
+  await page
+    .getByRole('button', { name: 'Iniciar sesión en la cuenta demo' })
+    .click()
   await expect(page).toHaveURL(/\/app\/dashboard$/)
 
   const overflow = await page.evaluate(
