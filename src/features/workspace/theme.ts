@@ -1,8 +1,31 @@
 import type { UserPreferences } from './types/workspace.types'
 
 const THEME_CACHE_KEY = 'fynar-theme'
+const PUBLIC_LIGHT_PATHS = [
+  '/',
+  '/login',
+  '/demo',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/verify-email-change',
+  '/auth/google',
+  '/terms',
+  '/privacy',
+]
+
+const isPublicLightPath = (pathname: string) =>
+  PUBLIC_LIGHT_PATHS.some((path) =>
+    path === '/' ? pathname === '/' : pathname.startsWith(path),
+  )
 
 export function applyCachedTheme() {
+  if (isPublicLightPath(window.location.pathname)) {
+    document.documentElement.dataset.bsTheme = 'light'
+    return
+  }
+
   const cached = localStorage.getItem(THEME_CACHE_KEY)
   if (cached === 'LIGHT' || cached === 'DARK' || cached === 'SYSTEM') {
     applyTheme(cached)
