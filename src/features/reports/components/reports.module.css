@@ -1,7 +1,9 @@
 .page {
   display: grid;
   gap: 1.5rem;
+  min-width: 0;
 }
+
 .printHeader {
   display: none;
 }
@@ -9,25 +11,100 @@
 .screenOnly {
   display: block;
 }
+
+.analysisHero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(16rem, 0.8fr);
+  gap: 1.25rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1.4rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--color-secondary) 22%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)),
+      var(--color-surface)
+    );
+}
+
+.analysisHero h2 {
+  margin: 0.25rem 0 0.45rem;
+  max-width: 48rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+}
+
+.analysisHero p {
+  margin: 0;
+  max-width: 54rem;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.analysisEyebrow,
+.metricEyebrow {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.analysisPills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.analysisPills span {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--color-surface) 86%,
+    var(--color-primary)
+  );
+  color: var(--color-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   align-items: end;
 }
+
 .filters label {
   display: grid;
   gap: 0.35rem;
   min-width: 11rem;
 }
+
 .section {
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 1.25rem;
   min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 0.75rem 2rem
+    color-mix(in srgb, var(--color-dark) 5%, transparent);
 }
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -35,164 +112,687 @@
   align-items: start;
   margin-bottom: 1rem;
 }
+
 .sectionHeader h2,
 .section h3,
 .account h3 {
   margin: 0;
 }
+
 .currencyGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 20rem), 1fr)
+  );
   gap: 1rem;
 }
-.currencyCard,
-.account {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-muted);
-  border-radius: 0.75rem;
-  padding: 1rem;
-}
-.metrics {
+
+.currencyCard {
   display: grid;
-  gap: 0.75rem;
-  margin: 1rem 0 0;
+  gap: 1.15rem;
+  min-width: 0;
+  padding: 1.1rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary) 13%, var(--color-border));
+  border-radius: 1rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)),
+    var(--color-surface-muted)
+  );
 }
-.metrics div {
+
+.currencyCardHeader {
   display: flex;
+  align-items: start;
   justify-content: space-between;
   gap: 1rem;
 }
-.metrics dd {
+
+.currencyCardHeader h3 {
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+}
+
+.netPositive,
+.netNegative {
+  display: grid;
+  justify-items: end;
+  gap: 0.1rem;
+}
+
+.netPositive span,
+.netNegative span {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
   font-weight: 700;
+}
+
+.netPositive strong {
+  color: var(--color-primary);
+}
+
+.netNegative strong {
+  color: var(--bs-danger);
+}
+
+.flowComparison {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.flowBarRow {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.flowBarRow > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.flowBarRow strong {
+  white-space: nowrap;
+}
+
+.flowTrack,
+.categoryTrack,
+.accountBar {
+  overflow: hidden;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--color-border) 65%,
+    var(--color-surface-muted)
+  );
+}
+
+.flowTrack > span,
+.categoryTrack > span,
+.accountBar > span {
+  display: block;
+  min-width: 0.2rem;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.flowIncome,
+.accountBarAsset {
+  background: var(--color-primary);
+}
+
+.flowExpense,
+.accountBarLiability {
+  background: color-mix(
+    in srgb,
+    var(--bs-danger) 76%,
+    var(--color-primary)
+  );
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
   margin: 0;
 }
+
+.metrics div {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.7rem;
+  border-radius: 0.75rem;
+  background: color-mix(
+    in srgb,
+    var(--color-surface) 68%,
+    var(--color-primary)
+  );
+}
+
+.metrics dt {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+}
+
+.metrics dd {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
 .stacks {
   display: grid;
   gap: 1.25rem;
 }
-.rows,
-.flowList {
+
+.categoryAnalysis {
   display: grid;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0.75rem 0 0;
+  grid-template-columns: minmax(15rem, 0.78fr) minmax(0, 1.35fr);
+  gap: 1.25rem;
+  align-items: center;
 }
+
+.categoryChartColumn {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.categoryHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.categoryHeading h3 {
+  margin-top: 0.2rem;
+}
+
+.categoryHeading > strong {
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.donutWrap {
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+}
+
+.donutChart {
+  width: min(100%, 17rem);
+  overflow: visible;
+}
+
+.donutBackground,
+.donutSegment {
+  fill: none;
+  stroke-width: 13;
+}
+
+.donutBackground {
+  stroke: color-mix(
+    in srgb,
+    var(--color-border) 70%,
+    var(--color-surface-muted)
+  );
+}
+
+.donutSegment {
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  stroke-linecap: butt;
+}
+
+.donutLabel {
+  fill: var(--color-text-secondary);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.donutValue {
+  fill: var(--color-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.categoryLegend {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.categoryLegend li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.8rem;
+  background: var(--color-surface-muted);
+}
+
+.categoryRank {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 10%,
+    var(--color-surface)
+  );
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.categoryLegendBody {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.categoryLegendTop,
+.categoryLegendBottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.categoryLegendTop strong {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.categoryLegendBottom {
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+}
+
+.categoryTrack {
+  flex: 1;
+  height: 0.45rem;
+}
+
+.categoryName {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.categoryName i {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+}
+
+.flowAnalysis {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.flowHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.flowHeader h3 {
+  margin-top: 0.2rem;
+}
+
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.chartLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chartLegend i {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+}
+
+.legendIncome {
+  background: var(--color-primary);
+}
+
+.legendExpense {
+  background: color-mix(
+    in srgb,
+    var(--bs-danger) 76%,
+    var(--color-primary)
+  );
+}
+
+.lineChartWrap {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 3%, var(--color-surface)),
+    var(--color-surface-muted)
+  );
+}
+
+.lineChart {
+  display: block;
+  width: 100%;
+  min-height: 13rem;
+}
+
+.gridLine {
+  stroke: var(--color-border);
+  stroke-width: 1;
+  stroke-dasharray: 5 6;
+}
+
+.incomeArea {
+  fill: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.incomeLine,
+.expenseLine {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.incomeLine {
+  stroke: var(--color-primary);
+}
+
+.expenseLine {
+  stroke: color-mix(
+    in srgb,
+    var(--bs-danger) 76%,
+    var(--color-primary)
+  );
+}
+
+.incomePoint {
+  fill: var(--color-primary);
+}
+
+.expensePoint {
+  fill: color-mix(
+    in srgb,
+    var(--bs-danger) 76%,
+    var(--color-primary)
+  );
+}
+
+.chartAxisLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.2rem 0.25rem 0;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+}
+
 .calendar,
 .calendarWeekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: var(--space-2);
 }
+
 .calendar {
   padding: 0;
   margin: var(--space-2) 0 0;
   list-style: none;
 }
+
 .calendarWeekdays {
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
   color: var(--color-text-secondary);
   text-align: center;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
+
 .calendar li {
   display: grid;
-  min-height: 8rem;
+  min-height: 7.5rem;
   align-content: start;
   gap: var(--space-1);
   padding: var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-small);
-  background: var(--color-surface-muted);
+  color: var(--color-text);
   font-size: var(--font-size-sm);
 }
+
 .calendar li strong {
   color: var(--color-dark);
 }
+
 .calendar .calendarEmpty {
   border-style: dashed;
-  background: transparent;
+  background: transparent !important;
   opacity: 0.45;
 }
-.rows li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-.categoryName {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-.categoryName i {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  flex: none;
-  border: 1px solid var(--color-border-strong);
-}
+
 .flowList {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.55rem;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  list-style: none;
 }
+
 .flowList li {
   display: grid;
   gap: 0.25rem;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-muted);
-  border-radius: 0.75rem;
   padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface-muted);
 }
-.accountList {
+
+.accountAnalysis {
   display: grid;
+  gap: 1rem;
+}
+
+.accountSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0.75rem;
 }
+
+.accountSummaryCard {
+  padding: 0.9rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary) 13%, var(--color-border));
+  border-radius: 0.85rem;
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 4%,
+    var(--color-surface-muted)
+  );
+}
+
+.accountSummaryCard > strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.accountSummaryCard > p {
+  margin: 0.1rem 0 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.accountSummaryCard dl {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.accountSummaryCard dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+}
+
+.accountSummaryCard dd {
+  margin: 0;
+  font-weight: 750;
+}
+
+.accountList {
+  display: grid;
+  gap: 0.65rem;
+}
+
 .account {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem 1rem;
+  align-items: center;
+  padding: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  background: var(--color-surface-muted);
+}
+
+.accountIdentity {
+  display: flex;
+  justify-content: space-between;
   gap: 1rem;
   align-items: center;
 }
-.account p {
-  margin: 0.25rem 0 0;
+
+.accountIdentity p {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
 }
-@media (max-width: 575px) {
-  .filters {
-    display: grid;
-  }
-  .filters label {
-    min-width: 0;
-  }
-  .section {
-    padding: 1rem;
-  }
-  .rows li,
-  .account {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
+
+.accountIdentity > strong {
+  white-space: nowrap;
 }
+
+.accountBar {
+  grid-column: 1 / -1;
+  height: 0.5rem;
+}
+
+.account > a {
+  justify-self: end;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 @media (max-width: 64rem) {
+  .analysisHero,
+  .categoryAnalysis {
+    grid-template-columns: 1fr;
+  }
+
+  .analysisPills {
+    justify-content: flex-start;
+  }
+
+  .categoryAnalysis {
+    align-items: start;
+  }
+
+  .donutWrap {
+    min-height: 13rem;
+  }
+
   .calendar li {
     min-height: 7rem;
     padding: var(--space-2);
     font-size: var(--font-size-xs);
   }
 }
+
 @media (max-width: 40rem) {
+  .filters {
+    display: grid;
+  }
+
+  .filters label {
+    min-width: 0;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .currencyCardHeader,
+  .flowHeader,
+  .categoryHeading,
+  .categoryLegendTop,
+  .categoryLegendBottom,
+  .accountIdentity {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .netPositive,
+  .netNegative {
+    justify-items: start;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryLegendBottom {
+    display: grid;
+  }
+
   .calendar,
   .calendarWeekdays {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .calendarWeekdays {
     display: none;
   }
+
   .calendar .calendarEmpty {
     display: none;
   }
+
+  .chartLegend {
+    justify-content: flex-start;
+  }
+
+  .lineChart {
+    min-width: 34rem;
+  }
+
+  .lineChartWrap {
+    overflow-x: auto;
+  }
+
+  .account {
+    grid-template-columns: 1fr;
+  }
+
+  .account > a {
+    justify-self: start;
+  }
 }
+
 @media print {
   .screenOnly {
     display: none !important;
@@ -202,31 +802,38 @@
     size: A4;
     margin: 14mm;
   }
+
   .printHeader {
     display: block;
     padding-bottom: 1rem;
     border-bottom: 2px solid #154b45;
   }
+
   .printHeader h1 {
     margin: 0.35rem 0 0.75rem;
   }
+
   .printHeader p {
     margin: 0.2rem 0;
   }
+
   .filters {
     display: none !important;
   }
+
   .page {
     display: block;
     color: #172b28;
     background: #fff;
   }
+
   .section {
     margin-top: 1rem;
     padding: 0.8rem;
     break-inside: avoid;
     box-shadow: none;
   }
+
   .calendar li {
     min-height: auto;
   }
