@@ -151,8 +151,20 @@
 .account h3, .recentItem h3 { margin: 0.35rem 0; }
 .account p, .recentItem small { color: var(--color-text-muted); }
 .sectionHeader, .quickActions { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
-.quickActions { width: 100%; min-width: 0; justify-content: flex-start; flex-wrap: wrap; padding-top: 0.2rem; }
-.quickActions > * { min-width: 0; box-shadow: 0 5px 14px color-mix(in srgb, var(--color-text) 5%, transparent); }
+.quickActions {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 0.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
+}
+.quickActions > * {
+  min-width: 0;
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--color-text) 5%, transparent);
+}
 .quickActions a, .sectionHeader a { font-weight: 600; }
 .recentList { display: grid; width: 100%; max-width: 100%; min-width: 0; gap: 0.75rem; }
 .recentLink { width: 100%; max-width: 100%; }
