@@ -6,10 +6,15 @@ import type {
 
 const DEMO_SESSION_KEY = 'fynar-demo-session'
 
+export const demoCredentials = Object.freeze({
+  email: 'demo@fynar.app',
+  password: 'fynar-demo-local',
+})
+
 export const demoUser: AuthUser = {
   id: 'demo-user',
-  email: 'demo@fynar.app',
-  firstName: 'Andrea',
+  email: demoCredentials.email,
+  firstName: 'Usuario',
   lastName: 'Demo',
   phone: null,
   avatarUrl: null,
@@ -21,7 +26,7 @@ export const demoUser: AuthUser = {
 
 export const demoWorkspace: Workspace = {
   id: 'demo-workspace',
-  name: 'Finanzas de Andrea',
+  name: 'Finanzas Demo',
   type: 'PERSONAL',
   baseCurrency: 'COP',
   timezone: 'America/Bogota',
