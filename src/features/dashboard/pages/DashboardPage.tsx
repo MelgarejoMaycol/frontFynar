@@ -180,37 +180,6 @@ export function DashboardPage() {
                 />
               </FilterPanel>
 
-              <div className={styles.quickActions} aria-label="Acciones rápidas">
-                {canCreateTransactions && (
-                  <Button onClick={openTransaction}>
-                    <Plus size={18} aria-hidden="true" /> Nuevo movimiento
-                  </Button>
-                )}
-                {canCreateAccounts && (
-                  <Button variant="secondary" onClick={openAccount}>
-                    <Landmark size={18} aria-hidden="true" /> Crear cuenta
-                  </Button>
-                )}
-                <Button variant="info" onClick={() => setConvertingCurrency(true)}>
-                  <ArrowLeftRight size={18} aria-hidden="true" /> Convertir divisas
-                </Button>
-                {dashboard.data?.summariesByCurrency.length ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate('/app/reports')}
-                  >
-                    <BarChart3 size={18} aria-hidden="true" /> Ver análisis
-                  </Button>
-                ) : null}
-                {canReadDebts && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate('/app/commitments')}
-                  >
-                    Ver créditos y deudas
-                  </Button>
-                )}
-              </div>
             </div>
 
             <aside
@@ -259,6 +228,38 @@ export function DashboardPage() {
                 </div>
               </div>
             </aside>
+          </div>
+
+          <div className={styles.quickActions} aria-label="Acciones rápidas">
+            {canCreateTransactions && (
+              <Button onClick={openTransaction}>
+                <Plus size={18} aria-hidden="true" /> Nuevo movimiento
+              </Button>
+            )}
+            {canCreateAccounts && (
+              <Button variant="secondary" onClick={openAccount}>
+                <Landmark size={18} aria-hidden="true" /> Crear cuenta
+              </Button>
+            )}
+            <Button variant="info" onClick={() => setConvertingCurrency(true)}>
+              <ArrowLeftRight size={18} aria-hidden="true" /> Convertir divisas
+            </Button>
+            {dashboard.data?.summariesByCurrency.length ? (
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/app/reports')}
+              >
+                <BarChart3 size={18} aria-hidden="true" /> Ver análisis
+              </Button>
+            ) : null}
+            {canReadDebts && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/app/commitments')}
+              >
+                Ver créditos y deudas
+              </Button>
+            )}
           </div>
         </div>
       </section>
