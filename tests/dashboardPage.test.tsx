@@ -18,6 +18,9 @@ vi.mock('@/features/forecasts/components/MonthEndProjectionCard', () => ({
 vi.mock('@/features/financial-health/FinancialHealthWidget', () => ({
   FinancialHealthWidget: () => <section>Widget de salud financiera</section>,
 }))
+vi.mock('@/features/investments/InvestmentsDashboardWidget', () => ({
+  InvestmentsDashboardWidget: () => <section>Widget de inversión activa</section>,
+}))
 vi.mock('@/features/transactions/components/TransactionForm', () => ({
   TransactionForm: () => <form aria-label="Formulario de movimiento" />,
 }))
