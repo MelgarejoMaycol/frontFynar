@@ -1,6 +1,6 @@
-export const transactionTypes = ['INCOME', 'EXPENSE', 'TRANSFER'] as const
+export const transactionTypes = ['INCOME', 'EXPENSE', 'TRANSFER', 'INVESTMENT'] as const
 export type TransactionType =
-  (typeof transactionTypes)[number] | 'ADJUSTMENT' | 'DEBT_PAYMENT' | 'INVESTMENT'
+  (typeof transactionTypes)[number] | 'ADJUSTMENT' | 'DEBT_PAYMENT'
 export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED'
 export interface Transaction {
   id: string
@@ -58,7 +58,7 @@ export interface TransferInput extends MovementInput {
   destinationAccountId: string
 }
 export type CreateTransactionInput =
-  | ({ type: 'INCOME' | 'EXPENSE' } & MovementInput)
+  | ({ type: 'INCOME' | 'EXPENSE' | 'INVESTMENT' } & MovementInput)
   | ({ type: 'TRANSFER' } & TransferInput)
   | ({ type: 'ADVANCE' } & Omit<TransferInput, 'categoryId'>)
   | {
