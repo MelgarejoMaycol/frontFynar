@@ -8,6 +8,8 @@ import { registerPrivateCacheCleaner } from '../session-events'
 import { useAuthStore } from '../store/auth.store'
 import { authMeKey } from '../hooks/auth.hooks'
 import { useWorkspaceStore } from '@/features/workspace/store/workspace.store'
+import { isDemoSession } from '@/features/demo/demo-mode'
+import { activateDemoSession } from '@/features/demo/demo-session'
 
 type Props = PropsWithChildren<{
   refresh?: () => Promise<string>
@@ -31,7 +33,14 @@ export function SessionInitializer({
     [queryClient],
   )
   useEffect(() => {
-    if (window.location.pathname === '/demo' || window.location.pathname.startsWith('/demo/')) {
+    if (isDemoSession()) {
+      activateDemoSession(queryClient)
+      return
+    }
+    if (
+      window.location.pathname === '/demo' ||
+      window.location.pathname.startsWith('/demo/')
+    ) {
       useAuthStore.getState().setStatus('unauthenticated')
       return
     }
