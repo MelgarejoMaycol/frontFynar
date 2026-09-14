@@ -3,6 +3,8 @@ import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
 import type { LoginRequest, RegisterRequest } from '../types/auth.types'
 import { useWorkspaceStore } from '@/features/workspace/store/workspace.store'
+import { isDemoSession } from '@/features/demo/demo-mode'
+import { stopDemoSession } from '@/features/demo/demo-session'
 
 export const authMeKey = ['auth', 'me'] as const
 
@@ -46,6 +48,7 @@ export function useLogout() {
       await authApi.logout()
     },
     onSettled: async () => {
+      if (isDemoSession()) stopDemoSession()
       useAuthStore.getState().clearSession()
       useWorkspaceStore.getState().clearWorkspace()
       await queryClient.cancelQueries()
@@ -59,6 +62,7 @@ export function useLogoutAll() {
   return useMutation({
     mutationFn: () => authApi.logoutAll(),
     onSuccess: async () => {
+      if (isDemoSession()) stopDemoSession()
       useAuthStore.getState().clearSession()
       useWorkspaceStore.getState().clearWorkspace()
       await queryClient.cancelQueries()
