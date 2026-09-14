@@ -21,7 +21,7 @@ export const mainNavigation: NavigationItem[] = [
   { to: '/app/budgets', label: 'Presupuestos', icon: WalletCards },
   { to: '/app/goals', label: 'Metas de ahorro', icon: Target },
   { to: '/app/commitments', label: 'Créditos y deudas', icon: HandCoins },
-  { to: '/app/reports', label: 'Reportes', icon: ChartNoAxesCombined },
+  { to: '/app/reports', label: 'Análisis', icon: ChartNoAxesCombined },
 ]
 export const settingsNavigation = {
   to: '/app/settings',
