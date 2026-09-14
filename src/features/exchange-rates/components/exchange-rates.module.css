@@ -1,0 +1,187 @@
+.converter {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.intro {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-info) 24%, var(--color-border));
+  border-radius: var(--radius-medium);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-info-soft) 82%, var(--color-surface)),
+    var(--color-surface)
+  );
+}
+
+.intro > span {
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.intro p,
+.disclaimer,
+.tip span {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.amountField,
+.currencyRow label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.amountField > span,
+.currencyRow label > span {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.currencyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.swap {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  margin-bottom: 0;
+  border: 1px solid color-mix(in srgb, var(--color-info) 40%, var(--color-border));
+  border-radius: 999px;
+  color: var(--color-info);
+  background: color-mix(in srgb, var(--color-info-soft) 75%, var(--color-surface));
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+}
+
+.swap:hover:not(:disabled) {
+  transform: rotate(180deg);
+  background: var(--color-info-soft);
+}
+
+.result {
+  display: grid;
+  gap: 0.7rem;
+  overflow: hidden;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-info) 30%, var(--color-border));
+  border-radius: var(--radius-large);
+  background:
+    radial-gradient(
+      circle at 95% 5%,
+      color-mix(in srgb, var(--color-info) 14%, transparent),
+      transparent 8rem
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-info-soft) 72%, var(--color-surface)),
+      var(--color-surface)
+    );
+}
+
+.resultTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.resultTop > span {
+  color: var(--color-info);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.resultAmount {
+  color: var(--color-text);
+  font-size: clamp(1.8rem, 7vw, 2.7rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.rateDetails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.meta,
+.tip {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.meta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.meta svg,
+.tip svg {
+  flex: none;
+  color: var(--color-info);
+}
+
+.tip {
+  padding: 0.8rem;
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-muted);
+}
+
+.error,
+.errorCard {
+  margin: 0;
+  color: var(--color-error);
+}
+
+.errorCard {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--color-error) 32%, var(--color-border));
+  border-radius: var(--radius-medium);
+  background: var(--color-error-soft);
+}
+
+.errorCard span {
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 35.99rem) {
+  .currencyRow {
+    grid-template-columns: 1fr;
+  }
+
+  .swap {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .swap:hover:not(:disabled) {
+    transform: rotate(270deg);
+  }
+
+  .resultTop {
+    flex-direction: column;
+  }
+}

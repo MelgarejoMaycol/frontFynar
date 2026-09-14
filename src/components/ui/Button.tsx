@@ -4,7 +4,7 @@ import styles from './controls.module.css'
 import { Spinner } from './Spinner'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'info'
   size?: 'small' | 'medium' | 'large'
   loading?: boolean
   children: ReactNode

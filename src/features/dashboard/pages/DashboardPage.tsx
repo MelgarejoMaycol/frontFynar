@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
+  ArrowLeftRight,
   BarChart3,
   CalendarClock,
   Landmark,
@@ -18,6 +19,7 @@ import { useCreateAccount } from '@/features/accounts/hooks/accounts.hooks'
 import type { AccountInput } from '@/features/accounts/types/account.types'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { FinancialHealthWidget } from '@/features/financial-health'
+import { ExchangeRateConverter } from '@/features/exchange-rates'
 import { MonthEndProjectionCard } from '@/features/forecasts/components/MonthEndProjectionCard'
 import { TransactionForm } from '@/features/transactions/components/TransactionForm'
 import { useCreateTransaction } from '@/features/transactions/hooks/transactions.hooks'
@@ -69,6 +71,7 @@ export function DashboardPage() {
   )
   const [creatingTransaction, setCreatingTransaction] = useState(false)
   const [creatingAccount, setCreatingAccount] = useState(false)
+  const [convertingCurrency, setConvertingCurrency] = useState(false)
   const [transactionCreationKey, setTransactionCreationKey] = useState(0)
   const [accountCreationKey, setAccountCreationKey] = useState(0)
   const [quickMessage, setQuickMessage] = useState('')
@@ -188,6 +191,9 @@ export function DashboardPage() {
                     <Landmark size={18} aria-hidden="true" /> Crear cuenta
                   </Button>
                 )}
+                <Button variant="info" onClick={() => setConvertingCurrency(true)}>
+                  <ArrowLeftRight size={18} aria-hidden="true" /> Convertir divisas
+                </Button>
                 {dashboard.data?.summariesByCurrency.length ? (
                   <Button
                     variant="secondary"
@@ -347,6 +353,14 @@ export function DashboardPage() {
           </>
         )
       ) : null}
+
+      <Dialog
+        open={convertingCurrency}
+        title="Conversor de divisas"
+        onClose={() => setConvertingCurrency(false)}
+      >
+        <ExchangeRateConverter defaultFrom={workspace.baseCurrency} />
+      </Dialog>
 
       <Dialog
         open={creatingTransaction}

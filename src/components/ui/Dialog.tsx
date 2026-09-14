@@ -55,6 +55,10 @@ function getDialogVisual(title: string): DialogVisual {
     return { Icon: CreditCard, eyebrow: 'Tarjetas', tone: 'primary' }
   }
 
+  if (/divisa|moneda|convers/.test(value)) {
+    return { Icon: ArrowLeftRight, eyebrow: 'Divisas', tone: 'info' }
+  }
+
   if (/movimiento|transfer|transacci/.test(value)) {
     return { Icon: ArrowLeftRight, eyebrow: 'Movimiento financiero', tone: 'success' }
   }
