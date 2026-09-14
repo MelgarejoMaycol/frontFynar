@@ -3,6 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 async function enterDemo(page: Page) {
   await page.goto('/demo')
   await expect(page).toHaveURL(/\/app\/dashboard$/)
+  await expect(page.locator('html')).toHaveAttribute('data-bs-theme', 'light')
   await expect(
     page.getByRole('heading', { name: 'Inicio', exact: true }),
   ).toBeVisible()
@@ -135,6 +136,7 @@ test('el botón demo está visible en el login y entra directamente a la aplicac
   page,
 }) => {
   await page.goto('/login')
+  await expect(page.locator('html')).toHaveAttribute('data-bs-theme', 'light')
 
   const demoButton = page.getByRole('button', { name: 'Entrar al modo demo' })
   await expect(demoButton).toBeVisible()
