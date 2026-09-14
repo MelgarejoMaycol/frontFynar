@@ -32,6 +32,7 @@ const money = (value: string | number, currency: string) =>
   new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(value))
 
