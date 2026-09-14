@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -184,7 +184,7 @@ describe('navegación y layouts', () => {
     await user.click(open)
     await user.keyboard('{Escape}')
     expect(open).toHaveAttribute('aria-expanded', 'false')
-    expect(open).toHaveFocus()
+    await waitFor(() => expect(open).toHaveFocus())
   })
   it('resuelve el título del header desde la configuración de navegación', () => {
     renderRoute('/app/transactions')
