@@ -92,6 +92,16 @@ const PurchaseSimulatorPage = lazy(() =>
     default: module.PurchaseSimulatorPage,
   })),
 )
+const InvestmentsPage = lazy(() =>
+  import('@/features/investments').then((module) => ({
+    default: module.InvestmentsPage,
+  })),
+)
+const InvestmentPlanDetailPage = lazy(() =>
+  import('@/features/investments').then((module) => ({
+    default: module.InvestmentPlanDetailPage,
+  })),
+)
 const InvestmentSimulatorPage = lazy(() =>
   import('@/features/simulations').then((module) => ({
     default: module.InvestmentSimulatorPage,
@@ -232,9 +242,14 @@ export function AppRoutes() {
               element={pending(<FinancialHealthPage />)}
             />
             <Route path="simulator" element={pending(<PurchaseSimulatorPage />)} />
+            <Route path="investments" element={pending(<InvestmentsPage />)} />
             <Route
-              path="investments"
+              path="investments/simulator"
               element={pending(<InvestmentSimulatorPage />)}
+            />
+            <Route
+              path="investments/:planId"
+              element={pending(<InvestmentPlanDetailPage />)}
             />
             <Route path="accounts" element={pending(<AccountsPage />)} />
             <Route
