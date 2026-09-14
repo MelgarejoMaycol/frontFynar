@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, useLocation } from 'react-router'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 
 vi.mock('@/features/dashboard/components/ActionableOverview', () => ({
@@ -133,10 +133,15 @@ const data = {
   accountsByType: [],
   comparisonByCurrency: [],
 }
+function LocationDisplay() {
+  return <span data-testid="location">{useLocation().pathname}</span>
+}
+
 const view = () =>
   render(
     <MemoryRouter>
       <DashboardPage />
+      <LocationDisplay />
     </MemoryRouter>,
   )
 describe('DashboardPage', () => {
@@ -223,32 +228,13 @@ describe('DashboardPage', () => {
       '/app/transactions?transactionId=t',
     )
   })
-  it('abre gráficas de ingresos, egresos y gastos por categoría', () => {
-    mocks.dashboard.mockReturnValue({
-      isPending: false,
-      isError: false,
-      data: {
-        ...data,
-        expensesByCategory: [
-          {
-            categoryId: 'food',
-            categoryName: 'Alimentación',
-            icon: null,
-            color: null,
-            currency: 'COP',
-            amount: '80.00',
-            percentage: '80.00',
-          },
-        ],
-      },
-      refetch: mocks.refetch,
-    })
+  it('abre el análisis financiero en una página independiente', () => {
     view()
-    fireEvent.click(screen.getByRole('button', { name: 'Ver gráficas' }))
-    expect(screen.getByText('Gráficas financieras')).toBeVisible()
-    expect(screen.getAllByText('Ingresos vs egresos').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Gastos por categoría').length).toBeGreaterThan(0)
-    expect(screen.getByText('Alimentación')).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Ver análisis' }))
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/reports')
+    expect(
+      screen.queryByRole('dialog', { name: /gráficas financieras/i }),
+    ).not.toBeInTheDocument()
   })
 
   it('limita los movimientos recientes a cinco', () => {
