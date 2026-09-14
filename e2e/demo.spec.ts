@@ -121,7 +121,9 @@ test('la demo expone módulos reales con datos preparados', async ({ page }) => 
   await expect(
     page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('Fondo de emergencia').last()).toBeVisible()
+  expect(
+    await page.getByText('Fondo de emergencia', { exact: true }).count(),
+  ).toBeGreaterThan(0)
 
   await page.goto('/app/reports')
   await expect(
@@ -178,7 +180,9 @@ test('la configuración de la demo protege identidad, correo y seguridad', async
     page.getByRole('heading', { name: 'Configuración', exact: true }),
   ).toBeVisible()
   await expect(page.getByText('Cuenta demo protegida')).toBeVisible()
-  await expect(page.getByText('Usuario Demo', { exact: true })).toBeVisible()
+  await expect(
+    page.getByText('Usuario Demo', { exact: true, selector: 'dd' }),
+  ).toBeVisible()
   await expect(page.getByText('demo@fynar.app', { exact: true })).toBeVisible()
 
   await expect(
