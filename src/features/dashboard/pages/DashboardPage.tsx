@@ -359,7 +359,9 @@ export function DashboardPage() {
         title="Conversor de divisas"
         onClose={() => setConvertingCurrency(false)}
       >
-        <ExchangeRateConverter defaultFrom={workspace.baseCurrency} />
+        {convertingCurrency && (
+          <ExchangeRateConverter defaultFrom={workspace.baseCurrency} />
+        )}
       </Dialog>
 
       <Dialog
