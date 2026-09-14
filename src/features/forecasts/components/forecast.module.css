@@ -158,11 +158,11 @@
 
 .compactMetric svg {
   grid-row: 1 / span 2;
-  color: #4f8068;
+  color: var(--color-secondary);
 }
 
 .compactMetric span {
-  color: var(--text-muted, #66736f);
+  color: var(--color-text-secondary);
   font-size: .72rem;
 }
 
@@ -208,7 +208,7 @@
 }
 
 .compactFootnote {
-  color: var(--text-muted, #66736f);
+  color: var(--color-text-secondary);
   font-size: .72rem;
 }
 
