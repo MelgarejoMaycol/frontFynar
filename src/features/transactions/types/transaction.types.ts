@@ -1,6 +1,6 @@
 export const transactionTypes = ['INCOME', 'EXPENSE', 'TRANSFER'] as const
 export type TransactionType =
-  (typeof transactionTypes)[number] | 'ADJUSTMENT' | 'DEBT_PAYMENT'
+  (typeof transactionTypes)[number] | 'ADJUSTMENT' | 'DEBT_PAYMENT' | 'INVESTMENT'
 export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED'
 export interface Transaction {
   id: string
