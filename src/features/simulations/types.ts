@@ -58,3 +58,131 @@ export interface PurchaseSimulationResult {
   currency: string
   assumptions: string[]
 }
+
+
+export type InvestmentContributionFrequency =
+  | 'NONE'
+  | 'MONTHLY'
+  | 'QUARTERLY'
+  | 'YEARLY'
+
+export interface InvestmentSimulationInput {
+  currency: string
+  initialAmount: string
+  recurringContribution: string
+  contributionFrequency: InvestmentContributionFrequency
+  years: number
+  annualReturn: string
+  annualFee: string
+  inflationRate: string
+}
+
+export interface InvestmentSimulationResult {
+  currency: string
+  initialAmount: string
+  recurringContribution: string
+  contributionFrequency: InvestmentContributionFrequency
+  years: number
+  annualReturn: string
+  annualFee: string
+  inflationRate: string
+  effectiveMonthlyReturn: string
+  effectiveAnnualReturn: string
+  totalContributions: string
+  estimatedFinalValue: string
+  estimatedProfit: string
+  inflationAdjustedValue: string
+  totalReturnPercentage: string
+  timeline: Array<{
+    month: number
+    year: number
+    contributed: string
+    estimatedValue: string
+    estimatedProfit: string
+  }>
+  assumptions: string[]
+}
+
+export interface InvestmentScenarioInput
+  extends Omit<InvestmentSimulationInput, 'annualReturn'> {
+  baseAnnualReturn: string
+  spread: string
+}
+
+export interface InvestmentScenarioResult {
+  currency: string
+  spread: string
+  scenarios: Array<{
+    label: 'CONSERVATIVE' | 'BASE' | 'OPTIMISTIC'
+    annualReturn: string
+    estimatedFinalValue: string
+    estimatedProfit: string
+    inflationAdjustedValue: string
+    totalReturnPercentage: string
+  }>
+  disclaimer: string
+}
+
+export interface InvestmentFinancialImpactInput {
+  currency: string
+  initialAmount: string
+  recurringContribution: string
+}
+
+export interface InvestmentFinancialImpactResult {
+  simulationCurrency: string
+  baseCurrency: string
+  initialInvestment: {
+    original: string
+    baseEquivalent: string
+  }
+  recurringContribution: {
+    original: string
+    baseEquivalent: string
+  }
+  availableMoney: string
+  remainingAvailableMoney: string
+  liquidityPercentageUsed: string
+  currentPeriodIncome: string
+  currentPeriodExpenses: string
+  currentNetCashFlow: string
+  knownCommitments: string
+  recurringContributionShareOfPositiveCashFlow: string
+  conversion: null | {
+    from: string
+    to: string
+    rate: string
+    date: string
+  }
+  impact: {
+    level: SimulationImpactLevel
+    headline: string
+    explanation: string
+  }
+  disclaimer: string
+}
+
+export interface InvestmentSimulationOptions {
+  currencies: Array<{
+    code: string
+    name: string
+    symbol: string
+    minorUnits: number
+  }>
+  defaultCurrency: string
+  contributionFrequencies: Array<{
+    value: InvestmentContributionFrequency
+    label: string
+  }>
+  limits: {
+    minYears: number
+    maxYears: number
+  }
+  defaults: {
+    years: number
+    annualReturn: string
+    annualFee: string
+    inflationRate: string
+    scenarioSpread: string
+  }
+}
