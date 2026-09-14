@@ -310,3 +310,61 @@ test('el resumen principal mantiene cifras grandes legibles y acciones priorizad
     ),
   ).toBe(true)
 })
+
+
+test('la demo permite simular una inversión completa sin modificar saldos', async ({
+  page,
+}) => {
+  const apiRequests: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/api/v1')) apiRequests.push(request.url())
+  })
+
+  await enterDemo(page)
+  const availableBefore = await page
+    .getByText('Disponible para usar')
+    .locator('..')
+    .locator('strong')
+    .first()
+    .textContent()
+
+  await page.goto('/app/investments')
+  await expect(
+    page.getByRole('heading', {
+      name: 'Simula cómo podría crecer una inversión',
+      exact: true,
+    }),
+  ).toBeVisible()
+
+  const initial = page.getByLabel('Monto inicial de la inversión')
+  await initial.fill('500000000')
+  await expect(initial).toHaveValue('5.000.000,00')
+
+  const recurring = page.getByLabel('Aporte periódico')
+  await recurring.fill('30000000')
+  await expect(recurring).toHaveValue('300.000,00')
+
+  await page.getByRole('button', { name: 'Simular inversión' }).click()
+
+  await expect(page.getByText('Valor estimado al final')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tres escenarios' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Comparación con tus finanzas' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Evolución año por año' }),
+  ).toBeVisible()
+  await expect(page.getByText('Conservador')).toBeVisible()
+  await expect(page.getByText('Base', { exact: true })).toBeVisible()
+  await expect(page.getByText('Optimista')).toBeVisible()
+  expect(apiRequests).toEqual([])
+
+  await page.goto('/app/dashboard')
+  const availableAfter = await page
+    .getByText('Disponible para usar')
+    .locator('..')
+    .locator('strong')
+    .first()
+    .textContent()
+  expect(availableAfter).toBe(availableBefore)
+})
