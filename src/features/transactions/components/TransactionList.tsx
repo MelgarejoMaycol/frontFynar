@@ -31,17 +31,28 @@ export function TransactionList({
     <div className={styles.list}>
       {items.map((item) => {
         const difference = adjustmentDifference(item)
-        const negative = item.type === 'EXPENSE' || item.type === 'DEBT_PAYMENT' || difference < 0
-        const positive = item.type === 'INCOME' || difference > 0
+        const investmentWithdrawal =
+          item.type === 'INVESTMENT' && item.metadata?.role === 'WITHDRAWAL'
+        const investmentContribution =
+          item.type === 'INVESTMENT' && item.metadata?.role === 'CONTRIBUTION'
+        const negative =
+          item.type === 'EXPENSE' ||
+          item.type === 'DEBT_PAYMENT' ||
+          investmentContribution ||
+          difference < 0
+        const positive =
+          item.type === 'INCOME' || investmentWithdrawal || difference > 0
         return (
           <button key={item.id} type="button" className={styles.itemButton} onClick={() => onOpen(item)} aria-label="Ver detalle">
           <Card className={styles.item}>
             <div>
               <Badge>{transactionTypeLabel(item)}</Badge>
               {item.status === 'CANCELLED' && <Badge>Cancelado</Badge>}
-              <h2>{item.type === 'DEBT_PAYMENT'
-                ? `${item.metadata?.debtOperation === 'EXTRA_PAYMENT' ? 'Abono' : 'Pago cuota'} · ${String(item.metadata?.debtName ?? 'Crédito')}`
-                : item.description || categoryName(item.categoryId)}</h2>
+              <h2>
+                {item.type === 'DEBT_PAYMENT'
+                  ? `${item.metadata?.debtOperation === 'EXTRA_PAYMENT' ? 'Abono' : 'Pago cuota'} · ${String(item.metadata?.debtName ?? 'Crédito')}`
+                  : item.description || categoryName(item.categoryId)}
+              </h2>
               <p>
                 {item.type === 'DEBT_PAYMENT'
                   ? item.accountId ? `Desde: ${accountName(item.accountId)}` : 'Origen: Externo'
