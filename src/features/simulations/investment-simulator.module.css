@@ -291,6 +291,40 @@
   line-height: 1.4;
 }
 
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  align-items: center;
+  padding: .8rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-primary-soft) 48%, var(--color-surface));
+}
+
+.resultActions small,
+.savePlanNote {
+  color: var(--color-text-secondary);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+
+.savePlanForm {
+  display: grid;
+  gap: .85rem;
+}
+
+.savePlanNote {
+  margin: 0;
+}
+
+.saveDialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  justify-content: flex-end;
+}
+
 .resultMetrics,
 .impactMetrics {
   display: grid;
