@@ -19,6 +19,7 @@ import { useCreateAccount } from '@/features/accounts/hooks/accounts.hooks'
 import type { AccountInput } from '@/features/accounts/types/account.types'
 import { useCategories } from '@/features/categories/hooks/categories.hooks'
 import { FinancialHealthWidget } from '@/features/financial-health'
+import { InvestmentsDashboardWidget } from '@/features/investments/InvestmentsDashboardWidget'
 import { ExchangeRateConverter } from '@/features/exchange-rates'
 import { MonthEndProjectionCard } from '@/features/forecasts/components/MonthEndProjectionCard'
 import { TransactionForm } from '@/features/transactions/components/TransactionForm'
@@ -263,6 +264,8 @@ export function DashboardPage() {
           </div>
         </div>
       </section>
+
+      <InvestmentsDashboardWidget workspaceId={workspace.id} />
 
       {quickMessage && (
         <p className={styles.quickSuccess} role="status">
