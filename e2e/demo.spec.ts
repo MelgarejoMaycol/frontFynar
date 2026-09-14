@@ -210,3 +210,103 @@ test('la configuración de la demo protege identidad, correo y seguridad', async
     page.getByRole('button', { name: 'Salir del demo' }),
   ).toBeVisible()
 })
+
+
+test('la demo puede usar el conversor de divisas sin salir de la aplicación real', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/exchange-rates/currencies', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          defaultBase: 'COP',
+          currencies: [
+            { code: 'COP', name: 'peso colombiano', symbol: '$', minorUnits: 2 },
+            {
+              code: 'USD',
+              name: 'dólar estadounidense',
+              symbol: '$',
+              minorUnits: 2,
+            },
+          ],
+        },
+      }),
+    })
+  })
+  await page.route('**/api/v1/exchange-rates/convert**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          from: 'COP',
+          to: 'USD',
+          amount: '1000000.00',
+          rate: '0.00032',
+          convertedAmount: '320.00',
+          date: '2026-09-14',
+          provider: 'frankfurter',
+          fetchedAt: '2026-09-14T18:00:00.000Z',
+          cacheStatus: 'LIVE',
+          disclaimer:
+            'Tasa de referencia. El valor final de una entidad financiera puede incluir margen, comisión o impuestos.',
+        },
+      }),
+    })
+  })
+
+  await enterDemo(page)
+  await page.getByRole('button', { name: 'Convertir divisas' }).click()
+
+  const dialog = page.getByRole('dialog', { name: 'Conversor de divisas' })
+  await expect(dialog).toBeVisible()
+  const amount = dialog.getByLabel('Monto a convertir')
+  await amount.fill('100000000')
+  await expect(amount).toHaveValue('1.000.000,00')
+  await dialog.getByRole('button', { name: 'Convertir ahora' }).click()
+
+  await expect(dialog.getByText('US$ 320,00')).toBeVisible()
+  await expect(dialog.getByText(/frankfurter/i)).toHaveCount(0)
+  await expect(dialog.getByText(/proveedor/i)).toHaveCount(0)
+})
+
+test('el resumen principal mantiene cifras grandes legibles y acciones priorizadas', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await enterDemo(page)
+
+  const actions = page.getByLabel('Acciones rápidas').getByRole('button')
+  await expect(actions.nth(0)).toContainText('Nuevo movimiento')
+  await expect(actions.nth(1)).toContainText('Crear cuenta')
+  await expect(actions.nth(2)).toContainText('Convertir divisas')
+  await expect(actions.nth(3)).toContainText('Ver análisis')
+  await expect(actions.nth(4)).toContainText('Ver créditos y deudas')
+
+  for (const label of [
+    'Tienes en total',
+    'Reservado en metas',
+    'Flujo del período',
+    'Pagos programados',
+  ]) {
+    const metric = page.getByText(label, { exact: true }).locator('..')
+    const value = metric.locator('strong')
+    await expect(value).toBeVisible()
+    const whiteSpace = await value.evaluate(
+      (element) => getComputedStyle(element).whiteSpace,
+    )
+    expect(whiteSpace).toBe('nowrap')
+  }
+
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+  ).toBe(true)
+})
