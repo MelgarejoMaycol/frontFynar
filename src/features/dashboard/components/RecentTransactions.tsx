@@ -13,6 +13,7 @@ const labels = {
   INCOME: 'Ingreso',
   EXPENSE: 'Gasto',
   TRANSFER: 'Transferencia',
+  INVESTMENT: 'Inversión',
   ADJUSTMENT: 'Ajuste de saldo',
   DEBT_PAYMENT: 'Pago de crédito',
 } as const
