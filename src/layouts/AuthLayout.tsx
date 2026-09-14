@@ -1,5 +1,6 @@
 import { BrandLogo } from '@/components/ui'
 import { APP_NAME } from '@/config/brand'
+import { MonitorPlay } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 import styles from './layouts.module.css'
 export function AuthLayout() {
@@ -25,11 +26,22 @@ export function AuthLayout() {
           </div>
           <Outlet />
           <nav className={styles.authNav} aria-label="Navegación de acceso">
-            <NavLink to="/login">Iniciar sesión</NavLink>
-            <NavLink to="/register">Crear cuenta</NavLink>
-            <NavLink to="/forgot-password">Recuperar contraseña</NavLink>
+            <div className={styles.authLinksRow}>
+              <NavLink to="/login">Iniciar sesión</NavLink>
+              <NavLink to="/register">Crear cuenta</NavLink>
+              <NavLink to="/forgot-password">Recuperar contraseña</NavLink>
+            </div>
             <NavLink className={styles.demoAccessLink} to="/demo">
-              Ver demo completa
+              <span className={styles.demoAccessIcon}>
+                <MonitorPlay size={24} aria-hidden="true" />
+              </span>
+              <span className={styles.demoAccessCopy}>
+                <strong>Probar Fynar con una cuenta demo</strong>
+                <small>
+                  Entra a la aplicación completa con un año de movimientos y datos locales.
+                </small>
+              </span>
+              <span className={styles.demoAccessAction}>Ver demo</span>
             </NavLink>
           </nav>
         </div>
