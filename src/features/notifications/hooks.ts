@@ -22,7 +22,9 @@ export const useNotificationSummary = (workspaceId: string) =>
     },
     enabled: Boolean(workspaceId),
     staleTime: 60_000,
-    refetchInterval: 5 * 60_000,
+    // No hacemos polling periódico: una pestaña de Fynar abierta no debe
+    // mantener PostgreSQL/Neon activo indefinidamente. React Query seguirá
+    // actualizando al montar la vista o cuando el usuario vuelva a interactuar.
   })
 
 export const useNotifications = (
