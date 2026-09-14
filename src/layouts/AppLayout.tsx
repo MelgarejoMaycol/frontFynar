@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import styles from './layouts.module.css'
 import './final-modules.css'
 import { usePreferences } from '@/features/workspace'
+import { isDemoSession } from '@/features/demo/demo-mode'
 
 export function AppLayout() {
   usePreferences()
   const location = useLocation()
+  const demo = isDemoSession()
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const routeRef = useRef<HTMLDivElement>(null)
@@ -69,6 +71,23 @@ export function AppLayout() {
           menuButtonRef={menuButtonRef}
         />
         <main id="main-content" className={styles.main} tabIndex={-1}>
+          {demo && location.pathname === '/app/dashboard' && (
+            <section className={styles.demoGuide} aria-label="Guía del modo demo">
+              <div>
+                <span className={styles.demoGuideBadge}>Modo demo</span>
+                <strong>Explora Fynar como una cuenta real</strong>
+                <p>
+                  Puedes crear cuentas, registrar, editar y eliminar movimientos
+                  y probar los módulos financieros. Solo la información de perfil
+                  y seguridad está bloqueada.
+                </p>
+              </div>
+              <div className={styles.demoGuideActions}>
+                <Link to="/app/accounts?new=1">Crear una cuenta</Link>
+                <Link to="/app/transactions?new=1">Registrar movimiento</Link>
+              </div>
+            </section>
+          )}
           <div
             ref={routeRef}
             key={location.pathname}
