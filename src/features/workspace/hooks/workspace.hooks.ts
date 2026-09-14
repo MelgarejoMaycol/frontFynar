@@ -27,6 +27,7 @@ export const workspaceDependentQueryRoots = [
   'dashboard',
   'budgets',
   'reports',
+  'simulations',
   'liabilities',
   'personal-balances',
   'lending',
