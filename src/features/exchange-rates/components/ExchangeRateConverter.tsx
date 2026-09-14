@@ -78,8 +78,8 @@ export function ExchangeRateConverter({
       <div className={styles.intro}>
         <span>Conversión de referencia</span>
         <p>
-          Compara monedas con tasas oficiales agregadas por Frankfurter. Fynar
-          calcula el resultado sin modificar tus saldos.
+          Compara monedas con tasas de referencia actualizadas. Fynar calcula
+          el resultado sin modificar tus saldos.
         </p>
       </div>
 
@@ -88,7 +88,8 @@ export function ExchangeRateConverter({
         <MoneyInput
           value={amount}
           currency={effectiveFrom}
-          placeholder="1.000.000"
+          minorUnits
+          placeholder="0,00"
           aria-label="Monto a convertir"
           onValueChange={(value) => {
             setAmount(value)
@@ -211,9 +212,7 @@ export function ExchangeRateConverter({
 
           <div className={styles.meta}>
             <Clock3 size={15} aria-hidden="true" />
-            <span>
-              Referencia del {result.date} · proveedor {result.provider}
-            </span>
+            <span>Referencia del {result.date}</span>
           </div>
 
           <p className={styles.disclaimer}>{result.disclaimer}</p>
@@ -225,7 +224,8 @@ export function ExchangeRateConverter({
           <RefreshCw size={17} aria-hidden="true" />
           <span>
             Las tasas se cachean para reducir llamadas externas y Fynar usa la
-            última tasa válida si el proveedor presenta una caída temporal.
+            última tasa válida si el servicio de tasas presenta una caída
+            temporal.
           </span>
         </div>
       )}
