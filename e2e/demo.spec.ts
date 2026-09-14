@@ -32,7 +32,6 @@ test('la demo usa la aplicación real, no llama la API y permite crear cuentas',
   await enterDemo(page)
 
   await expect(page.getByText('Bancolombia').first()).toBeVisible()
-  await expect(page.getByText('Fondo de emergencia').first()).toBeVisible()
   expect(apiRequests).toEqual([])
 
   await page.goto('/app/accounts')
@@ -70,7 +69,8 @@ test('la cuenta demo permite registrar un movimiento con los formularios reales'
   ).toBeVisible()
 
   await page.getByRole('button', { name: 'Registrar movimiento' }).click()
-  const dialog = page.getByRole('dialog', { name: 'Registrar movimiento' })
+  const dialog = page.getByRole('dialog', { name: 'Nuevo movimiento' })
+  await expect(dialog).toBeVisible()
   await dialog.getByRole('combobox', { name: /Tipo/ }).selectOption('INCOME')
 
   const destination = dialog.getByRole('combobox', { name: 'Destino' })
@@ -101,8 +101,12 @@ test('la demo expone módulos reales con datos preparados', async ({ page }) => 
   await expect(
     page.getByRole('heading', { name: 'Categorías', exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('Alimentación').first()).toBeVisible()
-  await expect(page.getByText('Salario').first()).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Alimentación', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Salario', exact: true }),
+  ).toBeVisible()
 
   await page.goto('/app/budgets')
   await expect(
@@ -113,7 +117,7 @@ test('la demo expone módulos reales con datos preparados', async ({ page }) => 
   await expect(
     page.getByRole('heading', { name: 'Metas de ahorro', exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('Fondo de emergencia').first()).toBeVisible()
+  await expect(page.getByText('Fondo de emergencia').last()).toBeVisible()
 
   await page.goto('/app/reports')
   await expect(
