@@ -12,9 +12,9 @@ const LandingPage = lazy(() =>
     default: module.LandingPage,
   })),
 )
-const DemoPage = lazy(() =>
+const DemoLoginPage = lazy(() =>
   import('@/features/demo').then((module) => ({
-    default: module.DemoPage,
+    default: module.DemoLoginPage,
   })),
 )
 const LoginPage = lazy(() =>
@@ -183,10 +183,10 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={publicLight(<LandingPage />)} />
-      <Route path="/demo" element={publicLight(<DemoPage />)} />
       <Route element={<PublicOnlyRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={pending(<LoginPage />)} />
+          <Route path="/demo" element={pending(<DemoLoginPage />)} />
           <Route path="/register" element={pending(<RegisterPage />)} />
           <Route
             path="/forgot-password"
