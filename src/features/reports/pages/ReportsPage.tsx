@@ -121,14 +121,30 @@ export function ReportsPage() {
     <div className={styles.page}>
       <div className={styles.screenOnly}>
         <PageHeader
-          title="Reportes"
-          description="Analiza cómo se comportan tus ingresos, gastos y cuentas."
+          title="Análisis financiero"
+          description="Explora tendencias, distribución de gastos, flujo de dinero y evolución de tus cuentas en una vista completa."
           actions={
             <Button onClick={() => window.print()}>
               <Printer size={18} aria-hidden="true" /> Imprimir reporte
             </Button>
           }
         />
+        <section className={styles.analysisHero} aria-label="Centro de análisis financiero">
+          <div>
+            <span className={styles.analysisEyebrow}>Centro de análisis</span>
+            <h2>Entiende qué pasó con tu dinero y qué está cambiando</h2>
+            <p>
+              Compara periodos, detecta categorías que concentran tus gastos y revisa
+              cómo evolucionan tus ingresos, egresos y saldos sin salir de esta página.
+            </p>
+          </div>
+          <div className={styles.analysisPills} aria-label="Áreas incluidas">
+            <span>Ingresos y gastos</span>
+            <span>Categorías</span>
+            <span>Flujo de caja</span>
+            <span>Cuentas</span>
+          </div>
+        </section>
       </div>
       <header className={styles.printHeader}>
         <strong>{APP_NAME}</strong>
