@@ -1,0 +1,109 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.demoIdentity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.demoIdentity > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.demoIdentity > div span,
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.avatar {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.infoGrid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.infoGrid > div {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-muted);
+}
+
+.infoGrid svg {
+  flex: none;
+  color: var(--color-primary);
+}
+
+.infoGrid span {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.infoGrid strong {
+  color: var(--color-text);
+}
+
+.enterButton {
+  width: 100%;
+  min-height: 3.4rem;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+.hint {
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (max-width: 35.99rem) {
+  .page {
+    margin-top: var(--space-4);
+  }
+
+  .demoIdentity {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .badge {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
