@@ -205,6 +205,15 @@ export function InvestmentPlanDetailPage() {
         <ArrowLeft size={16} aria-hidden="true" /> Volver a inversiones
       </button>
 
+      <div className={styles.education}>
+        <Wallet size={18} aria-hidden="true" />
+        <span>
+          Este seguimiento no es una deuda ni un atraso. El aporte diario,
+          semanal o mensual es solo una referencia: si no aportas en una fecha,
+          no pasa nada y Fynar no crea cobros ni obligaciones.
+        </span>
+      </div>
+
       <section className={styles.detailHero}>
         <div className={styles.detailHeading}>
           <div>
