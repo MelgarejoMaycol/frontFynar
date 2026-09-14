@@ -10,14 +10,28 @@ export const transactionStatusLabels: Record<TransactionStatus, string> = {
   CONFIRMED: 'Confirmado',
   CANCELLED: 'Cancelado',
 }
-export const transactionTypeLabel = (transaction: Pick<Transaction, 'type' | 'metadata'>) =>
+export const transactionTypeLabel = (
+  transaction: Pick<Transaction, 'type' | 'metadata'>,
+) =>
   transaction.type === 'DEBT_PAYMENT'
     ? transaction.metadata?.debtOperation === 'EXTRA_PAYMENT'
       ? 'Abono'
       : 'Pago de crédito'
-    : transaction.type === 'TRANSFER' && transaction.metadata?.cardCashAdvance === true
-    ? 'Adelanto'
-    : ({ INCOME: 'Ingreso', EXPENSE: 'Gasto', TRANSFER: 'Transferencia', ADJUSTMENT: 'Ajuste de saldo' } as const)[transaction.type]
+    : transaction.type === 'INVESTMENT'
+      ? transaction.metadata?.role === 'WITHDRAWAL'
+        ? 'Retiro de inversión'
+        : 'Aporte a inversión'
+      : transaction.type === 'TRANSFER' &&
+          transaction.metadata?.cardCashAdvance === true
+        ? 'Adelanto'
+        : (
+            {
+              INCOME: 'Ingreso',
+              EXPENSE: 'Gasto',
+              TRANSFER: 'Transferencia',
+              ADJUSTMENT: 'Ajuste de saldo',
+            } as const
+          )[transaction.type]
 
 export const formatMoney = (amount: string, currency: string) =>
   formatCurrency(amount, currency, getDisplayLocale())
