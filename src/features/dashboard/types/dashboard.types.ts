@@ -28,6 +28,7 @@ export interface CurrencySummary {
   totalExpenses: string
   netCashFlow: string
   netWorth: string
+  investmentValue?: string
   expectedCollections: string
   scheduledPayments: string
   projectedEndLiquidity: string
