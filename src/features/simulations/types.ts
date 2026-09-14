@@ -62,6 +62,8 @@ export interface PurchaseSimulationResult {
 
 export type InvestmentContributionFrequency =
   | 'NONE'
+  | 'DAILY'
+  | 'WEEKLY'
   | 'MONTHLY'
   | 'QUARTERLY'
   | 'YEARLY'
@@ -139,6 +141,8 @@ export interface InvestmentFinancialImpactResult {
   recurringContribution: {
     original: string
     baseEquivalent: string
+    frequency: InvestmentContributionFrequency
+    monthlyEquivalentBase: string
   }
   availableMoney: string
   remainingAvailableMoney: string
