@@ -16,7 +16,6 @@ import { toApiError } from './httpErrors'
 import type { HttpRequestOptions } from './httpTypes'
 import { createSingleFlight } from './singleFlight'
 import { isDemoSession } from '@/features/demo/demo-mode'
-import { handleDemoRequest } from '@/features/demo/demo-backend'
 
 const client = axios.create({
   baseURL: env.apiBaseUrl,
@@ -70,7 +69,10 @@ async function request<TResponse, TBody = unknown>(
   path: string,
   options: HttpRequestOptions<TBody> = {},
 ): Promise<TResponse> {
-  if (isDemoSession()) return handleDemoRequest<TResponse, TBody>(path, options)
+  if (isDemoSession()) {
+    const { handleDemoRequest } = await import('@/features/demo/demo-backend')
+    return handleDemoRequest<TResponse, TBody>(path, options)
+  }
 
   const isFormData =
     typeof FormData !== 'undefined' && options.body instanceof FormData
