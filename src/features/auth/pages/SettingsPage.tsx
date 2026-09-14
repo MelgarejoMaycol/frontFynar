@@ -30,6 +30,7 @@ import { getAuthErrorMessage } from '../auth.errors'
 import { getSettingsErrorMessage } from '@/features/settings/settings.errors'
 import { useLogout, useLogoutAll } from '../hooks/auth.hooks'
 import styles from './settings.module.css'
+import { demoUser, demoWorkspace, isDemoSession } from '@/features/demo/demo-mode'
 
 export function SettingsPage() {
   const [confirmAll, setConfirmAll] = useState(false),
@@ -60,6 +61,71 @@ export function SettingsPage() {
     VIEWER: 'Lector',
     ACCOUNTANT: 'Contador',
     ADVISOR: 'Asesor',
+  }
+
+  if (isDemoSession()) {
+    return (
+      <div className={styles.page}>
+        <PageHeader
+          title="Configuración"
+          description="La cuenta demo está preconfigurada para proteger su estado de demostración."
+        />
+        <Card className={styles.section}>
+          <SectionHeader
+            title="Cuenta demo protegida"
+            description="Puedes explorar y modificar la información financiera, pero no los datos de identidad o seguridad de esta cuenta."
+          />
+          <dl className={styles.details}>
+            <div>
+              <dt>Usuario</dt>
+              <dd>{demoUser.firstName} {demoUser.lastName}</dd>
+            </div>
+            <div>
+              <dt>Correo</dt>
+              <dd>{demoUser.email}</dd>
+            </div>
+            <div>
+              <dt>Espacio</dt>
+              <dd>{demoWorkspace.name}</dd>
+            </div>
+            <div>
+              <dt>Moneda base</dt>
+              <dd>{demoWorkspace.baseCurrency}</dd>
+            </div>
+            <div>
+              <dt>Zona horaria</dt>
+              <dd>{demoWorkspace.timezone}</dd>
+            </div>
+          </dl>
+          <div className={styles.demoLockNotice}>
+            <strong>Información bloqueada en el modo demo</strong>
+            <p>
+              No se puede cambiar el nombre, correo, avatar, contraseña,
+              preferencias de cuenta, sesiones ni eliminar el usuario demo.
+              Las cuentas, categorías, presupuestos, metas y movimientos sí se
+              pueden crear, editar o eliminar para probar Fynar.
+            </p>
+          </div>
+          <div className={styles.actions}>
+            <div>
+              <h3>Salir de la demostración</h3>
+              <p>Vuelve al inicio de sesión sin afectar ninguna cuenta real.</p>
+            </div>
+            <Button
+              variant="secondary"
+              loading={logout.isPending}
+              onClick={() =>
+                logout.mutate(undefined, {
+                  onSettled: () => navigate('/login', { replace: true }),
+                })
+              }
+            >
+              Salir del demo
+            </Button>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   return (
