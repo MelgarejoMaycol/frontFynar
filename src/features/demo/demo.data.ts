@@ -42,7 +42,7 @@ export type DemoCommitment = {
 }
 
 export const demoSummary = {
-  ownerName: 'Andrea',
+  ownerName: 'Usuario Demo',
   currency: 'COP',
   totalMoney: 7415500,
   availableMoney: 5815500,
