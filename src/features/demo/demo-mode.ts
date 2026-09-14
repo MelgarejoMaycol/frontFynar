@@ -43,7 +43,7 @@ export const demoPreferences: UserPreferences = {
   currency: 'COP',
   timezone: 'America/Bogota',
   dateFormat: 'DD/MM/YYYY',
-  theme: 'SYSTEM',
+  theme: 'LIGHT',
   startScreen: 'DASHBOARD',
   financialCycleStartDay: 5,
   dashboardLayout: {
