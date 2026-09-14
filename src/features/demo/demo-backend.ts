@@ -621,6 +621,16 @@ const resolveRange = (search: URLSearchParams) => {
     start.setUTCDate(start.getUTCDate() - days)
     return { from: dateOnly(start), to: dateOnly(now), period }
   }
+  if (period === 'CURRENT_YEAR' || period === 'PREVIOUS_YEAR') {
+    const year =
+      now.getUTCFullYear() - (period === 'PREVIOUS_YEAR' ? 1 : 0)
+    const start = new Date(Date.UTC(year, 0, 1))
+    const end =
+      period === 'CURRENT_YEAR'
+        ? now
+        : new Date(Date.UTC(year, 11, 31, 23, 59))
+    return { from: dateOnly(start), to: dateOnly(end), period }
+  }
   const offset = period === 'PREVIOUS_MONTH' ? 1 : 0
   const base = monthDate(offset, 1)
   const start = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1))
@@ -1041,7 +1051,15 @@ const reports = (db: DemoDb, route: string, search: URLSearchParams) => {
       const key =
         groupBy === 'MONTH'
           ? transaction.occurredAt.slice(0, 7) + '-01'
-          : transaction.occurredAt.slice(0, 10)
+          : groupBy === 'WEEK'
+            ? (() => {
+                const date = new Date(transaction.occurredAt)
+                const day = date.getUTCDay()
+                const mondayOffset = day === 0 ? -6 : 1 - day
+                date.setUTCDate(date.getUTCDate() + mondayOffset)
+                return dateOnly(date)
+              })()
+            : transaction.occurredAt.slice(0, 10)
       const current = grouped.get(key) ?? {
         income: 0,
         expenses: 0,
