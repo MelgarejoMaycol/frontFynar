@@ -29,12 +29,14 @@
 
 .avatar {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 3.25rem;
+  height: 3.25rem;
   place-items: center;
   border-radius: 50%;
   color: var(--color-text-inverse);
-  background: var(--color-primary);
+  background: linear-gradient(145deg, var(--color-primary), var(--color-dark));
+  box-shadow: 0 0.6rem 1.3rem
+    color-mix(in srgb, var(--color-primary) 22%, transparent);
   font-weight: var(--font-weight-bold);
 }
 
@@ -48,6 +50,54 @@
   background: var(--color-primary-soft);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
+}
+
+.loginPreview {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: color-mix(in srgb, var(--color-surface-muted) 82%, white);
+}
+
+.loginPreview label {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.loginPreview label > span {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.loginPreview input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+}
+
+.passwordPreview {
+  position: relative;
+}
+
+.passwordPreview input {
+  padding-right: 3rem;
+}
+
+.passwordPreview svg {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  color: var(--color-text-secondary);
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .infoGrid {
@@ -74,6 +124,7 @@
   gap: var(--space-1);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  line-height: 1.5;
 }
 
 .infoGrid strong {
@@ -82,15 +133,18 @@
 
 .enterButton {
   width: 100%;
-  min-height: 3.4rem;
-  font-size: var(--font-size-md);
+  min-height: 4rem;
+  border-radius: var(--radius-large);
+  box-shadow: 0 0.8rem 1.8rem
+    color-mix(in srgb, var(--color-primary) 28%, transparent);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
 }
 
 .hint {
   margin: 0;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 @media (max-width: 35.99rem) {
@@ -105,5 +159,14 @@
   .badge {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+
+  .loginPreview {
+    padding: var(--space-3);
+  }
+
+  .enterButton {
+    min-height: 3.75rem;
+    font-size: var(--font-size-md);
   }
 }
