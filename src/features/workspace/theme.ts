@@ -4,8 +4,11 @@ const THEME_CACHE_KEY = 'fynar-theme'
 
 export function applyCachedTheme() {
   const cached = localStorage.getItem(THEME_CACHE_KEY)
-  if (cached === 'LIGHT' || cached === 'DARK' || cached === 'SYSTEM')
+  if (cached === 'LIGHT' || cached === 'DARK' || cached === 'SYSTEM') {
     applyTheme(cached)
+    return
+  }
+  applyTheme('LIGHT')
 }
 
 export function resolveTheme(
