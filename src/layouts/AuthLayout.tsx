@@ -1,8 +1,13 @@
+import { useLayoutEffect } from 'react'
 import { BrandLogo } from '@/components/ui'
 import { APP_NAME } from '@/config/brand'
 import { NavLink, Outlet } from 'react-router'
 import styles from './layouts.module.css'
 export function AuthLayout() {
+  useLayoutEffect(() => {
+    document.documentElement.dataset.bsTheme = 'light'
+  }, [])
+
   return (
     <div className={styles.auth} data-bs-theme="light">
       <aside
