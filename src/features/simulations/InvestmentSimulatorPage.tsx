@@ -251,6 +251,15 @@ function FinancialImpact({
             {formatMoney(result.currentNetCashFlow, result.baseCurrency)}
           </strong>
         </div>
+        <div>
+          <span>Aporte equivalente al mes</span>
+          <strong>
+            {formatMoney(
+              result.recurringContribution.monthlyEquivalentBase,
+              result.baseCurrency,
+            )}
+          </strong>
+        </div>
       </div>
 
       {result.conversion && (
@@ -481,6 +490,7 @@ export function InvestmentSimulatorPage() {
             currency,
             initialAmount,
             recurringContribution: contribution,
+            contributionFrequency: frequency,
           }),
         )
       } else {
@@ -603,6 +613,8 @@ export function InvestmentSimulatorPage() {
               >
                 {(options.data?.contributionFrequencies ?? [
                   { value: 'NONE' as const, label: 'Sin aportes' },
+                  { value: 'DAILY' as const, label: 'Diario' },
+                  { value: 'WEEKLY' as const, label: 'Semanal' },
                   { value: 'MONTHLY' as const, label: 'Mensual' },
                   { value: 'QUARTERLY' as const, label: 'Trimestral' },
                   { value: 'YEARLY' as const, label: 'Anual' },
