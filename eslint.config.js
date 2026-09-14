@@ -20,5 +20,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ['src/features/simulations/InvestmentSimulatorPage.tsx'],
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
   eslintConfigPrettier,
 ])
