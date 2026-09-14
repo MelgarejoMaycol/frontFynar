@@ -104,7 +104,7 @@ describe('navegación y layouts', () => {
       'href',
       '/demo',
     )
-    expect(screen.getByText(/La demo carga localmente/)).toBeVisible()
+    expect(screen.getByText(/La demo usa la interfaz real de Fynar/)).toBeVisible()
   })
   it('navega entre rutas públicas', async () => {
     const user = userEvent.setup()
