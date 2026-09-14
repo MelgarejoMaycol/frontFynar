@@ -132,6 +132,19 @@ test('la demo expone módulos reales con datos preparados', async ({ page }) => 
   ).toBeVisible()
 })
 
+test('el login siempre permanece claro aunque exista un tema oscuro guardado', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('fynar-theme', 'DARK')
+    document.documentElement.dataset.bsTheme = 'dark'
+  })
+
+  await page.goto('/login')
+  await expect(page.locator('html')).toHaveAttribute('data-bs-theme', 'light')
+  await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible()
+})
+
 test('el botón demo está visible en el login y entra directamente a la aplicación', async ({
   page,
 }) => {
