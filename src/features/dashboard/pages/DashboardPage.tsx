@@ -34,7 +34,6 @@ import { DashboardPeriodFilter } from '../components/DashboardPeriodFilter'
 import { FinancialSummary } from '../components/FinancialSummary'
 import { RecentTransactions } from '../components/RecentTransactions'
 import { DashboardSkeleton } from '../components/DashboardSkeleton'
-import { DashboardCharts } from '../components/DashboardCharts'
 import { getDashboardErrorMessage } from '../dashboard.errors'
 import { useDashboard } from '../hooks/dashboard.hooks'
 import { LiabilitiesDashboardWidget } from '@/features/liabilities/LiabilitiesDashboardWidget'
@@ -70,7 +69,6 @@ export function DashboardPage() {
   )
   const [creatingTransaction, setCreatingTransaction] = useState(false)
   const [creatingAccount, setCreatingAccount] = useState(false)
-  const [showCharts, setShowCharts] = useState(false)
   const [transactionCreationKey, setTransactionCreationKey] = useState(0)
   const [accountCreationKey, setAccountCreationKey] = useState(0)
   const [quickMessage, setQuickMessage] = useState('')
@@ -191,8 +189,11 @@ export function DashboardPage() {
                   </Button>
                 )}
                 {dashboard.data?.summariesByCurrency.length ? (
-                  <Button variant="secondary" onClick={() => setShowCharts(true)}>
-                    <BarChart3 size={18} aria-hidden="true" /> Ver gráficas
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate('/app/reports')}
+                  >
+                    <BarChart3 size={18} aria-hidden="true" /> Ver análisis
                   </Button>
                 ) : null}
                 {canReadDebts && (
@@ -346,22 +347,6 @@ export function DashboardPage() {
           </>
         )
       ) : null}
-
-      <Dialog
-        open={showCharts}
-        title="Gráficas financieras"
-        size="wide"
-        onClose={() => setShowCharts(false)}
-      >
-        {dashboard.data ? (
-          <DashboardCharts
-            baseCurrency={dashboard.data.baseCurrency}
-            summariesByCurrency={dashboard.data.summariesByCurrency}
-            comparisonByCurrency={dashboard.data.comparisonByCurrency}
-            expensesByCategory={dashboard.data.expensesByCategory}
-          />
-        ) : null}
-      </Dialog>
 
       <Dialog
         open={creatingTransaction}
