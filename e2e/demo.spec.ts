@@ -344,6 +344,11 @@ test('la demo permite simular una inversión completa sin modificar saldos', asy
   await recurring.fill('30000000')
   await expect(recurring).toHaveValue('300.000,00')
 
+  const frequency = page.getByLabel('Frecuencia de aportes')
+  await expect(frequency.locator('option[value="DAILY"]')).toHaveText('Diario')
+  await expect(frequency.locator('option[value="WEEKLY"]')).toHaveText('Semanal')
+  await frequency.selectOption('WEEKLY')
+
   await page.getByRole('button', { name: 'Simular inversión' }).click()
 
   await expect(page.getByText('Valor estimado al final')).toBeVisible()
