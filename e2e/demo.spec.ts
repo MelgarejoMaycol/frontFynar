@@ -414,6 +414,19 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
   ).toBeVisible()
   await startDialog.getByRole('button', { name: 'Empezar' }).click()
 
+  await page.goto('/app/dashboard')
+  const activeInvestments = page.getByLabel('Inversiones activas')
+  await expect(activeInvestments).toBeVisible()
+  await expect(
+    activeInvestments.getByRole('heading', {
+      name: 'Plan semanal demo',
+      exact: true,
+    }),
+  ).toBeVisible()
+  await activeInvestments
+    .getByRole('button', { name: 'Abrir inversión Plan semanal demo' })
+    .click()
+
   await page.getByRole('button', { name: 'Registrar aporte' }).click()
   const contribution = page.getByRole('dialog', { name: 'Registrar aporte' })
   await contribution
@@ -454,9 +467,40 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
   })
   expect(Number(balanceAfterWithdrawal)).toBe(Number(balanceBefore) - 300000)
 
+  await page.getByRole('button', { name: 'Actualizar valor' }).click()
+  const valuation = page.getByRole('dialog', {
+    name: 'Actualizar valor de inversión',
+  })
+  await valuation.getByLabel('Valor actual de la inversión').fill('36000000')
+  await valuation.getByRole('button', { name: 'Guardar valor' }).click()
+  await expect(
+    page
+      .getByText('Valor actual registrado')
+      .locator('..')
+      .locator('strong'),
+  ).toContainText('360.000')
+
   await page.getByRole('button', { name: 'Pausar seguimiento' }).click()
   await expect(page.getByText('Pausado', { exact: true })).toBeVisible()
   await expect(page.getByText('Próxima referencia voluntaria')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Reanudar seguimiento' }).click()
+  await expect(page.getByText('En seguimiento', { exact: true })).toBeVisible()
+
+  await page.goto('/app/dashboard')
+  const resumedInvestment = page.getByLabel('Inversiones activas')
+  await expect(resumedInvestment).toBeVisible()
+  await resumedInvestment
+    .getByRole('button', { name: 'Abrir inversión Plan semanal demo' })
+    .click()
+
+  await page.getByRole('button', { name: 'Finalizar plan' }).click()
+  await expect(page.getByText('Finalizado', { exact: true })).toBeVisible()
+
+  await page.goto('/app/dashboard')
+  await expect(
+    page.getByRole('heading', { name: 'Plan semanal demo', exact: true }),
+  ).toHaveCount(0)
 
   expect(apiRequests).toEqual([])
 })
