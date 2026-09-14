@@ -56,7 +56,7 @@ export function LandingPage() {
             </div>
             <span className={styles.localNote}>
               <ShieldCheck size={16} aria-hidden="true" />
-              La demo carga localmente y no necesita cuenta ni datos personales.
+              La demo usa la interfaz real de Fynar, funciona localmente y no necesita datos personales.
             </span>
           </div>
 
@@ -95,8 +95,8 @@ export function LandingPage() {
             <span className={styles.eyebrow}>Conoce Fynar sin registrarte</span>
             <h2 id="demo-title">Una cuenta completa de ejemplo, lista para explorar.</h2>
             <p>
-              Entra a una experiencia de demostración con información suficiente
-              para ver cómo se comportaría Fynar después de varios meses de uso.
+              Entra a una cuenta de demostración con un año de historial, datos
+              realistas y los mismos módulos que usarías en una cuenta normal.
             </p>
             <div className={styles.landingActions}>
               <a className={styles.primaryCta} href="/demo">
@@ -106,10 +106,10 @@ export function LandingPage() {
           </div>
           <ul className={styles.demoPitchList}>
             <li><CheckCircle2 size={17} aria-hidden="true" /> Cinco cuentas con saldos y disponible realista.</li>
-            <li><CheckCircle2 size={17} aria-hidden="true" /> Movimientos con búsqueda y filtros.</li>
+            <li><CheckCircle2 size={17} aria-hidden="true" /> Un año de movimientos, ingresos, egresos y transferencias.</li>
             <li><CheckCircle2 size={17} aria-hidden="true" /> Presupuestos, metas y gráficos financieros.</li>
             <li><CheckCircle2 size={17} aria-hidden="true" /> Créditos, pagos recurrentes y préstamos informales.</li>
-            <li><CheckCircle2 size={17} aria-hidden="true" /> Todo funciona con datos locales del frontend.</li>
+            <li><CheckCircle2 size={17} aria-hidden="true" /> Puedes crear cuentas, movimientos, categorías, presupuestos y metas sin afectar datos reales.</li>
           </ul>
         </section>
 
