@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
+import { MonitorPlay } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Button, FormField, Input, PasswordInput } from '@/components/ui'
@@ -10,9 +12,12 @@ import styles from './auth.module.css'
 import { authApi } from '../api/auth.api'
 import { ApiError } from '@/services/http/httpErrors'
 import { GoogleButton } from './GoogleButton'
+import { activateDemoSession } from '@/features/demo/demo-session'
+import { resetDemoDatabase } from '@/features/demo/demo-backend'
 
 export function LoginForm() {
   const login = useLogin()
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const location = useLocation()
   const {
@@ -23,6 +28,12 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   })
+  const enterDemo = () => {
+    resetDemoDatabase()
+    activateDemoSession(queryClient)
+    navigate('/app/dashboard', { replace: true })
+  }
+
   const submit = handleSubmit(async (values) => {
     try {
       await login.mutateAsync(values)
@@ -42,6 +53,27 @@ export function LoginForm() {
       onSubmit={(event) => void submit(event)}
       noValidate
     >
+      <section className={styles.demoLoginAccess} aria-label="Acceso a la demo">
+        <div className={styles.demoLoginCopy}>
+          <span className={styles.demoLoginIcon}>
+            <MonitorPlay size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Probar Fynar con una cuenta demo</strong>
+            <span>
+              Entra de inmediato con datos preparados y usa la aplicación como
+              una cuenta normal.
+            </span>
+          </div>
+        </div>
+        <Button
+          className={styles.demoLoginButton}
+          type="button"
+          onClick={enterDemo}
+        >
+          Entrar al modo demo
+        </Button>
+      </section>
       {login.error && (
         <p className={styles.generalError} role="alert">
           {getAuthErrorMessage(login.error, 'login')}
