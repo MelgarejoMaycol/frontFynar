@@ -7,6 +7,53 @@
   display: grid;
   gap: var(--space-4);
 }
+
+.demoLoginAccess {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
+  border-radius: var(--radius-large);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 8rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 68%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 0.65rem 1.4rem rgb(13 43 40 / 6%);
+}
+.demoLoginCopy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+}
+.demoLoginCopy > div {
+  display: grid;
+  gap: 0.2rem;
+}
+.demoLoginCopy strong {
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+.demoLoginCopy span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+}
+.demoLoginIcon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: var(--radius-medium);
+  color: var(--color-text-inverse) !important;
+  background: var(--color-primary);
+}
+.demoLoginButton {
+  width: 100%;
+  min-height: 3.8rem;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 0.6rem 1.2rem color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
 .row {
   display: grid;
   gap: var(--space-4);
@@ -157,6 +204,15 @@
   .page {
     gap: var(--space-3);
     margin-top: var(--space-4);
+  }
+  .demoLoginAccess {
+    padding: var(--space-3);
+  }
+  .demoLoginCopy {
+    grid-template-columns: 1fr;
+  }
+  .demoLoginIcon {
+    display: none;
   }
 }
 .googleLegalForm {
