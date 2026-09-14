@@ -8,6 +8,7 @@ import {
   Landmark,
   Settings,
   Target,
+  TrendingUp,
   WalletCards,
   HandCoins,
   type LucideIcon,
@@ -20,6 +21,7 @@ export const mainNavigation: NavigationItem[] = [
   { to: '/app/transactions', label: 'Movimientos', icon: CircleDollarSign },
   { to: '/app/budgets', label: 'Presupuestos', icon: WalletCards },
   { to: '/app/goals', label: 'Metas de ahorro', icon: Target },
+  { to: '/app/investments', label: 'Inversiones', icon: TrendingUp },
   { to: '/app/commitments', label: 'Créditos y deudas', icon: HandCoins },
   { to: '/app/reports', label: 'Análisis', icon: ChartNoAxesCombined },
 ]
