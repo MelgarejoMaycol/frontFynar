@@ -228,6 +228,23 @@ describe('DashboardPage', () => {
       '/app/transactions?transactionId=t',
     )
   })
+  it('ordena las acciones rápidas de izquierda a derecha por prioridad', () => {
+    const rendered = view()
+    const actionButtons = Array.from(
+      rendered.container.querySelectorAll(
+        '[aria-label="Acciones rápidas"] button',
+      ),
+    ).map((button) => button.textContent?.replace(/\s+/g, ' ').trim())
+
+    expect(actionButtons).toEqual([
+      'Nuevo movimiento',
+      'Crear cuenta',
+      'Convertir divisas',
+      'Ver análisis',
+      'Ver créditos y deudas',
+    ])
+  })
+
   it('abre el análisis financiero en una página independiente', () => {
     view()
     fireEvent.click(screen.getByRole('button', { name: 'Ver análisis' }))
