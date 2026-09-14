@@ -41,14 +41,17 @@ describe('conversor de divisas', () => {
     mocks.reset.mockReset()
   })
 
-  it('usa la moneda base y envía el monto al backend', async () => {
+  it('formatea el monto mientras se escribe y lo envía normalizado al backend', async () => {
     const user = userEvent.setup()
     render(<ExchangeRateConverter defaultFrom="COP" />)
 
     expect(screen.getByLabelText('Moneda de origen')).toHaveValue('COP')
     expect(screen.getByLabelText('Moneda de destino')).toHaveValue('USD')
 
-    await user.type(screen.getByLabelText('Monto a convertir'), '1000000')
+    const amount = screen.getByLabelText('Monto a convertir')
+    await user.type(amount, '100000000')
+    expect(amount).toHaveValue('1.000.000,00')
+
     fireEvent.submit(
       screen.getByRole('button', { name: 'Convertir ahora' }).closest('form')!,
     )
@@ -56,7 +59,7 @@ describe('conversor de divisas', () => {
     expect(mocks.convert).toHaveBeenCalledWith({
       from: 'COP',
       to: 'USD',
-      amount: '1000000',
+      amount: '1000000.00',
     })
   })
 
@@ -69,5 +72,12 @@ describe('conversor de divisas', () => {
     expect(screen.getByLabelText('Moneda de origen')).toHaveValue('USD')
     expect(screen.getByLabelText('Moneda de destino')).toHaveValue('COP')
     expect(mocks.reset).toHaveBeenCalled()
+  })
+
+  it('no expone el proveedor de tasas en la interfaz', () => {
+    render(<ExchangeRateConverter defaultFrom="COP" />)
+
+    expect(screen.queryByText(/frankfurter/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/proveedor/i)).not.toBeInTheDocument()
   })
 })
