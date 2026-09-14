@@ -269,6 +269,67 @@
   padding: var(--space-5);
   overflow-x: clip;
 }
+.demoGuide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+  border-radius: var(--radius-large);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 10rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 62%, var(--color-surface)), var(--color-surface));
+}
+.demoGuide > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 46rem;
+}
+.demoGuide strong {
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+.demoGuide p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+.demoGuideBadge {
+  width: fit-content;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+.demoGuideActions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.demoGuideActions a {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-medium);
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+.demoGuideActions a:last-child {
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
 .routeTransition {
   min-width: 0;
   transform-origin: center top;
@@ -344,6 +405,18 @@
 @media (max-width: 35.99rem) {
   .authMain {
     padding: var(--space-4);
+  }
+  .demoGuide {
+    align-items: stretch;
+    flex-direction: column;
+    padding: var(--space-3);
+  }
+  .demoGuideActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .demoGuideActions a {
+    width: 100%;
   }
   .authLinksRow {
     gap: var(--space-3);
