@@ -12,7 +12,8 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button, MoneyInput } from '@/components/ui'
+import { Button, Dialog, MoneyInput } from '@/components/ui'
+import { useCreateInvestmentPlan } from '@/features/investments'
 import { useActiveWorkspace } from '@/features/workspace'
 import {
   useInvestmentFinancialImpact,
@@ -280,10 +281,12 @@ function Results({
   simulation,
   scenarios,
   impact,
+  onSavePlan,
 }: {
   simulation: InvestmentSimulationResult
   scenarios?: InvestmentScenarioResult
   impact?: InvestmentFinancialImpactResult
+  onSavePlan: () => void
 }) {
   const yearlyRows = useMemo(
     () =>
@@ -308,6 +311,16 @@ function Results({
           {simulation.years} años.
         </small>
       </section>
+
+      <div className={styles.resultActions}>
+        <Button type="button" onClick={onSavePlan}>
+          Guardar como plan
+        </Button>
+        <small>
+          Guardarlo no mueve dinero. Después decides cuándo empezar y cuándo
+          registrar aportes reales.
+        </small>
+      </div>
 
       <div className={styles.resultMetrics}>
         <div>
@@ -402,6 +415,7 @@ export function InvestmentSimulatorPage() {
   const simulation = useInvestmentSimulation(workspaceId)
   const scenarios = useInvestmentScenarios(workspaceId)
   const financialImpact = useInvestmentFinancialImpact(workspaceId)
+  const createPlan = useCreateInvestmentPlan(workspaceId)
 
   const [currency, setCurrency] = useState(
     activeWorkspace?.baseCurrency ?? 'COP',
@@ -417,6 +431,8 @@ export function InvestmentSimulatorPage() {
   const [advanced, setAdvanced] = useState(false)
   const [compareWithFinances, setCompareWithFinances] = useState(true)
   const [formError, setFormError] = useState<string | null>(null)
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [planName, setPlanName] = useState('Mi plan de inversión')
 
   useEffect(() => {
     if (!options.data) return
@@ -748,6 +764,7 @@ export function InvestmentSimulatorPage() {
               simulation={simulation.data}
               scenarios={scenarios.data}
               impact={financialImpact.data}
+              onSavePlan={() => setSaveOpen(true)}
             />
           ) : (
             <div className={styles.emptyPreview}>
@@ -769,6 +786,78 @@ export function InvestmentSimulatorPage() {
           )}
         </aside>
       </div>
+
+      <Dialog
+        open={saveOpen}
+        title="Guardar como plan"
+        onClose={() => setSaveOpen(false)}
+        footer={
+          <div className={styles.saveDialogActions}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setSaveOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="save-investment-plan"
+              loading={createPlan.isPending}
+            >
+              Guardar plan
+            </Button>
+          </div>
+        }
+      >
+        <form
+          id="save-investment-plan"
+          className={styles.savePlanForm}
+          onSubmit={async (event) => {
+            event.preventDefault()
+            if (!simulation.data || !planName.trim()) return
+            try {
+              const created = await createPlan.mutateAsync({
+                name: planName.trim(),
+                currency: simulation.data.currency,
+                plannedInitialAmount: simulation.data.initialAmount,
+                recurringContribution: simulation.data.recurringContribution,
+                contributionFrequency: simulation.data.contributionFrequency,
+                horizonYears: simulation.data.years,
+                annualReturn: simulation.data.annualReturn,
+                annualFee: simulation.data.annualFee,
+                inflationRate: simulation.data.inflationRate,
+                includeInNetWorth: true,
+              })
+              setSaveOpen(false)
+              navigate(`/app/investments/${created.id}`)
+            } catch {
+              // El hook conserva el error para mostrarlo en el diálogo.
+            }
+          }}
+        >
+          <label className={styles.field}>
+            <span>Nombre del plan</span>
+            <input
+              aria-label="Nombre del plan"
+              value={planName}
+              maxLength={140}
+              onChange={(event) => setPlanName(event.target.value)}
+              placeholder="Ej. Fondo de largo plazo"
+            />
+          </label>
+          <p className={styles.savePlanNote}>
+            Se guardarán el monto, el ritmo de aportes, el horizonte y tus
+            supuestos. No se crea una cuenta, no se descuenta dinero y no nace
+            ninguna obligación recurrente.
+          </p>
+          {createPlan.error instanceof Error ? (
+            <p className={styles.errorBox} role="alert">
+              {createPlan.error.message}
+            </p>
+          ) : null}
+        </form>
+      </Dialog>
     </div>
   )
 }
