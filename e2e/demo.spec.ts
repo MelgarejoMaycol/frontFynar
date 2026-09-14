@@ -328,7 +328,7 @@ test('la demo permite simular una inversión completa sin modificar saldos', asy
     .first()
     .textContent()
 
-  await page.goto('/app/investments')
+  await page.goto('/app/investments/simulator')
   await expect(
     page.getByRole('heading', {
       name: 'Simula cómo podría crecer una inversión',
@@ -372,4 +372,95 @@ test('la demo permite simular una inversión completa sin modificar saldos', asy
     .first()
     .textContent()
   expect(availableAfter).toBe(availableBefore)
+})
+
+
+test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligaciones', async ({
+  page,
+}) => {
+  const apiRequests: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/api/v1')) apiRequests.push(request.url())
+  })
+
+  await enterDemo(page)
+
+  const balanceBefore = await page.evaluate(() => {
+    const raw = localStorage.getItem('fynar-demo-database-v3')
+    const db = raw ? JSON.parse(raw) : null
+    return db?.accounts?.find(
+      (account: { id: string }) => account.id === 'demo-account-bancolombia',
+    )?.currentBalance
+  })
+
+  await page.goto('/app/investments/simulator')
+  await page.getByLabel('Monto inicial de la inversión').fill('50000000')
+  await page.getByLabel('Aporte periódico').fill('10000000')
+  await page.getByLabel('Frecuencia de aportes').selectOption('WEEKLY')
+  await page.getByRole('button', { name: 'Simular inversión' }).click()
+  await expect(page.getByText('Valor estimado al final')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Guardar como plan' }).click()
+  const saveDialog = page.getByRole('dialog', { name: 'Guardar como plan' })
+  await saveDialog.getByLabel('Nombre del plan').fill('Plan semanal demo')
+  await saveDialog.getByRole('button', { name: 'Guardar plan' }).click()
+
+  await expect(page).toHaveURL(/\/app\/investments\/demo-investment-plan-/)
+  await expect(
+    page.getByRole('heading', { name: 'Plan semanal demo', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText(/no es una deuda ni un atraso/i)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Empezar inversión' }).click()
+  const startDialog = page.getByRole('dialog', { name: 'Empezar inversión' })
+  await expect(
+    startDialog.getByText(/no mueve dinero/i),
+  ).toBeVisible()
+  await startDialog.getByRole('button', { name: 'Empezar' }).click()
+
+  await page.getByRole('button', { name: 'Registrar aporte' }).click()
+  const contribution = page.getByRole('dialog', { name: 'Registrar aporte' })
+  await contribution
+    .getByLabel('Cuenta de origen del aporte')
+    .selectOption('demo-account-bancolombia')
+  await contribution.getByLabel('Monto del aporte').fill('50000000')
+  await contribution
+    .getByRole('button', { name: 'Registrar aporte' })
+    .click()
+
+  await expect(page.getByText('+$ 500.000,00')).toBeVisible()
+
+  const balanceAfterContribution = await page.evaluate(() => {
+    const raw = localStorage.getItem('fynar-demo-database-v3')
+    const db = raw ? JSON.parse(raw) : null
+    return db?.accounts?.find(
+      (account: { id: string }) => account.id === 'demo-account-bancolombia',
+    )?.currentBalance
+  })
+  expect(Number(balanceAfterContribution)).toBe(Number(balanceBefore) - 500000)
+
+  await page.getByRole('button', { name: 'Retirar' }).click()
+  const withdrawal = page.getByRole('dialog', { name: 'Retirar de inversión' })
+  await withdrawal
+    .getByLabel('Cuenta de destino del retiro')
+    .selectOption('demo-account-bancolombia')
+  await withdrawal.getByLabel('Monto a retirar').fill('20000000')
+  await withdrawal.getByRole('button', { name: 'Retirar' }).click()
+
+  await expect(page.getByText('-$ 200.000,00')).toBeVisible()
+
+  const balanceAfterWithdrawal = await page.evaluate(() => {
+    const raw = localStorage.getItem('fynar-demo-database-v3')
+    const db = raw ? JSON.parse(raw) : null
+    return db?.accounts?.find(
+      (account: { id: string }) => account.id === 'demo-account-bancolombia',
+    )?.currentBalance
+  })
+  expect(Number(balanceAfterWithdrawal)).toBe(Number(balanceBefore) - 300000)
+
+  await page.getByRole('button', { name: 'Pausar seguimiento' }).click()
+  await expect(page.getByText('Pausado', { exact: true })).toBeVisible()
+  await expect(page.getByText('Próxima referencia voluntaria')).toHaveCount(0)
+
+  expect(apiRequests).toEqual([])
 })
