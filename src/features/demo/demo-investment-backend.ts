@@ -1,6 +1,12 @@
 import type { HttpRequestOptions } from '@/services/http/httpTypes'
 
-type DemoFrequency = 'NONE' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY'
+type DemoFrequency =
+  | 'NONE'
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'MONTHLY'
+  | 'QUARTERLY'
+  | 'YEARLY'
 
 const money = (value: number) => value.toFixed(2)
 const success = (data: unknown) => ({ success: true as const, data })
@@ -34,6 +40,8 @@ const demoOptions = () => ({
   defaultCurrency: 'COP',
   contributionFrequencies: [
     { value: 'NONE', label: 'Sin aportes' },
+    { value: 'DAILY', label: 'Diario' },
+    { value: 'WEEKLY', label: 'Semanal' },
     { value: 'MONTHLY', label: 'Mensual' },
     { value: 'QUARTERLY', label: 'Trimestral' },
     { value: 'YEARLY', label: 'Anual' },
@@ -65,19 +73,24 @@ const simulate = (
   const annualFee = Number(body.annualFee ?? 0)
   const inflationRate = Number(body.inflationRate ?? 0)
   const months = years * 12
-  const grossMonthly = Math.pow(1 + annualReturn, 1 / 12)
-  const feeMonthly = Math.pow(1 - annualFee, 1 / 12)
-  const monthlyFactor = grossMonthly * feeMonthly
-  const intervals: Record<DemoFrequency, number | null> = {
-    NONE: null,
-    MONTHLY: 1,
-    QUARTERLY: 3,
-    YEARLY: 12,
+  const daysPerYear = 365
+  const days = years * daysPerYear
+  const grossDaily = Math.pow(1 + annualReturn, 1 / daysPerYear)
+  const feeDaily = Math.pow(1 - annualFee, 1 / daysPerYear)
+  const dailyFactor = grossDaily * feeDaily
+  const eventsPerYear: Record<DemoFrequency, number> = {
+    NONE: 0,
+    DAILY: 365,
+    WEEKLY: 52,
+    MONTHLY: 12,
+    QUARTERLY: 4,
+    YEARLY: 1,
   }
-  const interval = intervals[contributionFrequency]
+  const yearlyEvents = eventsPerYear[contributionFrequency]
 
   let balance = initialAmount
   let totalContributions = initialAmount
+  let nextTimelineMonth = 1
   const timeline = [
     {
       month: 0,
@@ -88,19 +101,32 @@ const simulate = (
     },
   ]
 
-  for (let month = 1; month <= months; month += 1) {
-    balance *= monthlyFactor
-    if (interval && month % interval === 0 && recurringContribution > 0) {
-      balance += recurringContribution
-      totalContributions += recurringContribution
+  for (let day = 1; day <= days; day += 1) {
+    balance *= dailyFactor
+    if (yearlyEvents > 0 && recurringContribution > 0) {
+      const eventsBefore = Math.floor(((day - 1) * yearlyEvents) / daysPerYear)
+      const eventsNow = Math.floor((day * yearlyEvents) / daysPerYear)
+      const newEvents = eventsNow - eventsBefore
+      if (newEvents > 0) {
+        const contribution = recurringContribution * newEvents
+        balance += contribution
+        totalContributions += contribution
+      }
     }
-    timeline.push({
-      month,
-      year: Number((month / 12).toFixed(4)),
-      contributed: money(totalContributions),
-      estimatedValue: money(balance),
-      estimatedProfit: money(balance - totalContributions),
-    })
+
+    while (
+      nextTimelineMonth <= months &&
+      day >= Math.round((nextTimelineMonth * daysPerYear) / 12)
+    ) {
+      timeline.push({
+        month: nextTimelineMonth,
+        year: Number((nextTimelineMonth / 12).toFixed(4)),
+        contributed: money(totalContributions),
+        estimatedValue: money(balance),
+        estimatedProfit: money(balance - totalContributions),
+      })
+      nextTimelineMonth += 1
+    }
   }
 
   const estimatedProfit = balance - totalContributions
@@ -118,8 +144,8 @@ const simulate = (
     annualReturn: annualReturn.toFixed(8),
     annualFee: annualFee.toFixed(8),
     inflationRate: inflationRate.toFixed(8),
-    effectiveMonthlyReturn: (monthlyFactor - 1).toFixed(8),
-    effectiveAnnualReturn: (Math.pow(monthlyFactor, 12) - 1).toFixed(8),
+    effectiveMonthlyReturn: (Math.pow(dailyFactor, daysPerYear / 12) - 1).toFixed(8),
+    effectiveAnnualReturn: (Math.pow(dailyFactor, daysPerYear) - 1).toFixed(8),
     totalContributions: money(totalContributions),
     estimatedFinalValue: money(balance),
     estimatedProfit: money(estimatedProfit),
@@ -127,8 +153,8 @@ const simulate = (
     totalReturnPercentage: totalReturnPercentage.toFixed(2),
     timeline,
     assumptions: [
-      'La simulación capitaliza el rendimiento mensualmente.',
-      'Los aportes periódicos se agregan al final de cada periodo configurado.',
+      'La rentabilidad anual se distribuye de forma equivalente a lo largo del año para modelar aportes diarios, semanales y periódicos.',
+      'Los aportes periódicos se incorporan al final de cada intervalo configurado.',
       annualFee > 0
         ? 'La comisión anual indicada se descuenta durante el periodo.'
         : 'No se incluyeron comisiones.',
@@ -145,9 +171,24 @@ const impact = (body: Record<string, unknown>) => {
   const currency = String(body.currency ?? 'COP').toUpperCase()
   const initialOriginal = Number(body.initialAmount ?? 0)
   const recurringOriginal = Number(body.recurringContribution ?? 0)
+  const contributionFrequency = String(
+    body.contributionFrequency ?? 'MONTHLY',
+  ) as DemoFrequency
   const rate = copPerUnit[currency] ?? 1
   const initialBase = initialOriginal * rate
   const recurringBase = recurringOriginal * rate
+  const recurringMonthlyEquivalent =
+    contributionFrequency === 'DAILY'
+      ? (recurringBase * 365) / 12
+      : contributionFrequency === 'WEEKLY'
+        ? (recurringBase * 52) / 12
+        : contributionFrequency === 'QUARTERLY'
+          ? recurringBase / 3
+          : contributionFrequency === 'YEARLY'
+            ? recurringBase / 12
+            : contributionFrequency === 'NONE'
+              ? 0
+              : recurringBase
 
   const available = 5_815_500
   const income = 4_750_000
@@ -158,8 +199,8 @@ const impact = (body: Record<string, unknown>) => {
   const liquidityUsed = available > 0 ? (initialBase / available) * 100 : 100
   const recurringShare =
     netCashFlow > 0
-      ? (recurringBase / netCashFlow) * 100
-      : recurringBase > 0
+      ? (recurringMonthlyEquivalent / netCashFlow) * 100
+      : recurringMonthlyEquivalent > 0
         ? 100
         : 0
 
@@ -167,7 +208,7 @@ const impact = (body: Record<string, unknown>) => {
     remaining < 0
       ? 'CRITICAL'
       : liquidityUsed >= 80 ||
-          (netCashFlow > 0 && recurringBase >= netCashFlow)
+          (netCashFlow > 0 && recurringMonthlyEquivalent >= netCashFlow)
         ? 'HIGH'
         : liquidityUsed >= 50 || recurringShare >= 50
           ? 'MODERATE'
@@ -208,6 +249,8 @@ const impact = (body: Record<string, unknown>) => {
     recurringContribution: {
       original: money(recurringOriginal),
       baseEquivalent: money(recurringBase),
+      frequency: contributionFrequency,
+      monthlyEquivalentBase: money(recurringMonthlyEquivalent),
     },
     availableMoney: money(available),
     remainingAvailableMoney: money(remaining),
