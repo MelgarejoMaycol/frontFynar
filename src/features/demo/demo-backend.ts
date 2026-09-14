@@ -1,4 +1,5 @@
 import type { HttpRequestOptions } from '@/services/http/httpTypes'
+import { env } from '@/config/env'
 import type { Account } from '@/features/accounts/types/account.types'
 import type { Budget } from '@/features/budgets/types/budget.types'
 import type { Category } from '@/features/categories/types/category.types'
@@ -1557,6 +1558,3385 @@ const monthEndForecast = (db: DemoDb) => {
       version: 'demo-v1',
       description: 'Proyección local basada en los datos de la cuenta demo.',
     },
+  }
+}
+
+type DemoInvestmentFrequency = 'NONE' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY'
+
+const demoInvestment = (body: Record<string, unknown>, annualReturnOverride?: number) => {
+  const currency = String(body.currency ?? 'COP').toUpperCase()
+  const initialAmount = Number(body.initialAmount ?? 0)
+  const recurringContribution = Number(body.recurringContribution ?? 0)
+  const contributionFrequency = String(
+    body.contributionFrequency ?? 'MONTHLY',
+  ) as DemoInvestmentFrequency
+  const years = Math.max(1, Math.min(50, Number(body.years ?? 10)))
+  const annualReturn =
+    annualReturnOverride ?? Number(body.annualReturn ?? body.baseAnnualReturn ?? 0.08)
+  const annualFee = Number(body.annualFee ?? 0)
+  const inflationRate = Number(body.inflationRate ?? 0)
+  const months = years * 12
+  const grossMonthly = Math.pow(1 + annualReturn, 1 / 12)
+  const feeMonthly = Math.pow(1 - annualFee, 1 / 12)
+  const monthlyFactor = grossMonthly * feeMonthly
+  const intervals: Record<DemoInvestmentFrequency, number | null> = {
+    NONE: null,
+    MONTHLY: 1,
+    QUARTERLY: 3,
+    YEARLY: 12,
+  }
+  const interval = intervals[contributionFrequency]
+
+  let balance = initialAmount
+  let totalContributions = initialAmount
+  const timeline = [
+    {
+      month: 0,
+      year: 0,
+      contributed: money(totalContributions),
+      estimatedValue: money(balance),
+      estimatedProfit: '0.00',
+    },
+  ]
+
+  for (let month = 1; month <= months; month += 1) {
+    balance *= monthlyFactor
+    if (interval && month % interval === 0 && recurringContribution > 0) {
+      balance += recurringContribution
+      totalContributions += recurringContribution
+    }
+    timeline.push({
+      month,
+      year: Number((month / 12).toFixed(4)),
+      contributed: money(totalContributions),
+      estimatedValue: money(balance),
+      estimatedProfit: money(balance - totalContributions),
+    })
+  }
+
+  const profit = balance - totalContributions
+  const inflationAdjusted =
+    inflationRate > 0 ? balance / Math.pow(1 + inflationRate, years) : balance
+  const totalReturnPercentage =
+    totalContributions > 0 ? (profit / totalContributions) * 100 : 0
+
+  return {
+    currency,
+    initialAmount: money(initialAmount),
+    recurringContribution: money(recurringContribution),
+    contributionFrequency,
+    years,
+    annualReturn: annualReturn.toFixed(8),
+    annualFee: annualFee.toFixed(8),
+    inflationRate: inflationRate.toFixed(8),
+    effectiveMonthlyReturn: (monthlyFactor - 1).toFixed(8),
+    effectiveAnnualReturn: (Math.pow(monthlyFactor, 12) - 1).toFixed(8),
+    totalContributions: money(totalContributions),
+    estimatedFinalValue: money(balance),
+    estimatedProfit: money(profit),
+    inflationAdjustedValue: money(inflationAdjusted),
+    totalReturnPercentage: totalReturnPercentage.toFixed(2),
+    timeline,
+    assumptions: [
+      'La simulación capitaliza el rendimiento mensualmente.',
+      'Los aportes periódicos se agregan al final de cada periodo configurado.',
+      annualFee > 0
+        ? 'La comisión anual indicada se descuenta durante el periodo.'
+        : 'No se incluyeron comisiones.',
+      inflationRate > 0
+        ? 'El valor real estimado descuenta la inflación anual indicada.'
+        : 'No se aplicó ajuste por inflación.',
+      'Los resultados son escenarios matemáticos y no garantizan rendimientos futuros.',
+      'Simular no crea movimientos ni modifica cuentas, metas, presupuestos o saldos.',
+    ],
+  }
+}
+
+const demoInvestmentOptions = () => ({
+  currencies: [
+    ['COP', 'peso colombiano', '
+  const page = Number(search.get('page') ?? 1)
+  const limit = Number(search.get('limit') ?? 25)
+  const start = Math.max(0, (page - 1) * limit)
+  return {
+    items: items.slice(start, start + limit),
+    page,
+    limit,
+    total: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  }
+}
+
+export async function handleDemoRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: HttpRequestOptions<TBody> = {},
+): Promise<TResponse> {
+  const url = new URL(path, 'https://demo.fynar.local')
+  const pathname = url.pathname
+  const method = options.method ?? 'GET'
+  const body = (options.body ?? {}) as Record<string, unknown>
+  const db = readDb()
+  const parts = pathParts(pathname)
+
+  if (pathname === '/auth/me') return success(demoUser) as TResponse
+  if (
+    pathname === '/auth/logout' ||
+    pathname === '/auth/logout-all' ||
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
+  )
+    return undefined as TResponse
+
+  if (pathname === '/workspaces')
+    return success([demoWorkspace]) as TResponse
+
+  if (pathname === '/users/me/preferences')
+    return success(db.preferences) as TResponse
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
+
+  if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
+    return success({
+      workspace: demoWorkspace,
+      defaultWorkspaceId: demoWorkspace.id,
+      updatedAt: nowIso(),
+    }) as TResponse
+
+  const workspaceIndex = parts.indexOf('workspaces')
+  const workspaceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 1] : undefined
+  const resource =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 2] : undefined
+  const resourceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 3] : undefined
+
+  if (workspaceId !== demoWorkspace.id)
+    return success(null) as TResponse
+
+  if (resource === 'accounts') {
+    if (method === 'GET' && resourceId) {
+      const account = db.accounts.find((item) => item.id === resourceId)
+      return success(account ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      const archived = url.searchParams.get('archived') === 'true'
+      const favorite = url.searchParams.get('favorite') === 'true'
+      const rows = db.accounts.filter(
+        (item) =>
+          (archived ? !item.isActive : item.isActive) &&
+          (!favorite || item.isFavorite),
+      )
+      return success(rows) as TResponse
+    }
+    if (method === 'POST' && resourceId === undefined) {
+      const opening = String(body.openingBalance ?? '0')
+      const account: Account = {
+        id: id('demo-account'),
+        name: String(body.name ?? 'Nueva cuenta'),
+        type: (body.type as Account['type']) ?? 'SAVINGS',
+        nature: (body.nature as Account['nature']) ?? 'ASSET',
+        institutionName: body.institutionName
+          ? String(body.institutionName)
+          : null,
+        currency: String(body.currency ?? 'COP'),
+        openingBalance: opening,
+        currentBalance: opening,
+        reservedForGoals: '0.00',
+        availableBalance: opening,
+        creditLimit: body.creditLimit ? String(body.creditLimit) : null,
+        billingDay: body.billingDay ? Number(body.billingDay) : null,
+        paymentDueDay: body.paymentDueDay
+          ? Number(body.paymentDueDay)
+          : null,
+        color: null,
+        icon: null,
+        isFavorite: Boolean(body.isFavorite),
+        isActive: true,
+        includeInNetWorth: body.includeInNetWorth !== false,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.accounts.push(account)
+      saveDb(db)
+      return success(account) as TResponse
+    }
+    const account = db.accounts.find((item) => item.id === resourceId)
+    if (account) {
+      if (method === 'PATCH') {
+        if (parts.at(-1) === 'favorite')
+          account.isFavorite = Boolean(body.isFavorite)
+        else Object.assign(account, body, { updatedAt: nowIso() })
+      }
+      if (method === 'POST' && parts.at(-1) === 'archive')
+        account.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        account.isActive = true
+      if (method === 'DELETE') account.isActive = false
+      saveDb(db)
+      return success(account) as TResponse
+    }
+  }
+
+  if (resource === 'categories') {
+    if (method === 'GET') {
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true' ||
+        url.searchParams.get('status') === 'ALL'
+      const status = url.searchParams.get('status')
+      return success(
+        db.categories.filter(
+          (item) =>
+            (includeArchived ||
+              (status === 'ARCHIVED' ? !item.isActive : item.isActive)) &&
+            (status !== 'ARCHIVED' || !item.isActive),
+        ),
+      ) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const category: Category = {
+        id: id('demo-category'),
+        parentId: body.parentId ? String(body.parentId) : null,
+        name: String(body.name ?? 'Nueva categoría'),
+        type: (body.type as Category['type']) ?? 'EXPENSE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : null,
+        scope: 'CUSTOM',
+        isSystem: false,
+        isActive: true,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.categories.push(category)
+      saveDb(db)
+      return success(category) as TResponse
+    }
+    const category = db.categories.find((item) => item.id === resourceId)
+    if (category) {
+      if (method === 'PATCH')
+        Object.assign(category, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') category.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        category.isActive = true
+      saveDb(db)
+      return success(category) as TResponse
+    }
+  }
+
+  if (resource === 'transactions') {
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.transactions.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.transactions]
+      const type = url.searchParams.get('type')
+      const accountId = url.searchParams.get('accountId')
+      const categoryId = url.searchParams.get('categoryId')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      if (type) rows = rows.filter((item) => item.type === type)
+      if (accountId)
+        rows = rows.filter(
+          (item) =>
+            item.accountId === accountId ||
+            item.destinationAccountId === accountId,
+        )
+      if (categoryId)
+        rows = rows.filter((item) => item.categoryId === categoryId)
+      if (search)
+        rows = rows.filter((item) =>
+          (item.description ?? '').toLocaleLowerCase('es').includes(search),
+        )
+      const page = Number(url.searchParams.get('page') ?? 1)
+      const limit = Number(url.searchParams.get('limit') ?? 25)
+      const start = (page - 1) * limit
+      return success({
+        items: rows.slice(start, start + limit),
+        page,
+        limit,
+        total: rows.length,
+        totalPages: Math.max(1, Math.ceil(rows.length / limit)),
+        nextCursor: null,
+      }) as TResponse
+    }
+    if (
+      method === 'POST' &&
+      ['income', 'expense', 'transfer'].includes(String(resourceId))
+    ) {
+      const type = String(resourceId).toUpperCase() as
+        | 'INCOME'
+        | 'EXPENSE'
+        | 'TRANSFER'
+      const transaction = createMovement(db, type, body)
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    const transaction = db.transactions.find(
+      (item) => item.id === resourceId,
+    )
+    if (transaction && method === 'PATCH') {
+      Object.assign(transaction, body, {
+        version: transaction.version + 1,
+        updatedAt: nowIso(),
+      })
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    if (transaction && method === 'DELETE') {
+      transaction.status = 'CANCELLED'
+      transaction.version += 1
+      updateAccountForTransaction(db, transaction, -1)
+      recalculateBudgets(db)
+      saveDb(db)
+      return undefined as TResponse
+    }
+  }
+
+  if (resource === 'dashboard' && method === 'GET')
+    return success(dashboard(db, url.searchParams)) as TResponse
+
+  if (resource === 'budgets') {
+    recalculateBudgets(db)
+    if (method === 'GET' && resourceId === 'cycle-range') {
+      const start = dateOnly(monthDate(0, 1))
+      const end = dateOnly(
+        new Date(
+          Date.UTC(
+            today().getUTCFullYear(),
+            today().getUTCMonth() + 1,
+            0,
+          ),
+        ),
+      )
+      return success({
+        startsOn: start,
+        endsOn: end,
+        financialCycleStartDay: 5,
+      }) as TResponse
+    }
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.budgets.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      const active =
+        url.searchParams.get('status') !== 'ARCHIVED' &&
+        url.searchParams.get('includeArchived') !== 'true'
+      const rows = db.budgets.filter(
+        (item) => (active ? item.isActive : true),
+      )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const categoryIds = Array.isArray(body.categoryIds)
+        ? body.categoryIds.map(String)
+        : []
+      const accountIds = Array.isArray(body.accountIds)
+        ? body.accountIds.map(String)
+        : []
+      const budget: Budget = {
+        id: id('demo-budget'),
+        name: String(body.name ?? 'Nuevo presupuesto'),
+        period: (body.period as Budget['period']) ?? 'MONTHLY',
+        startsOn: String(body.startsOn ?? dateOnly(monthDate(0, 1))),
+        endsOn: String(body.endsOn ?? dateOnly(today())),
+        amount: String(body.amount ?? '0'),
+        currency: String(body.currency ?? 'COP'),
+        alertThreshold: String(body.alertThreshold ?? '80'),
+        rolloverEnabled: Boolean(body.rolloverEnabled),
+        isActive: true,
+        categories: db.categories
+          .filter((item) => categoryIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'EXPENSE' as const,
+            icon: item.icon,
+            color: item.color,
+            isSystem: item.isSystem,
+            isActive: item.isActive,
+          })),
+        accounts: db.accounts
+          .filter((item) => accountIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            nature: item.nature,
+            currency: item.currency,
+            isActive: item.isActive,
+          })),
+        progress: {
+          spent: '0.00',
+          remaining: String(body.amount ?? '0'),
+          percentage: '0.00',
+          status: 'SAFE',
+        },
+        projection: {
+          projectedSpend: '0.00',
+          projectedRemaining: String(body.amount ?? '0'),
+          projectedPercentage: '0.00',
+          projectedStatus: 'SAFE',
+        },
+        movements: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.budgets.push(budget)
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+    const budget = db.budgets.find((item) => item.id === resourceId)
+    if (budget) {
+      if (method === 'PATCH') Object.assign(budget, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') budget.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        budget.isActive = true
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+  }
+
+  if (resource === 'goals') {
+    if (method === 'GET' && resourceId) {
+      const goal = db.goals.find((item) => item.id === resourceId)
+      if (parts.at(-1) === 'projection')
+        return success(goal?.progress ?? null) as TResponse
+      return success(goal ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.goals]
+      const status = url.searchParams.get('status')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true'
+      if (!includeArchived) rows = rows.filter((item) => !item.archivedAt)
+      if (status) rows = rows.filter((item) => item.status === status)
+      if (search)
+        rows = rows.filter((item) =>
+          item.name.toLocaleLowerCase('es').includes(search),
+        )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const account = db.accounts.find(
+        (item) => item.id === String(body.accountId ?? ''),
+      )
+      const targetAmount = String(body.targetAmount ?? '0')
+      const goal: Goal = {
+        id: id('demo-goal'),
+        name: String(body.name ?? 'Nueva meta'),
+        targetAmount,
+        savedAmount: '0.00',
+        targetDate: body.targetDate ? String(body.targetDate) : null,
+        status: 'ACTIVE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : '#154B45',
+        account: account
+          ? {
+              id: account.id,
+              name: account.name,
+              type: account.type,
+              nature: account.nature,
+              currency: account.currency,
+              isActive: account.isActive,
+            }
+          : null,
+        progress: {
+          savedAmount: '0.00',
+          targetAmount,
+          remainingAmount: targetAmount,
+          surplusAmount: '0.00',
+          percentage: '0.00',
+          suggestedMonthlyAmount: money(numeric(targetAmount) / 6),
+          averageMonthlyContribution: null,
+          estimatedCompletionDate: null,
+          estimationReason: 'INSUFFICIENT_HISTORY',
+        },
+        contributions: [],
+        archivedAt: null,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.goals.push(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+    const goal = db.goals.find((item) => item.id === resourceId)
+    if (goal) {
+      if (method === 'PATCH') Object.assign(goal, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') {
+        goal.archivedAt = nowIso()
+        goal.status = 'CANCELLED'
+      }
+      if (method === 'POST' && parts.at(-1) === 'restore') {
+        goal.archivedAt = null
+        goal.status = 'ACTIVE'
+      }
+      if (method === 'POST' && parts.at(-1) === 'pause') goal.status = 'PAUSED'
+      if (method === 'POST' && parts.at(-1) === 'resume') goal.status = 'ACTIVE'
+      if (method === 'POST' && parts.at(-1) === 'complete')
+        goal.status = 'COMPLETED'
+      if (
+        method === 'POST' &&
+        parts[workspaceIndex + 4] === 'contributions' &&
+        parts.length === workspaceIndex + 5
+      ) {
+        const amount = numeric(String(body.amount ?? '0'))
+        goal.savedAmount = money(numeric(goal.savedAmount) + amount)
+        const account = db.accounts.find(
+          (item) => item.id === String(body.accountId ?? ''),
+        )
+        if (account) {
+          account.reservedForGoals = money(
+            numeric(account.reservedForGoals) + amount,
+          )
+          account.availableBalance = money(
+            numeric(account.currentBalance) -
+              numeric(account.reservedForGoals),
+          )
+        }
+        goal.contributions.unshift({
+          id: id('demo-contribution'),
+          transactionId: null,
+          accountId: account?.id ?? null,
+          account: account
+            ? {
+                id: account.id,
+                name: account.name,
+                currency: account.currency,
+              }
+            : null,
+          amount: money(amount),
+          direction: 'IN',
+          contributedAt: String(body.contributedAt ?? nowIso()),
+          createdAt: nowIso(),
+        })
+      }
+      goalProgress(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+  }
+
+  if (resource === 'simulations' && resourceId === 'investment') {
+    const action = parts[workspaceIndex + 4]
+    if (method === 'GET' && action === 'options')
+      return success(demoInvestmentOptions()) as TResponse
+
+    if (method === 'POST' && action === 'calculate')
+      return success(demoInvestment(body)) as TResponse
+
+    if (method === 'POST' && action === 'scenarios') {
+      const base = Number(body.baseAnnualReturn ?? 0.08)
+      const spread = Math.max(0, Number(body.spread ?? 0.04))
+      const summarize = (
+        label: 'CONSERVATIVE' | 'BASE' | 'OPTIMISTIC',
+        rate: number,
+      ) => {
+        const result = demoInvestment(body, Math.max(-0.99, rate))
+        return {
+          label,
+          annualReturn: result.annualReturn,
+          estimatedFinalValue: result.estimatedFinalValue,
+          estimatedProfit: result.estimatedProfit,
+          inflationAdjustedValue: result.inflationAdjustedValue,
+          totalReturnPercentage: result.totalReturnPercentage,
+        }
+      }
+      return success({
+        currency: String(body.currency ?? 'COP'),
+        spread: spread.toFixed(8),
+        scenarios: [
+          summarize('CONSERVATIVE', base - spread),
+          summarize('BASE', base),
+          summarize('OPTIMISTIC', base + spread),
+        ],
+        disclaimer:
+          'Los escenarios son estimaciones matemáticas basadas en tasas supuestas y no garantizan rendimientos futuros.',
+      }) as TResponse
+    }
+
+    if (method === 'POST' && action === 'financial-impact') {
+      const currency = String(body.currency ?? 'COP').toUpperCase()
+      const initialOriginal = Number(body.initialAmount ?? 0)
+      const recurringOriginal = Number(body.recurringContribution ?? 0)
+      const [initial, recurring] = await Promise.all([
+        demoBaseEquivalent(currency, initialOriginal),
+        demoBaseEquivalent(currency, recurringOriginal),
+      ])
+      const dash = dashboard(
+        db,
+        new URLSearchParams({ period: 'CURRENT_MONTH' }),
+      )
+      const summary = dash.summariesByCurrency[0]!
+      const available = Number(summary.availableMoney)
+      const initialBase = Number(initial.amount)
+      const recurringBase = Number(recurring.amount)
+      const remaining = available - initialBase
+      const netCashFlow = Number(summary.netCashFlow)
+      const liquidityUsed =
+        available > 0 ? (initialBase / available) * 100 : 100
+      const recurringShare =
+        netCashFlow > 0 ? (recurringBase / netCashFlow) * 100 : recurringBase > 0 ? 100 : 0
+      const level =
+        remaining < 0
+          ? 'CRITICAL'
+          : liquidityUsed >= 80 || (netCashFlow > 0 && recurringBase >= netCashFlow)
+            ? 'HIGH'
+            : liquidityUsed >= 50 || recurringShare >= 50
+              ? 'MODERATE'
+              : 'LOW'
+      const copy =
+        level === 'CRITICAL'
+          ? {
+              headline: 'La inversión supera tu disponible actual',
+              explanation:
+                'Como simulación es válida, pero si saliera hoy de tus cuentas dejaría tu disponible por debajo de cero.',
+            }
+          : level === 'HIGH'
+            ? {
+                headline: 'La inversión consumiría una parte alta de tu liquidez',
+                explanation:
+                  'Puedes simularla libremente, pero comparada con tus finanzas actuales reduciría de forma importante tu margen.',
+              }
+            : level === 'MODERATE'
+              ? {
+                  headline: 'La inversión tendría un impacto moderado en tu liquidez',
+                  explanation:
+                    'La simulación deja margen, aunque representa una parte relevante de tu disponible o de tu flujo mensual.',
+                }
+              : {
+                  headline: 'La inversión tendría un impacto bajo sobre tu situación actual',
+                  explanation:
+                    'Comparada con tu disponible y tu flujo del periodo, conservarías un margen amplio.',
+                }
+
+      return success({
+        simulationCurrency: currency,
+        baseCurrency: 'COP',
+        initialInvestment: {
+          original: money(initialOriginal),
+          baseEquivalent: money(initialBase),
+        },
+        recurringContribution: {
+          original: money(recurringOriginal),
+          baseEquivalent: money(recurringBase),
+        },
+        availableMoney: money(available),
+        remainingAvailableMoney: money(remaining),
+        liquidityPercentageUsed: liquidityUsed.toFixed(2),
+        currentPeriodIncome: summary.totalIncome,
+        currentPeriodExpenses: summary.totalExpenses,
+        currentNetCashFlow: summary.netCashFlow,
+        knownCommitments: summary.scheduledPayments,
+        recurringContributionShareOfPositiveCashFlow: recurringShare.toFixed(2),
+        conversion:
+          currency === 'COP'
+            ? null
+            : {
+                from: currency,
+                to: 'COP',
+                rate: initial.rate,
+                date: initial.date,
+              },
+        impact: { level, ...copy },
+        disclaimer:
+          'Esta comparación no reserva dinero ni modifica saldos. Solo contrasta la simulación con la situación financiera actual de Fynar.',
+      }) as TResponse
+    }
+  }
+
+  if (resource === 'reports' && method === 'GET') {
+    const route = resourceId ?? ''
+    return success(reports(db, route, url.searchParams)) as TResponse
+  }
+
+  if (resource === 'forecasts' && resourceId === 'month-end')
+    return success(monthEndForecast(db)) as TResponse
+
+  if (resource === 'financial-health') {
+    const result = financialHealth()
+    if (resourceId === 'history')
+      return success(result.history) as TResponse
+    return success(result) as TResponse
+  }
+
+  if (resource === 'upcoming-payments')
+    return success(upcoming()) as TResponse
+
+  if (resource === 'debts-summary')
+    return success(liabilitySummary()) as TResponse
+
+  if (resource === 'debts') {
+    const rows = debts()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET')
+      return success({
+        items: rows,
+        page: 1,
+        limit: 25,
+        total: rows.length,
+        totalPages: 1,
+      }) as TResponse
+  }
+
+  if (resource === 'cards') {
+    const rows = cards()
+    if (method === 'GET' && resourceId) {
+      if (parts.at(-1) === 'purchases' || parts.at(-1) === 'activity' || parts.at(-1) === 'statements')
+        return success([]) as TResponse
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    }
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'obligations') {
+    const rows = obligations()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'lending') {
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            principalPending: '820000.00',
+            interestPending: '46000.00',
+            interestReceived: '46000.00',
+            activeCount: 1,
+          },
+        ],
+        upcoming: [],
+      }) as TResponse
+    if (resourceId === 'loans') {
+      const rows = lendingLoans()
+      const loanId = parts[workspaceIndex + 4]
+      if (loanId)
+        return success(rows.find((item) => item.id === loanId) ?? null) as TResponse
+      return success(rows) as TResponse
+    }
+  }
+
+  if (resource === 'personal-balances') {
+    const rows = personalBalances()
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            iOwe: '85000.00',
+            owedToMe: '365000.00',
+            netPosition: '280000.00',
+            iOweCount: 1,
+            owedToMeCount: 2,
+          },
+        ],
+      }) as TResponse
+    if (resourceId === 'people') {
+      return success(
+        rows.map((item) => ({
+          id: item.person.id,
+          name: item.person.name,
+          relationship: item.person.relationship,
+          notes: null,
+          isActive: true,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        })),
+      ) as TResponse
+    }
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'notifications') {
+    const visible = db.notifications.filter((item) => !item.dismissedAt)
+    if (resourceId === 'summary')
+      return success({
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'GET')
+      return success({
+        items: visible,
+        page: 1,
+        limit: Number(url.searchParams.get('limit') ?? 25),
+        total: visible.length,
+        totalPages: 1,
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'POST' && resourceId === 'refresh')
+      return success({ evaluated: visible.length, created: 0 }) as TResponse
+    if (method === 'POST' && resourceId === 'read-all') {
+      const stamp = nowIso()
+      visible.forEach((item) => {
+        item.readAt = stamp
+      })
+      saveDb(db)
+      return success({ updated: visible.length }) as TResponse
+    }
+    const notification = db.notifications.find(
+      (item) => item.id === resourceId,
+    )
+    if (notification && method === 'POST') {
+      const stamp = nowIso()
+      if (parts.at(-1) === 'read') notification.readAt = stamp
+      if (parts.at(-1) === 'dismiss') notification.dismissedAt = stamp
+      saveDb(db)
+      return success({
+        id: notification.id,
+        readAt: notification.readAt,
+        dismissedAt: notification.dismissedAt,
+      }) as TResponse
+    }
+  }
+
+  return success(null) as TResponse
+}
+, 2],
+    ['USD', 'dólar estadounidense', 'US
+  const page = Number(search.get('page') ?? 1)
+  const limit = Number(search.get('limit') ?? 25)
+  const start = Math.max(0, (page - 1) * limit)
+  return {
+    items: items.slice(start, start + limit),
+    page,
+    limit,
+    total: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  }
+}
+
+export async function handleDemoRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: HttpRequestOptions<TBody> = {},
+): Promise<TResponse> {
+  const url = new URL(path, 'https://demo.fynar.local')
+  const pathname = url.pathname
+  const method = options.method ?? 'GET'
+  const body = (options.body ?? {}) as Record<string, unknown>
+  const db = readDb()
+  const parts = pathParts(pathname)
+
+  if (pathname === '/auth/me') return success(demoUser) as TResponse
+  if (
+    pathname === '/auth/logout' ||
+    pathname === '/auth/logout-all' ||
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
+  )
+    return undefined as TResponse
+
+  if (pathname === '/workspaces')
+    return success([demoWorkspace]) as TResponse
+
+  if (pathname === '/users/me/preferences')
+    return success(db.preferences) as TResponse
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
+
+  if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
+    return success({
+      workspace: demoWorkspace,
+      defaultWorkspaceId: demoWorkspace.id,
+      updatedAt: nowIso(),
+    }) as TResponse
+
+  const workspaceIndex = parts.indexOf('workspaces')
+  const workspaceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 1] : undefined
+  const resource =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 2] : undefined
+  const resourceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 3] : undefined
+
+  if (workspaceId !== demoWorkspace.id)
+    return success(null) as TResponse
+
+  if (resource === 'accounts') {
+    if (method === 'GET' && resourceId) {
+      const account = db.accounts.find((item) => item.id === resourceId)
+      return success(account ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      const archived = url.searchParams.get('archived') === 'true'
+      const favorite = url.searchParams.get('favorite') === 'true'
+      const rows = db.accounts.filter(
+        (item) =>
+          (archived ? !item.isActive : item.isActive) &&
+          (!favorite || item.isFavorite),
+      )
+      return success(rows) as TResponse
+    }
+    if (method === 'POST' && resourceId === undefined) {
+      const opening = String(body.openingBalance ?? '0')
+      const account: Account = {
+        id: id('demo-account'),
+        name: String(body.name ?? 'Nueva cuenta'),
+        type: (body.type as Account['type']) ?? 'SAVINGS',
+        nature: (body.nature as Account['nature']) ?? 'ASSET',
+        institutionName: body.institutionName
+          ? String(body.institutionName)
+          : null,
+        currency: String(body.currency ?? 'COP'),
+        openingBalance: opening,
+        currentBalance: opening,
+        reservedForGoals: '0.00',
+        availableBalance: opening,
+        creditLimit: body.creditLimit ? String(body.creditLimit) : null,
+        billingDay: body.billingDay ? Number(body.billingDay) : null,
+        paymentDueDay: body.paymentDueDay
+          ? Number(body.paymentDueDay)
+          : null,
+        color: null,
+        icon: null,
+        isFavorite: Boolean(body.isFavorite),
+        isActive: true,
+        includeInNetWorth: body.includeInNetWorth !== false,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.accounts.push(account)
+      saveDb(db)
+      return success(account) as TResponse
+    }
+    const account = db.accounts.find((item) => item.id === resourceId)
+    if (account) {
+      if (method === 'PATCH') {
+        if (parts.at(-1) === 'favorite')
+          account.isFavorite = Boolean(body.isFavorite)
+        else Object.assign(account, body, { updatedAt: nowIso() })
+      }
+      if (method === 'POST' && parts.at(-1) === 'archive')
+        account.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        account.isActive = true
+      if (method === 'DELETE') account.isActive = false
+      saveDb(db)
+      return success(account) as TResponse
+    }
+  }
+
+  if (resource === 'categories') {
+    if (method === 'GET') {
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true' ||
+        url.searchParams.get('status') === 'ALL'
+      const status = url.searchParams.get('status')
+      return success(
+        db.categories.filter(
+          (item) =>
+            (includeArchived ||
+              (status === 'ARCHIVED' ? !item.isActive : item.isActive)) &&
+            (status !== 'ARCHIVED' || !item.isActive),
+        ),
+      ) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const category: Category = {
+        id: id('demo-category'),
+        parentId: body.parentId ? String(body.parentId) : null,
+        name: String(body.name ?? 'Nueva categoría'),
+        type: (body.type as Category['type']) ?? 'EXPENSE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : null,
+        scope: 'CUSTOM',
+        isSystem: false,
+        isActive: true,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.categories.push(category)
+      saveDb(db)
+      return success(category) as TResponse
+    }
+    const category = db.categories.find((item) => item.id === resourceId)
+    if (category) {
+      if (method === 'PATCH')
+        Object.assign(category, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') category.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        category.isActive = true
+      saveDb(db)
+      return success(category) as TResponse
+    }
+  }
+
+  if (resource === 'transactions') {
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.transactions.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.transactions]
+      const type = url.searchParams.get('type')
+      const accountId = url.searchParams.get('accountId')
+      const categoryId = url.searchParams.get('categoryId')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      if (type) rows = rows.filter((item) => item.type === type)
+      if (accountId)
+        rows = rows.filter(
+          (item) =>
+            item.accountId === accountId ||
+            item.destinationAccountId === accountId,
+        )
+      if (categoryId)
+        rows = rows.filter((item) => item.categoryId === categoryId)
+      if (search)
+        rows = rows.filter((item) =>
+          (item.description ?? '').toLocaleLowerCase('es').includes(search),
+        )
+      const page = Number(url.searchParams.get('page') ?? 1)
+      const limit = Number(url.searchParams.get('limit') ?? 25)
+      const start = (page - 1) * limit
+      return success({
+        items: rows.slice(start, start + limit),
+        page,
+        limit,
+        total: rows.length,
+        totalPages: Math.max(1, Math.ceil(rows.length / limit)),
+        nextCursor: null,
+      }) as TResponse
+    }
+    if (
+      method === 'POST' &&
+      ['income', 'expense', 'transfer'].includes(String(resourceId))
+    ) {
+      const type = String(resourceId).toUpperCase() as
+        | 'INCOME'
+        | 'EXPENSE'
+        | 'TRANSFER'
+      const transaction = createMovement(db, type, body)
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    const transaction = db.transactions.find(
+      (item) => item.id === resourceId,
+    )
+    if (transaction && method === 'PATCH') {
+      Object.assign(transaction, body, {
+        version: transaction.version + 1,
+        updatedAt: nowIso(),
+      })
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    if (transaction && method === 'DELETE') {
+      transaction.status = 'CANCELLED'
+      transaction.version += 1
+      updateAccountForTransaction(db, transaction, -1)
+      recalculateBudgets(db)
+      saveDb(db)
+      return undefined as TResponse
+    }
+  }
+
+  if (resource === 'dashboard' && method === 'GET')
+    return success(dashboard(db, url.searchParams)) as TResponse
+
+  if (resource === 'budgets') {
+    recalculateBudgets(db)
+    if (method === 'GET' && resourceId === 'cycle-range') {
+      const start = dateOnly(monthDate(0, 1))
+      const end = dateOnly(
+        new Date(
+          Date.UTC(
+            today().getUTCFullYear(),
+            today().getUTCMonth() + 1,
+            0,
+          ),
+        ),
+      )
+      return success({
+        startsOn: start,
+        endsOn: end,
+        financialCycleStartDay: 5,
+      }) as TResponse
+    }
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.budgets.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      const active =
+        url.searchParams.get('status') !== 'ARCHIVED' &&
+        url.searchParams.get('includeArchived') !== 'true'
+      const rows = db.budgets.filter(
+        (item) => (active ? item.isActive : true),
+      )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const categoryIds = Array.isArray(body.categoryIds)
+        ? body.categoryIds.map(String)
+        : []
+      const accountIds = Array.isArray(body.accountIds)
+        ? body.accountIds.map(String)
+        : []
+      const budget: Budget = {
+        id: id('demo-budget'),
+        name: String(body.name ?? 'Nuevo presupuesto'),
+        period: (body.period as Budget['period']) ?? 'MONTHLY',
+        startsOn: String(body.startsOn ?? dateOnly(monthDate(0, 1))),
+        endsOn: String(body.endsOn ?? dateOnly(today())),
+        amount: String(body.amount ?? '0'),
+        currency: String(body.currency ?? 'COP'),
+        alertThreshold: String(body.alertThreshold ?? '80'),
+        rolloverEnabled: Boolean(body.rolloverEnabled),
+        isActive: true,
+        categories: db.categories
+          .filter((item) => categoryIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'EXPENSE' as const,
+            icon: item.icon,
+            color: item.color,
+            isSystem: item.isSystem,
+            isActive: item.isActive,
+          })),
+        accounts: db.accounts
+          .filter((item) => accountIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            nature: item.nature,
+            currency: item.currency,
+            isActive: item.isActive,
+          })),
+        progress: {
+          spent: '0.00',
+          remaining: String(body.amount ?? '0'),
+          percentage: '0.00',
+          status: 'SAFE',
+        },
+        projection: {
+          projectedSpend: '0.00',
+          projectedRemaining: String(body.amount ?? '0'),
+          projectedPercentage: '0.00',
+          projectedStatus: 'SAFE',
+        },
+        movements: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.budgets.push(budget)
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+    const budget = db.budgets.find((item) => item.id === resourceId)
+    if (budget) {
+      if (method === 'PATCH') Object.assign(budget, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') budget.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        budget.isActive = true
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+  }
+
+  if (resource === 'goals') {
+    if (method === 'GET' && resourceId) {
+      const goal = db.goals.find((item) => item.id === resourceId)
+      if (parts.at(-1) === 'projection')
+        return success(goal?.progress ?? null) as TResponse
+      return success(goal ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.goals]
+      const status = url.searchParams.get('status')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true'
+      if (!includeArchived) rows = rows.filter((item) => !item.archivedAt)
+      if (status) rows = rows.filter((item) => item.status === status)
+      if (search)
+        rows = rows.filter((item) =>
+          item.name.toLocaleLowerCase('es').includes(search),
+        )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const account = db.accounts.find(
+        (item) => item.id === String(body.accountId ?? ''),
+      )
+      const targetAmount = String(body.targetAmount ?? '0')
+      const goal: Goal = {
+        id: id('demo-goal'),
+        name: String(body.name ?? 'Nueva meta'),
+        targetAmount,
+        savedAmount: '0.00',
+        targetDate: body.targetDate ? String(body.targetDate) : null,
+        status: 'ACTIVE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : '#154B45',
+        account: account
+          ? {
+              id: account.id,
+              name: account.name,
+              type: account.type,
+              nature: account.nature,
+              currency: account.currency,
+              isActive: account.isActive,
+            }
+          : null,
+        progress: {
+          savedAmount: '0.00',
+          targetAmount,
+          remainingAmount: targetAmount,
+          surplusAmount: '0.00',
+          percentage: '0.00',
+          suggestedMonthlyAmount: money(numeric(targetAmount) / 6),
+          averageMonthlyContribution: null,
+          estimatedCompletionDate: null,
+          estimationReason: 'INSUFFICIENT_HISTORY',
+        },
+        contributions: [],
+        archivedAt: null,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.goals.push(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+    const goal = db.goals.find((item) => item.id === resourceId)
+    if (goal) {
+      if (method === 'PATCH') Object.assign(goal, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') {
+        goal.archivedAt = nowIso()
+        goal.status = 'CANCELLED'
+      }
+      if (method === 'POST' && parts.at(-1) === 'restore') {
+        goal.archivedAt = null
+        goal.status = 'ACTIVE'
+      }
+      if (method === 'POST' && parts.at(-1) === 'pause') goal.status = 'PAUSED'
+      if (method === 'POST' && parts.at(-1) === 'resume') goal.status = 'ACTIVE'
+      if (method === 'POST' && parts.at(-1) === 'complete')
+        goal.status = 'COMPLETED'
+      if (
+        method === 'POST' &&
+        parts[workspaceIndex + 4] === 'contributions' &&
+        parts.length === workspaceIndex + 5
+      ) {
+        const amount = numeric(String(body.amount ?? '0'))
+        goal.savedAmount = money(numeric(goal.savedAmount) + amount)
+        const account = db.accounts.find(
+          (item) => item.id === String(body.accountId ?? ''),
+        )
+        if (account) {
+          account.reservedForGoals = money(
+            numeric(account.reservedForGoals) + amount,
+          )
+          account.availableBalance = money(
+            numeric(account.currentBalance) -
+              numeric(account.reservedForGoals),
+          )
+        }
+        goal.contributions.unshift({
+          id: id('demo-contribution'),
+          transactionId: null,
+          accountId: account?.id ?? null,
+          account: account
+            ? {
+                id: account.id,
+                name: account.name,
+                currency: account.currency,
+              }
+            : null,
+          amount: money(amount),
+          direction: 'IN',
+          contributedAt: String(body.contributedAt ?? nowIso()),
+          createdAt: nowIso(),
+        })
+      }
+      goalProgress(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+  }
+
+  if (resource === 'reports' && method === 'GET') {
+    const route = resourceId ?? ''
+    return success(reports(db, route, url.searchParams)) as TResponse
+  }
+
+  if (resource === 'forecasts' && resourceId === 'month-end')
+    return success(monthEndForecast(db)) as TResponse
+
+  if (resource === 'financial-health') {
+    const result = financialHealth()
+    if (resourceId === 'history')
+      return success(result.history) as TResponse
+    return success(result) as TResponse
+  }
+
+  if (resource === 'upcoming-payments')
+    return success(upcoming()) as TResponse
+
+  if (resource === 'debts-summary')
+    return success(liabilitySummary()) as TResponse
+
+  if (resource === 'debts') {
+    const rows = debts()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET')
+      return success({
+        items: rows,
+        page: 1,
+        limit: 25,
+        total: rows.length,
+        totalPages: 1,
+      }) as TResponse
+  }
+
+  if (resource === 'cards') {
+    const rows = cards()
+    if (method === 'GET' && resourceId) {
+      if (parts.at(-1) === 'purchases' || parts.at(-1) === 'activity' || parts.at(-1) === 'statements')
+        return success([]) as TResponse
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    }
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'obligations') {
+    const rows = obligations()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'lending') {
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            principalPending: '820000.00',
+            interestPending: '46000.00',
+            interestReceived: '46000.00',
+            activeCount: 1,
+          },
+        ],
+        upcoming: [],
+      }) as TResponse
+    if (resourceId === 'loans') {
+      const rows = lendingLoans()
+      const loanId = parts[workspaceIndex + 4]
+      if (loanId)
+        return success(rows.find((item) => item.id === loanId) ?? null) as TResponse
+      return success(rows) as TResponse
+    }
+  }
+
+  if (resource === 'personal-balances') {
+    const rows = personalBalances()
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            iOwe: '85000.00',
+            owedToMe: '365000.00',
+            netPosition: '280000.00',
+            iOweCount: 1,
+            owedToMeCount: 2,
+          },
+        ],
+      }) as TResponse
+    if (resourceId === 'people') {
+      return success(
+        rows.map((item) => ({
+          id: item.person.id,
+          name: item.person.name,
+          relationship: item.person.relationship,
+          notes: null,
+          isActive: true,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        })),
+      ) as TResponse
+    }
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'notifications') {
+    const visible = db.notifications.filter((item) => !item.dismissedAt)
+    if (resourceId === 'summary')
+      return success({
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'GET')
+      return success({
+        items: visible,
+        page: 1,
+        limit: Number(url.searchParams.get('limit') ?? 25),
+        total: visible.length,
+        totalPages: 1,
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'POST' && resourceId === 'refresh')
+      return success({ evaluated: visible.length, created: 0 }) as TResponse
+    if (method === 'POST' && resourceId === 'read-all') {
+      const stamp = nowIso()
+      visible.forEach((item) => {
+        item.readAt = stamp
+      })
+      saveDb(db)
+      return success({ updated: visible.length }) as TResponse
+    }
+    const notification = db.notifications.find(
+      (item) => item.id === resourceId,
+    )
+    if (notification && method === 'POST') {
+      const stamp = nowIso()
+      if (parts.at(-1) === 'read') notification.readAt = stamp
+      if (parts.at(-1) === 'dismiss') notification.dismissedAt = stamp
+      saveDb(db)
+      return success({
+        id: notification.id,
+        readAt: notification.readAt,
+        dismissedAt: notification.dismissedAt,
+      }) as TResponse
+    }
+  }
+
+  return success(null) as TResponse
+}
+, 2],
+    ['EUR', 'euro', '€', 2],
+    ['GBP', 'libra esterlina', '£', 2],
+    ['CAD', 'dólar canadiense', 'CA
+  const page = Number(search.get('page') ?? 1)
+  const limit = Number(search.get('limit') ?? 25)
+  const start = Math.max(0, (page - 1) * limit)
+  return {
+    items: items.slice(start, start + limit),
+    page,
+    limit,
+    total: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  }
+}
+
+export async function handleDemoRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: HttpRequestOptions<TBody> = {},
+): Promise<TResponse> {
+  const url = new URL(path, 'https://demo.fynar.local')
+  const pathname = url.pathname
+  const method = options.method ?? 'GET'
+  const body = (options.body ?? {}) as Record<string, unknown>
+  const db = readDb()
+  const parts = pathParts(pathname)
+
+  if (pathname === '/auth/me') return success(demoUser) as TResponse
+  if (
+    pathname === '/auth/logout' ||
+    pathname === '/auth/logout-all' ||
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
+  )
+    return undefined as TResponse
+
+  if (pathname === '/workspaces')
+    return success([demoWorkspace]) as TResponse
+
+  if (pathname === '/users/me/preferences')
+    return success(db.preferences) as TResponse
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
+
+  if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
+    return success({
+      workspace: demoWorkspace,
+      defaultWorkspaceId: demoWorkspace.id,
+      updatedAt: nowIso(),
+    }) as TResponse
+
+  const workspaceIndex = parts.indexOf('workspaces')
+  const workspaceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 1] : undefined
+  const resource =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 2] : undefined
+  const resourceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 3] : undefined
+
+  if (workspaceId !== demoWorkspace.id)
+    return success(null) as TResponse
+
+  if (resource === 'accounts') {
+    if (method === 'GET' && resourceId) {
+      const account = db.accounts.find((item) => item.id === resourceId)
+      return success(account ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      const archived = url.searchParams.get('archived') === 'true'
+      const favorite = url.searchParams.get('favorite') === 'true'
+      const rows = db.accounts.filter(
+        (item) =>
+          (archived ? !item.isActive : item.isActive) &&
+          (!favorite || item.isFavorite),
+      )
+      return success(rows) as TResponse
+    }
+    if (method === 'POST' && resourceId === undefined) {
+      const opening = String(body.openingBalance ?? '0')
+      const account: Account = {
+        id: id('demo-account'),
+        name: String(body.name ?? 'Nueva cuenta'),
+        type: (body.type as Account['type']) ?? 'SAVINGS',
+        nature: (body.nature as Account['nature']) ?? 'ASSET',
+        institutionName: body.institutionName
+          ? String(body.institutionName)
+          : null,
+        currency: String(body.currency ?? 'COP'),
+        openingBalance: opening,
+        currentBalance: opening,
+        reservedForGoals: '0.00',
+        availableBalance: opening,
+        creditLimit: body.creditLimit ? String(body.creditLimit) : null,
+        billingDay: body.billingDay ? Number(body.billingDay) : null,
+        paymentDueDay: body.paymentDueDay
+          ? Number(body.paymentDueDay)
+          : null,
+        color: null,
+        icon: null,
+        isFavorite: Boolean(body.isFavorite),
+        isActive: true,
+        includeInNetWorth: body.includeInNetWorth !== false,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.accounts.push(account)
+      saveDb(db)
+      return success(account) as TResponse
+    }
+    const account = db.accounts.find((item) => item.id === resourceId)
+    if (account) {
+      if (method === 'PATCH') {
+        if (parts.at(-1) === 'favorite')
+          account.isFavorite = Boolean(body.isFavorite)
+        else Object.assign(account, body, { updatedAt: nowIso() })
+      }
+      if (method === 'POST' && parts.at(-1) === 'archive')
+        account.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        account.isActive = true
+      if (method === 'DELETE') account.isActive = false
+      saveDb(db)
+      return success(account) as TResponse
+    }
+  }
+
+  if (resource === 'categories') {
+    if (method === 'GET') {
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true' ||
+        url.searchParams.get('status') === 'ALL'
+      const status = url.searchParams.get('status')
+      return success(
+        db.categories.filter(
+          (item) =>
+            (includeArchived ||
+              (status === 'ARCHIVED' ? !item.isActive : item.isActive)) &&
+            (status !== 'ARCHIVED' || !item.isActive),
+        ),
+      ) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const category: Category = {
+        id: id('demo-category'),
+        parentId: body.parentId ? String(body.parentId) : null,
+        name: String(body.name ?? 'Nueva categoría'),
+        type: (body.type as Category['type']) ?? 'EXPENSE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : null,
+        scope: 'CUSTOM',
+        isSystem: false,
+        isActive: true,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.categories.push(category)
+      saveDb(db)
+      return success(category) as TResponse
+    }
+    const category = db.categories.find((item) => item.id === resourceId)
+    if (category) {
+      if (method === 'PATCH')
+        Object.assign(category, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') category.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        category.isActive = true
+      saveDb(db)
+      return success(category) as TResponse
+    }
+  }
+
+  if (resource === 'transactions') {
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.transactions.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.transactions]
+      const type = url.searchParams.get('type')
+      const accountId = url.searchParams.get('accountId')
+      const categoryId = url.searchParams.get('categoryId')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      if (type) rows = rows.filter((item) => item.type === type)
+      if (accountId)
+        rows = rows.filter(
+          (item) =>
+            item.accountId === accountId ||
+            item.destinationAccountId === accountId,
+        )
+      if (categoryId)
+        rows = rows.filter((item) => item.categoryId === categoryId)
+      if (search)
+        rows = rows.filter((item) =>
+          (item.description ?? '').toLocaleLowerCase('es').includes(search),
+        )
+      const page = Number(url.searchParams.get('page') ?? 1)
+      const limit = Number(url.searchParams.get('limit') ?? 25)
+      const start = (page - 1) * limit
+      return success({
+        items: rows.slice(start, start + limit),
+        page,
+        limit,
+        total: rows.length,
+        totalPages: Math.max(1, Math.ceil(rows.length / limit)),
+        nextCursor: null,
+      }) as TResponse
+    }
+    if (
+      method === 'POST' &&
+      ['income', 'expense', 'transfer'].includes(String(resourceId))
+    ) {
+      const type = String(resourceId).toUpperCase() as
+        | 'INCOME'
+        | 'EXPENSE'
+        | 'TRANSFER'
+      const transaction = createMovement(db, type, body)
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    const transaction = db.transactions.find(
+      (item) => item.id === resourceId,
+    )
+    if (transaction && method === 'PATCH') {
+      Object.assign(transaction, body, {
+        version: transaction.version + 1,
+        updatedAt: nowIso(),
+      })
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    if (transaction && method === 'DELETE') {
+      transaction.status = 'CANCELLED'
+      transaction.version += 1
+      updateAccountForTransaction(db, transaction, -1)
+      recalculateBudgets(db)
+      saveDb(db)
+      return undefined as TResponse
+    }
+  }
+
+  if (resource === 'dashboard' && method === 'GET')
+    return success(dashboard(db, url.searchParams)) as TResponse
+
+  if (resource === 'budgets') {
+    recalculateBudgets(db)
+    if (method === 'GET' && resourceId === 'cycle-range') {
+      const start = dateOnly(monthDate(0, 1))
+      const end = dateOnly(
+        new Date(
+          Date.UTC(
+            today().getUTCFullYear(),
+            today().getUTCMonth() + 1,
+            0,
+          ),
+        ),
+      )
+      return success({
+        startsOn: start,
+        endsOn: end,
+        financialCycleStartDay: 5,
+      }) as TResponse
+    }
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.budgets.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      const active =
+        url.searchParams.get('status') !== 'ARCHIVED' &&
+        url.searchParams.get('includeArchived') !== 'true'
+      const rows = db.budgets.filter(
+        (item) => (active ? item.isActive : true),
+      )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const categoryIds = Array.isArray(body.categoryIds)
+        ? body.categoryIds.map(String)
+        : []
+      const accountIds = Array.isArray(body.accountIds)
+        ? body.accountIds.map(String)
+        : []
+      const budget: Budget = {
+        id: id('demo-budget'),
+        name: String(body.name ?? 'Nuevo presupuesto'),
+        period: (body.period as Budget['period']) ?? 'MONTHLY',
+        startsOn: String(body.startsOn ?? dateOnly(monthDate(0, 1))),
+        endsOn: String(body.endsOn ?? dateOnly(today())),
+        amount: String(body.amount ?? '0'),
+        currency: String(body.currency ?? 'COP'),
+        alertThreshold: String(body.alertThreshold ?? '80'),
+        rolloverEnabled: Boolean(body.rolloverEnabled),
+        isActive: true,
+        categories: db.categories
+          .filter((item) => categoryIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'EXPENSE' as const,
+            icon: item.icon,
+            color: item.color,
+            isSystem: item.isSystem,
+            isActive: item.isActive,
+          })),
+        accounts: db.accounts
+          .filter((item) => accountIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            nature: item.nature,
+            currency: item.currency,
+            isActive: item.isActive,
+          })),
+        progress: {
+          spent: '0.00',
+          remaining: String(body.amount ?? '0'),
+          percentage: '0.00',
+          status: 'SAFE',
+        },
+        projection: {
+          projectedSpend: '0.00',
+          projectedRemaining: String(body.amount ?? '0'),
+          projectedPercentage: '0.00',
+          projectedStatus: 'SAFE',
+        },
+        movements: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.budgets.push(budget)
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+    const budget = db.budgets.find((item) => item.id === resourceId)
+    if (budget) {
+      if (method === 'PATCH') Object.assign(budget, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') budget.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        budget.isActive = true
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+  }
+
+  if (resource === 'goals') {
+    if (method === 'GET' && resourceId) {
+      const goal = db.goals.find((item) => item.id === resourceId)
+      if (parts.at(-1) === 'projection')
+        return success(goal?.progress ?? null) as TResponse
+      return success(goal ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.goals]
+      const status = url.searchParams.get('status')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true'
+      if (!includeArchived) rows = rows.filter((item) => !item.archivedAt)
+      if (status) rows = rows.filter((item) => item.status === status)
+      if (search)
+        rows = rows.filter((item) =>
+          item.name.toLocaleLowerCase('es').includes(search),
+        )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const account = db.accounts.find(
+        (item) => item.id === String(body.accountId ?? ''),
+      )
+      const targetAmount = String(body.targetAmount ?? '0')
+      const goal: Goal = {
+        id: id('demo-goal'),
+        name: String(body.name ?? 'Nueva meta'),
+        targetAmount,
+        savedAmount: '0.00',
+        targetDate: body.targetDate ? String(body.targetDate) : null,
+        status: 'ACTIVE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : '#154B45',
+        account: account
+          ? {
+              id: account.id,
+              name: account.name,
+              type: account.type,
+              nature: account.nature,
+              currency: account.currency,
+              isActive: account.isActive,
+            }
+          : null,
+        progress: {
+          savedAmount: '0.00',
+          targetAmount,
+          remainingAmount: targetAmount,
+          surplusAmount: '0.00',
+          percentage: '0.00',
+          suggestedMonthlyAmount: money(numeric(targetAmount) / 6),
+          averageMonthlyContribution: null,
+          estimatedCompletionDate: null,
+          estimationReason: 'INSUFFICIENT_HISTORY',
+        },
+        contributions: [],
+        archivedAt: null,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.goals.push(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+    const goal = db.goals.find((item) => item.id === resourceId)
+    if (goal) {
+      if (method === 'PATCH') Object.assign(goal, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') {
+        goal.archivedAt = nowIso()
+        goal.status = 'CANCELLED'
+      }
+      if (method === 'POST' && parts.at(-1) === 'restore') {
+        goal.archivedAt = null
+        goal.status = 'ACTIVE'
+      }
+      if (method === 'POST' && parts.at(-1) === 'pause') goal.status = 'PAUSED'
+      if (method === 'POST' && parts.at(-1) === 'resume') goal.status = 'ACTIVE'
+      if (method === 'POST' && parts.at(-1) === 'complete')
+        goal.status = 'COMPLETED'
+      if (
+        method === 'POST' &&
+        parts[workspaceIndex + 4] === 'contributions' &&
+        parts.length === workspaceIndex + 5
+      ) {
+        const amount = numeric(String(body.amount ?? '0'))
+        goal.savedAmount = money(numeric(goal.savedAmount) + amount)
+        const account = db.accounts.find(
+          (item) => item.id === String(body.accountId ?? ''),
+        )
+        if (account) {
+          account.reservedForGoals = money(
+            numeric(account.reservedForGoals) + amount,
+          )
+          account.availableBalance = money(
+            numeric(account.currentBalance) -
+              numeric(account.reservedForGoals),
+          )
+        }
+        goal.contributions.unshift({
+          id: id('demo-contribution'),
+          transactionId: null,
+          accountId: account?.id ?? null,
+          account: account
+            ? {
+                id: account.id,
+                name: account.name,
+                currency: account.currency,
+              }
+            : null,
+          amount: money(amount),
+          direction: 'IN',
+          contributedAt: String(body.contributedAt ?? nowIso()),
+          createdAt: nowIso(),
+        })
+      }
+      goalProgress(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+  }
+
+  if (resource === 'reports' && method === 'GET') {
+    const route = resourceId ?? ''
+    return success(reports(db, route, url.searchParams)) as TResponse
+  }
+
+  if (resource === 'forecasts' && resourceId === 'month-end')
+    return success(monthEndForecast(db)) as TResponse
+
+  if (resource === 'financial-health') {
+    const result = financialHealth()
+    if (resourceId === 'history')
+      return success(result.history) as TResponse
+    return success(result) as TResponse
+  }
+
+  if (resource === 'upcoming-payments')
+    return success(upcoming()) as TResponse
+
+  if (resource === 'debts-summary')
+    return success(liabilitySummary()) as TResponse
+
+  if (resource === 'debts') {
+    const rows = debts()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET')
+      return success({
+        items: rows,
+        page: 1,
+        limit: 25,
+        total: rows.length,
+        totalPages: 1,
+      }) as TResponse
+  }
+
+  if (resource === 'cards') {
+    const rows = cards()
+    if (method === 'GET' && resourceId) {
+      if (parts.at(-1) === 'purchases' || parts.at(-1) === 'activity' || parts.at(-1) === 'statements')
+        return success([]) as TResponse
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    }
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'obligations') {
+    const rows = obligations()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'lending') {
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            principalPending: '820000.00',
+            interestPending: '46000.00',
+            interestReceived: '46000.00',
+            activeCount: 1,
+          },
+        ],
+        upcoming: [],
+      }) as TResponse
+    if (resourceId === 'loans') {
+      const rows = lendingLoans()
+      const loanId = parts[workspaceIndex + 4]
+      if (loanId)
+        return success(rows.find((item) => item.id === loanId) ?? null) as TResponse
+      return success(rows) as TResponse
+    }
+  }
+
+  if (resource === 'personal-balances') {
+    const rows = personalBalances()
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            iOwe: '85000.00',
+            owedToMe: '365000.00',
+            netPosition: '280000.00',
+            iOweCount: 1,
+            owedToMeCount: 2,
+          },
+        ],
+      }) as TResponse
+    if (resourceId === 'people') {
+      return success(
+        rows.map((item) => ({
+          id: item.person.id,
+          name: item.person.name,
+          relationship: item.person.relationship,
+          notes: null,
+          isActive: true,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        })),
+      ) as TResponse
+    }
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'notifications') {
+    const visible = db.notifications.filter((item) => !item.dismissedAt)
+    if (resourceId === 'summary')
+      return success({
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'GET')
+      return success({
+        items: visible,
+        page: 1,
+        limit: Number(url.searchParams.get('limit') ?? 25),
+        total: visible.length,
+        totalPages: 1,
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'POST' && resourceId === 'refresh')
+      return success({ evaluated: visible.length, created: 0 }) as TResponse
+    if (method === 'POST' && resourceId === 'read-all') {
+      const stamp = nowIso()
+      visible.forEach((item) => {
+        item.readAt = stamp
+      })
+      saveDb(db)
+      return success({ updated: visible.length }) as TResponse
+    }
+    const notification = db.notifications.find(
+      (item) => item.id === resourceId,
+    )
+    if (notification && method === 'POST') {
+      const stamp = nowIso()
+      if (parts.at(-1) === 'read') notification.readAt = stamp
+      if (parts.at(-1) === 'dismiss') notification.dismissedAt = stamp
+      saveDb(db)
+      return success({
+        id: notification.id,
+        readAt: notification.readAt,
+        dismissedAt: notification.dismissedAt,
+      }) as TResponse
+    }
+  }
+
+  return success(null) as TResponse
+}
+, 2],
+    ['MXN', 'peso mexicano', 'MX
+  const page = Number(search.get('page') ?? 1)
+  const limit = Number(search.get('limit') ?? 25)
+  const start = Math.max(0, (page - 1) * limit)
+  return {
+    items: items.slice(start, start + limit),
+    page,
+    limit,
+    total: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  }
+}
+
+export async function handleDemoRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: HttpRequestOptions<TBody> = {},
+): Promise<TResponse> {
+  const url = new URL(path, 'https://demo.fynar.local')
+  const pathname = url.pathname
+  const method = options.method ?? 'GET'
+  const body = (options.body ?? {}) as Record<string, unknown>
+  const db = readDb()
+  const parts = pathParts(pathname)
+
+  if (pathname === '/auth/me') return success(demoUser) as TResponse
+  if (
+    pathname === '/auth/logout' ||
+    pathname === '/auth/logout-all' ||
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
+  )
+    return undefined as TResponse
+
+  if (pathname === '/workspaces')
+    return success([demoWorkspace]) as TResponse
+
+  if (pathname === '/users/me/preferences')
+    return success(db.preferences) as TResponse
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
+
+  if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
+    return success({
+      workspace: demoWorkspace,
+      defaultWorkspaceId: demoWorkspace.id,
+      updatedAt: nowIso(),
+    }) as TResponse
+
+  const workspaceIndex = parts.indexOf('workspaces')
+  const workspaceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 1] : undefined
+  const resource =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 2] : undefined
+  const resourceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 3] : undefined
+
+  if (workspaceId !== demoWorkspace.id)
+    return success(null) as TResponse
+
+  if (resource === 'accounts') {
+    if (method === 'GET' && resourceId) {
+      const account = db.accounts.find((item) => item.id === resourceId)
+      return success(account ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      const archived = url.searchParams.get('archived') === 'true'
+      const favorite = url.searchParams.get('favorite') === 'true'
+      const rows = db.accounts.filter(
+        (item) =>
+          (archived ? !item.isActive : item.isActive) &&
+          (!favorite || item.isFavorite),
+      )
+      return success(rows) as TResponse
+    }
+    if (method === 'POST' && resourceId === undefined) {
+      const opening = String(body.openingBalance ?? '0')
+      const account: Account = {
+        id: id('demo-account'),
+        name: String(body.name ?? 'Nueva cuenta'),
+        type: (body.type as Account['type']) ?? 'SAVINGS',
+        nature: (body.nature as Account['nature']) ?? 'ASSET',
+        institutionName: body.institutionName
+          ? String(body.institutionName)
+          : null,
+        currency: String(body.currency ?? 'COP'),
+        openingBalance: opening,
+        currentBalance: opening,
+        reservedForGoals: '0.00',
+        availableBalance: opening,
+        creditLimit: body.creditLimit ? String(body.creditLimit) : null,
+        billingDay: body.billingDay ? Number(body.billingDay) : null,
+        paymentDueDay: body.paymentDueDay
+          ? Number(body.paymentDueDay)
+          : null,
+        color: null,
+        icon: null,
+        isFavorite: Boolean(body.isFavorite),
+        isActive: true,
+        includeInNetWorth: body.includeInNetWorth !== false,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.accounts.push(account)
+      saveDb(db)
+      return success(account) as TResponse
+    }
+    const account = db.accounts.find((item) => item.id === resourceId)
+    if (account) {
+      if (method === 'PATCH') {
+        if (parts.at(-1) === 'favorite')
+          account.isFavorite = Boolean(body.isFavorite)
+        else Object.assign(account, body, { updatedAt: nowIso() })
+      }
+      if (method === 'POST' && parts.at(-1) === 'archive')
+        account.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        account.isActive = true
+      if (method === 'DELETE') account.isActive = false
+      saveDb(db)
+      return success(account) as TResponse
+    }
+  }
+
+  if (resource === 'categories') {
+    if (method === 'GET') {
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true' ||
+        url.searchParams.get('status') === 'ALL'
+      const status = url.searchParams.get('status')
+      return success(
+        db.categories.filter(
+          (item) =>
+            (includeArchived ||
+              (status === 'ARCHIVED' ? !item.isActive : item.isActive)) &&
+            (status !== 'ARCHIVED' || !item.isActive),
+        ),
+      ) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const category: Category = {
+        id: id('demo-category'),
+        parentId: body.parentId ? String(body.parentId) : null,
+        name: String(body.name ?? 'Nueva categoría'),
+        type: (body.type as Category['type']) ?? 'EXPENSE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : null,
+        scope: 'CUSTOM',
+        isSystem: false,
+        isActive: true,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.categories.push(category)
+      saveDb(db)
+      return success(category) as TResponse
+    }
+    const category = db.categories.find((item) => item.id === resourceId)
+    if (category) {
+      if (method === 'PATCH')
+        Object.assign(category, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') category.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        category.isActive = true
+      saveDb(db)
+      return success(category) as TResponse
+    }
+  }
+
+  if (resource === 'transactions') {
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.transactions.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.transactions]
+      const type = url.searchParams.get('type')
+      const accountId = url.searchParams.get('accountId')
+      const categoryId = url.searchParams.get('categoryId')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      if (type) rows = rows.filter((item) => item.type === type)
+      if (accountId)
+        rows = rows.filter(
+          (item) =>
+            item.accountId === accountId ||
+            item.destinationAccountId === accountId,
+        )
+      if (categoryId)
+        rows = rows.filter((item) => item.categoryId === categoryId)
+      if (search)
+        rows = rows.filter((item) =>
+          (item.description ?? '').toLocaleLowerCase('es').includes(search),
+        )
+      const page = Number(url.searchParams.get('page') ?? 1)
+      const limit = Number(url.searchParams.get('limit') ?? 25)
+      const start = (page - 1) * limit
+      return success({
+        items: rows.slice(start, start + limit),
+        page,
+        limit,
+        total: rows.length,
+        totalPages: Math.max(1, Math.ceil(rows.length / limit)),
+        nextCursor: null,
+      }) as TResponse
+    }
+    if (
+      method === 'POST' &&
+      ['income', 'expense', 'transfer'].includes(String(resourceId))
+    ) {
+      const type = String(resourceId).toUpperCase() as
+        | 'INCOME'
+        | 'EXPENSE'
+        | 'TRANSFER'
+      const transaction = createMovement(db, type, body)
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    const transaction = db.transactions.find(
+      (item) => item.id === resourceId,
+    )
+    if (transaction && method === 'PATCH') {
+      Object.assign(transaction, body, {
+        version: transaction.version + 1,
+        updatedAt: nowIso(),
+      })
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    if (transaction && method === 'DELETE') {
+      transaction.status = 'CANCELLED'
+      transaction.version += 1
+      updateAccountForTransaction(db, transaction, -1)
+      recalculateBudgets(db)
+      saveDb(db)
+      return undefined as TResponse
+    }
+  }
+
+  if (resource === 'dashboard' && method === 'GET')
+    return success(dashboard(db, url.searchParams)) as TResponse
+
+  if (resource === 'budgets') {
+    recalculateBudgets(db)
+    if (method === 'GET' && resourceId === 'cycle-range') {
+      const start = dateOnly(monthDate(0, 1))
+      const end = dateOnly(
+        new Date(
+          Date.UTC(
+            today().getUTCFullYear(),
+            today().getUTCMonth() + 1,
+            0,
+          ),
+        ),
+      )
+      return success({
+        startsOn: start,
+        endsOn: end,
+        financialCycleStartDay: 5,
+      }) as TResponse
+    }
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.budgets.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      const active =
+        url.searchParams.get('status') !== 'ARCHIVED' &&
+        url.searchParams.get('includeArchived') !== 'true'
+      const rows = db.budgets.filter(
+        (item) => (active ? item.isActive : true),
+      )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const categoryIds = Array.isArray(body.categoryIds)
+        ? body.categoryIds.map(String)
+        : []
+      const accountIds = Array.isArray(body.accountIds)
+        ? body.accountIds.map(String)
+        : []
+      const budget: Budget = {
+        id: id('demo-budget'),
+        name: String(body.name ?? 'Nuevo presupuesto'),
+        period: (body.period as Budget['period']) ?? 'MONTHLY',
+        startsOn: String(body.startsOn ?? dateOnly(monthDate(0, 1))),
+        endsOn: String(body.endsOn ?? dateOnly(today())),
+        amount: String(body.amount ?? '0'),
+        currency: String(body.currency ?? 'COP'),
+        alertThreshold: String(body.alertThreshold ?? '80'),
+        rolloverEnabled: Boolean(body.rolloverEnabled),
+        isActive: true,
+        categories: db.categories
+          .filter((item) => categoryIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'EXPENSE' as const,
+            icon: item.icon,
+            color: item.color,
+            isSystem: item.isSystem,
+            isActive: item.isActive,
+          })),
+        accounts: db.accounts
+          .filter((item) => accountIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            nature: item.nature,
+            currency: item.currency,
+            isActive: item.isActive,
+          })),
+        progress: {
+          spent: '0.00',
+          remaining: String(body.amount ?? '0'),
+          percentage: '0.00',
+          status: 'SAFE',
+        },
+        projection: {
+          projectedSpend: '0.00',
+          projectedRemaining: String(body.amount ?? '0'),
+          projectedPercentage: '0.00',
+          projectedStatus: 'SAFE',
+        },
+        movements: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.budgets.push(budget)
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+    const budget = db.budgets.find((item) => item.id === resourceId)
+    if (budget) {
+      if (method === 'PATCH') Object.assign(budget, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') budget.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        budget.isActive = true
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+  }
+
+  if (resource === 'goals') {
+    if (method === 'GET' && resourceId) {
+      const goal = db.goals.find((item) => item.id === resourceId)
+      if (parts.at(-1) === 'projection')
+        return success(goal?.progress ?? null) as TResponse
+      return success(goal ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.goals]
+      const status = url.searchParams.get('status')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true'
+      if (!includeArchived) rows = rows.filter((item) => !item.archivedAt)
+      if (status) rows = rows.filter((item) => item.status === status)
+      if (search)
+        rows = rows.filter((item) =>
+          item.name.toLocaleLowerCase('es').includes(search),
+        )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const account = db.accounts.find(
+        (item) => item.id === String(body.accountId ?? ''),
+      )
+      const targetAmount = String(body.targetAmount ?? '0')
+      const goal: Goal = {
+        id: id('demo-goal'),
+        name: String(body.name ?? 'Nueva meta'),
+        targetAmount,
+        savedAmount: '0.00',
+        targetDate: body.targetDate ? String(body.targetDate) : null,
+        status: 'ACTIVE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : '#154B45',
+        account: account
+          ? {
+              id: account.id,
+              name: account.name,
+              type: account.type,
+              nature: account.nature,
+              currency: account.currency,
+              isActive: account.isActive,
+            }
+          : null,
+        progress: {
+          savedAmount: '0.00',
+          targetAmount,
+          remainingAmount: targetAmount,
+          surplusAmount: '0.00',
+          percentage: '0.00',
+          suggestedMonthlyAmount: money(numeric(targetAmount) / 6),
+          averageMonthlyContribution: null,
+          estimatedCompletionDate: null,
+          estimationReason: 'INSUFFICIENT_HISTORY',
+        },
+        contributions: [],
+        archivedAt: null,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.goals.push(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+    const goal = db.goals.find((item) => item.id === resourceId)
+    if (goal) {
+      if (method === 'PATCH') Object.assign(goal, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') {
+        goal.archivedAt = nowIso()
+        goal.status = 'CANCELLED'
+      }
+      if (method === 'POST' && parts.at(-1) === 'restore') {
+        goal.archivedAt = null
+        goal.status = 'ACTIVE'
+      }
+      if (method === 'POST' && parts.at(-1) === 'pause') goal.status = 'PAUSED'
+      if (method === 'POST' && parts.at(-1) === 'resume') goal.status = 'ACTIVE'
+      if (method === 'POST' && parts.at(-1) === 'complete')
+        goal.status = 'COMPLETED'
+      if (
+        method === 'POST' &&
+        parts[workspaceIndex + 4] === 'contributions' &&
+        parts.length === workspaceIndex + 5
+      ) {
+        const amount = numeric(String(body.amount ?? '0'))
+        goal.savedAmount = money(numeric(goal.savedAmount) + amount)
+        const account = db.accounts.find(
+          (item) => item.id === String(body.accountId ?? ''),
+        )
+        if (account) {
+          account.reservedForGoals = money(
+            numeric(account.reservedForGoals) + amount,
+          )
+          account.availableBalance = money(
+            numeric(account.currentBalance) -
+              numeric(account.reservedForGoals),
+          )
+        }
+        goal.contributions.unshift({
+          id: id('demo-contribution'),
+          transactionId: null,
+          accountId: account?.id ?? null,
+          account: account
+            ? {
+                id: account.id,
+                name: account.name,
+                currency: account.currency,
+              }
+            : null,
+          amount: money(amount),
+          direction: 'IN',
+          contributedAt: String(body.contributedAt ?? nowIso()),
+          createdAt: nowIso(),
+        })
+      }
+      goalProgress(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+  }
+
+  if (resource === 'reports' && method === 'GET') {
+    const route = resourceId ?? ''
+    return success(reports(db, route, url.searchParams)) as TResponse
+  }
+
+  if (resource === 'forecasts' && resourceId === 'month-end')
+    return success(monthEndForecast(db)) as TResponse
+
+  if (resource === 'financial-health') {
+    const result = financialHealth()
+    if (resourceId === 'history')
+      return success(result.history) as TResponse
+    return success(result) as TResponse
+  }
+
+  if (resource === 'upcoming-payments')
+    return success(upcoming()) as TResponse
+
+  if (resource === 'debts-summary')
+    return success(liabilitySummary()) as TResponse
+
+  if (resource === 'debts') {
+    const rows = debts()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET')
+      return success({
+        items: rows,
+        page: 1,
+        limit: 25,
+        total: rows.length,
+        totalPages: 1,
+      }) as TResponse
+  }
+
+  if (resource === 'cards') {
+    const rows = cards()
+    if (method === 'GET' && resourceId) {
+      if (parts.at(-1) === 'purchases' || parts.at(-1) === 'activity' || parts.at(-1) === 'statements')
+        return success([]) as TResponse
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    }
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'obligations') {
+    const rows = obligations()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'lending') {
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            principalPending: '820000.00',
+            interestPending: '46000.00',
+            interestReceived: '46000.00',
+            activeCount: 1,
+          },
+        ],
+        upcoming: [],
+      }) as TResponse
+    if (resourceId === 'loans') {
+      const rows = lendingLoans()
+      const loanId = parts[workspaceIndex + 4]
+      if (loanId)
+        return success(rows.find((item) => item.id === loanId) ?? null) as TResponse
+      return success(rows) as TResponse
+    }
+  }
+
+  if (resource === 'personal-balances') {
+    const rows = personalBalances()
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            iOwe: '85000.00',
+            owedToMe: '365000.00',
+            netPosition: '280000.00',
+            iOweCount: 1,
+            owedToMeCount: 2,
+          },
+        ],
+      }) as TResponse
+    if (resourceId === 'people') {
+      return success(
+        rows.map((item) => ({
+          id: item.person.id,
+          name: item.person.name,
+          relationship: item.person.relationship,
+          notes: null,
+          isActive: true,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        })),
+      ) as TResponse
+    }
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'notifications') {
+    const visible = db.notifications.filter((item) => !item.dismissedAt)
+    if (resourceId === 'summary')
+      return success({
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'GET')
+      return success({
+        items: visible,
+        page: 1,
+        limit: Number(url.searchParams.get('limit') ?? 25),
+        total: visible.length,
+        totalPages: 1,
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'POST' && resourceId === 'refresh')
+      return success({ evaluated: visible.length, created: 0 }) as TResponse
+    if (method === 'POST' && resourceId === 'read-all') {
+      const stamp = nowIso()
+      visible.forEach((item) => {
+        item.readAt = stamp
+      })
+      saveDb(db)
+      return success({ updated: visible.length }) as TResponse
+    }
+    const notification = db.notifications.find(
+      (item) => item.id === resourceId,
+    )
+    if (notification && method === 'POST') {
+      const stamp = nowIso()
+      if (parts.at(-1) === 'read') notification.readAt = stamp
+      if (parts.at(-1) === 'dismiss') notification.dismissedAt = stamp
+      saveDb(db)
+      return success({
+        id: notification.id,
+        readAt: notification.readAt,
+        dismissedAt: notification.dismissedAt,
+      }) as TResponse
+    }
+  }
+
+  return success(null) as TResponse
+}
+, 2],
+    ['BRL', 'real brasileño', 'R
+  const page = Number(search.get('page') ?? 1)
+  const limit = Number(search.get('limit') ?? 25)
+  const start = Math.max(0, (page - 1) * limit)
+  return {
+    items: items.slice(start, start + limit),
+    page,
+    limit,
+    total: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  }
+}
+
+export async function handleDemoRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: HttpRequestOptions<TBody> = {},
+): Promise<TResponse> {
+  const url = new URL(path, 'https://demo.fynar.local')
+  const pathname = url.pathname
+  const method = options.method ?? 'GET'
+  const body = (options.body ?? {}) as Record<string, unknown>
+  const db = readDb()
+  const parts = pathParts(pathname)
+
+  if (pathname === '/auth/me') return success(demoUser) as TResponse
+  if (
+    pathname === '/auth/logout' ||
+    pathname === '/auth/logout-all' ||
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
+  )
+    return undefined as TResponse
+
+  if (pathname === '/workspaces')
+    return success([demoWorkspace]) as TResponse
+
+  if (pathname === '/users/me/preferences')
+    return success(db.preferences) as TResponse
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
+
+  if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
+    return success({
+      workspace: demoWorkspace,
+      defaultWorkspaceId: demoWorkspace.id,
+      updatedAt: nowIso(),
+    }) as TResponse
+
+  const workspaceIndex = parts.indexOf('workspaces')
+  const workspaceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 1] : undefined
+  const resource =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 2] : undefined
+  const resourceId =
+    workspaceIndex >= 0 ? parts[workspaceIndex + 3] : undefined
+
+  if (workspaceId !== demoWorkspace.id)
+    return success(null) as TResponse
+
+  if (resource === 'accounts') {
+    if (method === 'GET' && resourceId) {
+      const account = db.accounts.find((item) => item.id === resourceId)
+      return success(account ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      const archived = url.searchParams.get('archived') === 'true'
+      const favorite = url.searchParams.get('favorite') === 'true'
+      const rows = db.accounts.filter(
+        (item) =>
+          (archived ? !item.isActive : item.isActive) &&
+          (!favorite || item.isFavorite),
+      )
+      return success(rows) as TResponse
+    }
+    if (method === 'POST' && resourceId === undefined) {
+      const opening = String(body.openingBalance ?? '0')
+      const account: Account = {
+        id: id('demo-account'),
+        name: String(body.name ?? 'Nueva cuenta'),
+        type: (body.type as Account['type']) ?? 'SAVINGS',
+        nature: (body.nature as Account['nature']) ?? 'ASSET',
+        institutionName: body.institutionName
+          ? String(body.institutionName)
+          : null,
+        currency: String(body.currency ?? 'COP'),
+        openingBalance: opening,
+        currentBalance: opening,
+        reservedForGoals: '0.00',
+        availableBalance: opening,
+        creditLimit: body.creditLimit ? String(body.creditLimit) : null,
+        billingDay: body.billingDay ? Number(body.billingDay) : null,
+        paymentDueDay: body.paymentDueDay
+          ? Number(body.paymentDueDay)
+          : null,
+        color: null,
+        icon: null,
+        isFavorite: Boolean(body.isFavorite),
+        isActive: true,
+        includeInNetWorth: body.includeInNetWorth !== false,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.accounts.push(account)
+      saveDb(db)
+      return success(account) as TResponse
+    }
+    const account = db.accounts.find((item) => item.id === resourceId)
+    if (account) {
+      if (method === 'PATCH') {
+        if (parts.at(-1) === 'favorite')
+          account.isFavorite = Boolean(body.isFavorite)
+        else Object.assign(account, body, { updatedAt: nowIso() })
+      }
+      if (method === 'POST' && parts.at(-1) === 'archive')
+        account.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        account.isActive = true
+      if (method === 'DELETE') account.isActive = false
+      saveDb(db)
+      return success(account) as TResponse
+    }
+  }
+
+  if (resource === 'categories') {
+    if (method === 'GET') {
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true' ||
+        url.searchParams.get('status') === 'ALL'
+      const status = url.searchParams.get('status')
+      return success(
+        db.categories.filter(
+          (item) =>
+            (includeArchived ||
+              (status === 'ARCHIVED' ? !item.isActive : item.isActive)) &&
+            (status !== 'ARCHIVED' || !item.isActive),
+        ),
+      ) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const category: Category = {
+        id: id('demo-category'),
+        parentId: body.parentId ? String(body.parentId) : null,
+        name: String(body.name ?? 'Nueva categoría'),
+        type: (body.type as Category['type']) ?? 'EXPENSE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : null,
+        scope: 'CUSTOM',
+        isSystem: false,
+        isActive: true,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.categories.push(category)
+      saveDb(db)
+      return success(category) as TResponse
+    }
+    const category = db.categories.find((item) => item.id === resourceId)
+    if (category) {
+      if (method === 'PATCH')
+        Object.assign(category, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') category.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        category.isActive = true
+      saveDb(db)
+      return success(category) as TResponse
+    }
+  }
+
+  if (resource === 'transactions') {
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.transactions.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.transactions]
+      const type = url.searchParams.get('type')
+      const accountId = url.searchParams.get('accountId')
+      const categoryId = url.searchParams.get('categoryId')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      if (type) rows = rows.filter((item) => item.type === type)
+      if (accountId)
+        rows = rows.filter(
+          (item) =>
+            item.accountId === accountId ||
+            item.destinationAccountId === accountId,
+        )
+      if (categoryId)
+        rows = rows.filter((item) => item.categoryId === categoryId)
+      if (search)
+        rows = rows.filter((item) =>
+          (item.description ?? '').toLocaleLowerCase('es').includes(search),
+        )
+      const page = Number(url.searchParams.get('page') ?? 1)
+      const limit = Number(url.searchParams.get('limit') ?? 25)
+      const start = (page - 1) * limit
+      return success({
+        items: rows.slice(start, start + limit),
+        page,
+        limit,
+        total: rows.length,
+        totalPages: Math.max(1, Math.ceil(rows.length / limit)),
+        nextCursor: null,
+      }) as TResponse
+    }
+    if (
+      method === 'POST' &&
+      ['income', 'expense', 'transfer'].includes(String(resourceId))
+    ) {
+      const type = String(resourceId).toUpperCase() as
+        | 'INCOME'
+        | 'EXPENSE'
+        | 'TRANSFER'
+      const transaction = createMovement(db, type, body)
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    const transaction = db.transactions.find(
+      (item) => item.id === resourceId,
+    )
+    if (transaction && method === 'PATCH') {
+      Object.assign(transaction, body, {
+        version: transaction.version + 1,
+        updatedAt: nowIso(),
+      })
+      saveDb(db)
+      return success(transaction) as TResponse
+    }
+    if (transaction && method === 'DELETE') {
+      transaction.status = 'CANCELLED'
+      transaction.version += 1
+      updateAccountForTransaction(db, transaction, -1)
+      recalculateBudgets(db)
+      saveDb(db)
+      return undefined as TResponse
+    }
+  }
+
+  if (resource === 'dashboard' && method === 'GET')
+    return success(dashboard(db, url.searchParams)) as TResponse
+
+  if (resource === 'budgets') {
+    recalculateBudgets(db)
+    if (method === 'GET' && resourceId === 'cycle-range') {
+      const start = dateOnly(monthDate(0, 1))
+      const end = dateOnly(
+        new Date(
+          Date.UTC(
+            today().getUTCFullYear(),
+            today().getUTCMonth() + 1,
+            0,
+          ),
+        ),
+      )
+      return success({
+        startsOn: start,
+        endsOn: end,
+        financialCycleStartDay: 5,
+      }) as TResponse
+    }
+    if (method === 'GET' && resourceId) {
+      return success(
+        db.budgets.find((item) => item.id === resourceId) ?? null,
+      ) as TResponse
+    }
+    if (method === 'GET') {
+      const active =
+        url.searchParams.get('status') !== 'ARCHIVED' &&
+        url.searchParams.get('includeArchived') !== 'true'
+      const rows = db.budgets.filter(
+        (item) => (active ? item.isActive : true),
+      )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const categoryIds = Array.isArray(body.categoryIds)
+        ? body.categoryIds.map(String)
+        : []
+      const accountIds = Array.isArray(body.accountIds)
+        ? body.accountIds.map(String)
+        : []
+      const budget: Budget = {
+        id: id('demo-budget'),
+        name: String(body.name ?? 'Nuevo presupuesto'),
+        period: (body.period as Budget['period']) ?? 'MONTHLY',
+        startsOn: String(body.startsOn ?? dateOnly(monthDate(0, 1))),
+        endsOn: String(body.endsOn ?? dateOnly(today())),
+        amount: String(body.amount ?? '0'),
+        currency: String(body.currency ?? 'COP'),
+        alertThreshold: String(body.alertThreshold ?? '80'),
+        rolloverEnabled: Boolean(body.rolloverEnabled),
+        isActive: true,
+        categories: db.categories
+          .filter((item) => categoryIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'EXPENSE' as const,
+            icon: item.icon,
+            color: item.color,
+            isSystem: item.isSystem,
+            isActive: item.isActive,
+          })),
+        accounts: db.accounts
+          .filter((item) => accountIds.includes(item.id))
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            nature: item.nature,
+            currency: item.currency,
+            isActive: item.isActive,
+          })),
+        progress: {
+          spent: '0.00',
+          remaining: String(body.amount ?? '0'),
+          percentage: '0.00',
+          status: 'SAFE',
+        },
+        projection: {
+          projectedSpend: '0.00',
+          projectedRemaining: String(body.amount ?? '0'),
+          projectedPercentage: '0.00',
+          projectedStatus: 'SAFE',
+        },
+        movements: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.budgets.push(budget)
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+    const budget = db.budgets.find((item) => item.id === resourceId)
+    if (budget) {
+      if (method === 'PATCH') Object.assign(budget, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') budget.isActive = false
+      if (method === 'POST' && parts.at(-1) === 'restore')
+        budget.isActive = true
+      recalculateBudgets(db)
+      saveDb(db)
+      return success(budget) as TResponse
+    }
+  }
+
+  if (resource === 'goals') {
+    if (method === 'GET' && resourceId) {
+      const goal = db.goals.find((item) => item.id === resourceId)
+      if (parts.at(-1) === 'projection')
+        return success(goal?.progress ?? null) as TResponse
+      return success(goal ?? null) as TResponse
+    }
+    if (method === 'GET') {
+      let rows = [...db.goals]
+      const status = url.searchParams.get('status')
+      const search = url.searchParams.get('search')?.toLocaleLowerCase('es')
+      const includeArchived =
+        url.searchParams.get('includeArchived') === 'true'
+      if (!includeArchived) rows = rows.filter((item) => !item.archivedAt)
+      if (status) rows = rows.filter((item) => item.status === status)
+      if (search)
+        rows = rows.filter((item) =>
+          item.name.toLocaleLowerCase('es').includes(search),
+        )
+      return success(listWithPagination(rows, url.searchParams)) as TResponse
+    }
+    if (method === 'POST' && !resourceId) {
+      const account = db.accounts.find(
+        (item) => item.id === String(body.accountId ?? ''),
+      )
+      const targetAmount = String(body.targetAmount ?? '0')
+      const goal: Goal = {
+        id: id('demo-goal'),
+        name: String(body.name ?? 'Nueva meta'),
+        targetAmount,
+        savedAmount: '0.00',
+        targetDate: body.targetDate ? String(body.targetDate) : null,
+        status: 'ACTIVE',
+        icon: body.icon ? String(body.icon) : null,
+        color: body.color ? String(body.color) : '#154B45',
+        account: account
+          ? {
+              id: account.id,
+              name: account.name,
+              type: account.type,
+              nature: account.nature,
+              currency: account.currency,
+              isActive: account.isActive,
+            }
+          : null,
+        progress: {
+          savedAmount: '0.00',
+          targetAmount,
+          remainingAmount: targetAmount,
+          surplusAmount: '0.00',
+          percentage: '0.00',
+          suggestedMonthlyAmount: money(numeric(targetAmount) / 6),
+          averageMonthlyContribution: null,
+          estimatedCompletionDate: null,
+          estimationReason: 'INSUFFICIENT_HISTORY',
+        },
+        contributions: [],
+        archivedAt: null,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      }
+      db.goals.push(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+    const goal = db.goals.find((item) => item.id === resourceId)
+    if (goal) {
+      if (method === 'PATCH') Object.assign(goal, body, { updatedAt: nowIso() })
+      if (method === 'DELETE') {
+        goal.archivedAt = nowIso()
+        goal.status = 'CANCELLED'
+      }
+      if (method === 'POST' && parts.at(-1) === 'restore') {
+        goal.archivedAt = null
+        goal.status = 'ACTIVE'
+      }
+      if (method === 'POST' && parts.at(-1) === 'pause') goal.status = 'PAUSED'
+      if (method === 'POST' && parts.at(-1) === 'resume') goal.status = 'ACTIVE'
+      if (method === 'POST' && parts.at(-1) === 'complete')
+        goal.status = 'COMPLETED'
+      if (
+        method === 'POST' &&
+        parts[workspaceIndex + 4] === 'contributions' &&
+        parts.length === workspaceIndex + 5
+      ) {
+        const amount = numeric(String(body.amount ?? '0'))
+        goal.savedAmount = money(numeric(goal.savedAmount) + amount)
+        const account = db.accounts.find(
+          (item) => item.id === String(body.accountId ?? ''),
+        )
+        if (account) {
+          account.reservedForGoals = money(
+            numeric(account.reservedForGoals) + amount,
+          )
+          account.availableBalance = money(
+            numeric(account.currentBalance) -
+              numeric(account.reservedForGoals),
+          )
+        }
+        goal.contributions.unshift({
+          id: id('demo-contribution'),
+          transactionId: null,
+          accountId: account?.id ?? null,
+          account: account
+            ? {
+                id: account.id,
+                name: account.name,
+                currency: account.currency,
+              }
+            : null,
+          amount: money(amount),
+          direction: 'IN',
+          contributedAt: String(body.contributedAt ?? nowIso()),
+          createdAt: nowIso(),
+        })
+      }
+      goalProgress(goal)
+      saveDb(db)
+      return success(goal) as TResponse
+    }
+  }
+
+  if (resource === 'reports' && method === 'GET') {
+    const route = resourceId ?? ''
+    return success(reports(db, route, url.searchParams)) as TResponse
+  }
+
+  if (resource === 'forecasts' && resourceId === 'month-end')
+    return success(monthEndForecast(db)) as TResponse
+
+  if (resource === 'financial-health') {
+    const result = financialHealth()
+    if (resourceId === 'history')
+      return success(result.history) as TResponse
+    return success(result) as TResponse
+  }
+
+  if (resource === 'upcoming-payments')
+    return success(upcoming()) as TResponse
+
+  if (resource === 'debts-summary')
+    return success(liabilitySummary()) as TResponse
+
+  if (resource === 'debts') {
+    const rows = debts()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET')
+      return success({
+        items: rows,
+        page: 1,
+        limit: 25,
+        total: rows.length,
+        totalPages: 1,
+      }) as TResponse
+  }
+
+  if (resource === 'cards') {
+    const rows = cards()
+    if (method === 'GET' && resourceId) {
+      if (parts.at(-1) === 'purchases' || parts.at(-1) === 'activity' || parts.at(-1) === 'statements')
+        return success([]) as TResponse
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    }
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'obligations') {
+    const rows = obligations()
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'lending') {
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            principalPending: '820000.00',
+            interestPending: '46000.00',
+            interestReceived: '46000.00',
+            activeCount: 1,
+          },
+        ],
+        upcoming: [],
+      }) as TResponse
+    if (resourceId === 'loans') {
+      const rows = lendingLoans()
+      const loanId = parts[workspaceIndex + 4]
+      if (loanId)
+        return success(rows.find((item) => item.id === loanId) ?? null) as TResponse
+      return success(rows) as TResponse
+    }
+  }
+
+  if (resource === 'personal-balances') {
+    const rows = personalBalances()
+    if (resourceId === 'summary')
+      return success({
+        currencies: [
+          {
+            currency: 'COP',
+            iOwe: '85000.00',
+            owedToMe: '365000.00',
+            netPosition: '280000.00',
+            iOweCount: 1,
+            owedToMeCount: 2,
+          },
+        ],
+      }) as TResponse
+    if (resourceId === 'people') {
+      return success(
+        rows.map((item) => ({
+          id: item.person.id,
+          name: item.person.name,
+          relationship: item.person.relationship,
+          notes: null,
+          isActive: true,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        })),
+      ) as TResponse
+    }
+    if (method === 'GET' && resourceId)
+      return success(rows.find((item) => item.id === resourceId) ?? null) as TResponse
+    if (method === 'GET') return success(rows) as TResponse
+  }
+
+  if (resource === 'notifications') {
+    const visible = db.notifications.filter((item) => !item.dismissedAt)
+    if (resourceId === 'summary')
+      return success({
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'GET')
+      return success({
+        items: visible,
+        page: 1,
+        limit: Number(url.searchParams.get('limit') ?? 25),
+        total: visible.length,
+        totalPages: 1,
+        unread: visible.filter((item) => !item.readAt).length,
+      }) as TResponse
+    if (method === 'POST' && resourceId === 'refresh')
+      return success({ evaluated: visible.length, created: 0 }) as TResponse
+    if (method === 'POST' && resourceId === 'read-all') {
+      const stamp = nowIso()
+      visible.forEach((item) => {
+        item.readAt = stamp
+      })
+      saveDb(db)
+      return success({ updated: visible.length }) as TResponse
+    }
+    const notification = db.notifications.find(
+      (item) => item.id === resourceId,
+    )
+    if (notification && method === 'POST') {
+      const stamp = nowIso()
+      if (parts.at(-1) === 'read') notification.readAt = stamp
+      if (parts.at(-1) === 'dismiss') notification.dismissedAt = stamp
+      saveDb(db)
+      return success({
+        id: notification.id,
+        readAt: notification.readAt,
+        dismissedAt: notification.dismissedAt,
+      }) as TResponse
+    }
+  }
+
+  return success(null) as TResponse
+}
+, 2],
+    ['JPY', 'yen japonés', '¥', 0],
+    ['CHF', 'franco suizo', 'CHF', 2],
+  ].map(([code, name, symbol, minorUnits]) => ({
+    code,
+    name,
+    symbol,
+    minorUnits,
+  })),
+  defaultCurrency: 'COP',
+  contributionFrequencies: [
+    { value: 'NONE', label: 'Sin aportes' },
+    { value: 'MONTHLY', label: 'Mensual' },
+    { value: 'QUARTERLY', label: 'Trimestral' },
+    { value: 'YEARLY', label: 'Anual' },
+  ],
+  limits: { minYears: 1, maxYears: 50 },
+  defaults: {
+    years: 10,
+    annualReturn: '0.08',
+    annualFee: '0.00',
+    inflationRate: '0.04',
+    scenarioSpread: '0.04',
+  },
+})
+
+const demoBaseEquivalent = async (currency: string, amount: number) => {
+  if (currency === 'COP') {
+    return {
+      amount: money(amount),
+      rate: '1',
+      date: dateOnly(today()),
+    }
+  }
+  const url =
+    env.apiBaseUrl +
+    '/exchange-rates/convert?from=' +
+    encodeURIComponent(currency) +
+    '&to=COP&amount=' +
+    encodeURIComponent(String(amount))
+  const response = await fetch(url, { headers: { Accept: 'application/json' } })
+  if (!response.ok) throw new Error('No pudimos convertir la simulación para compararla.')
+  const payload = (await response.json()) as {
+    data: { convertedAmount: string; rate: string; date: string }
+  }
+  return {
+    amount: payload.data.convertedAmount,
+    rate: payload.data.rate,
+    date: payload.data.date,
   }
 }
 
