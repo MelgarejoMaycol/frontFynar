@@ -26,5 +26,17 @@ export default defineConfig([
       'react-hooks/set-state-in-effect': 'off',
     },
   },
+  {
+    files: [
+      'src/features/demo/demo-investment-plans-backend.ts',
+      'src/features/investments/InvestmentPlanDetailPage.tsx',
+    ],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^(InvestmentPlanStatus|Wallet)$' },
+      ],
+    },
+  },
   eslintConfigPrettier,
 ])
