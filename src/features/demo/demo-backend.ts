@@ -5,6 +5,10 @@ import type { Category } from '@/features/categories/types/category.types'
 import type { Goal } from '@/features/goals/types/goal.types'
 import type { Transaction } from '@/features/transactions/types/transaction.types'
 import { demoPreferences, demoUser, demoWorkspace } from './demo-mode'
+import {
+  demoInvestmentNetWorth,
+  resetDemoInvestmentPlans,
+} from './demo-investment-plans-backend'
 
 const STORAGE_KEY = 'fynar-demo-database-v3'
 
@@ -600,8 +604,10 @@ const saveDb = (db: DemoDb) => {
 }
 
 export const resetDemoDatabase = () => {
-  if (typeof window !== 'undefined')
+  if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(seed()))
+    resetDemoInvestmentPlans()
+  }
 }
 
 const pathParts = (pathname: string) => pathname.split('/').filter(Boolean)
@@ -1108,7 +1114,10 @@ const reports = (db: DemoDb, route: string, search: URLSearchParams) => {
         currency: 'COP',
         assetBalance: money(assetBalance),
         liabilityBalance: money(liabilityBalance),
-        netWorth: money(assetBalance - liabilityBalance),
+        netWorth: money(
+          assetBalance - liabilityBalance + demoInvestmentNetWorth('COP'),
+        ),
+        investmentValue: money(demoInvestmentNetWorth('COP')),
         availableMoney: money(
           active.reduce(
             (total, item) =>
