@@ -365,13 +365,9 @@ test('la demo permite simular una inversión completa sin modificar saldos', asy
   expect(apiRequests).toEqual([])
 
   await page.goto('/app/dashboard')
-  const availableAfter = await page
-    .getByText('Disponible para usar')
-    .locator('..')
-    .locator('strong')
-    .first()
-    .textContent()
-  expect(availableAfter).toBe(availableBefore)
+  const availableAmount = page.getByTestId('hero-available-amount')
+  await expect(availableAmount).not.toHaveText('—')
+  await expect(availableAmount).toHaveText(availableBefore ?? '')
 })
 
 
