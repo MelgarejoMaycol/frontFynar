@@ -2,23 +2,11 @@ import { expect, test, type Page } from '@playwright/test'
 
 async function enterDemo(page: Page) {
   await page.goto('/demo')
-  await expect(
-    page.getByRole('heading', { name: 'Iniciar sesión en la demo' }),
-  ).toBeVisible()
-  await expect(page.getByText('Andrea Demo')).toBeVisible()
-  await expect(page.getByLabel('Correo electrónico demo')).toHaveValue(
-    'demo@fynar.app',
-  )
-  await expect(page.getByLabel('Contraseña demo')).toHaveValue(
-    'fynar-demo-2026',
-  )
-  await page
-    .getByRole('button', { name: 'Iniciar sesión en la cuenta demo' })
-    .click()
   await expect(page).toHaveURL(/\/app\/dashboard$/)
   await expect(
     page.getByRole('heading', { name: 'Inicio', exact: true }),
   ).toBeVisible()
+  await expect(page.getByText('Usuario Demo').first()).toBeVisible()
 }
 
 test('la demo usa la aplicación real, no llama la API y permite crear cuentas', async ({
@@ -54,7 +42,7 @@ test('la demo usa la aplicación real, no llama la API y permite crear cuentas',
   expect(apiRequests).toEqual([])
 })
 
-test('la cuenta demo permite registrar un movimiento con los formularios reales', async ({
+test('la cuenta demo permite crear y eliminar movimientos con la interfaz real', async ({
   page,
 }) => {
   const apiRequests: string[] = []
@@ -83,14 +71,30 @@ test('la cuenta demo permite registrar un movimiento con los formularios reales'
 
   await dialog.getByRole('button', { name: 'Categoría' }).click()
   await dialog.getByRole('listbox').getByRole('option').first().click()
-  await dialog.getByRole('textbox', { name: 'Monto' }).fill('32500000')
+  await dialog.getByRole('textbox', { name: 'Monto' }).fill('325000')
   await dialog.getByLabel('Descripción').fill('Ingreso creado en demo')
   await dialog
     .getByRole('button', { name: 'Registrar movimiento' })
     .click()
 
   await expect(dialog).toHaveCount(0)
-  await expect(page.getByText('Ingreso creado en demo').first()).toBeVisible()
+  const created = page.getByText('Ingreso creado en demo').first()
+  await expect(created).toBeVisible()
+  await created.click()
+
+  const detail = page.getByRole('dialog', { name: 'Detalle del movimiento' })
+  await expect(detail).toBeVisible()
+  await detail.getByRole('button', { name: 'Eliminar' }).click()
+
+  const confirmation = page.getByRole('dialog', { name: 'Eliminar movimiento' })
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole('button', { name: 'Eliminar' }).click()
+  await expect(
+    page.getByRole('status').filter({
+      hasText: 'Movimiento eliminado y saldo revertido.',
+    }),
+  ).toBeVisible()
+
   expect(apiRequests).toEqual([])
 })
 
@@ -125,37 +129,30 @@ test('la demo expone módulos reales con datos preparados', async ({ page }) => 
   ).toBeVisible()
 })
 
-test('el acceso público lleva al login demo y la experiencia real es responsive', async ({
+test('el botón demo está visible en el login y entra directamente a la aplicación', async ({
   page,
 }) => {
-  await page.goto('/')
-  await expect(
-    page.getByRole('heading', {
-      name: 'Entiende tu dinero antes de tomar decisiones.',
-    }),
-  ).toBeVisible()
-  await expect(
-    page.getByRole('link', { name: 'Explorar demo' }),
-  ).toHaveAttribute('href', '/demo')
-
   await page.goto('/login')
-  const demoLink = page.getByRole('link', {
-    name: /Probar Fynar con una cuenta demo/i,
-  })
-  await expect(demoLink).toBeVisible()
-  const box = await demoLink.boundingBox()
-  expect(box?.height ?? 0).toBeGreaterThanOrEqual(70)
+
+  const demoButton = page.getByRole('button', { name: 'Entrar al modo demo' })
+  await expect(demoButton).toBeVisible()
+
+  const box = await demoButton.boundingBox()
+  const viewport = page.viewportSize()
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(56)
+  expect(box).not.toBeNull()
+  expect(viewport).not.toBeNull()
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+    viewport?.height ?? Number.MAX_SAFE_INTEGER,
+  )
+
+  await demoButton.click()
+  await expect(page).toHaveURL(/\/app\/dashboard$/)
+  await expect(
+    page.getByRole('heading', { name: 'Inicio', exact: true }),
+  ).toBeVisible()
 
   await page.setViewportSize({ width: 320, height: 760 })
-  await demoLink.click()
-  await expect(
-    page.getByRole('heading', { name: 'Iniciar sesión en la demo' }),
-  ).toBeVisible()
-  await page
-    .getByRole('button', { name: 'Iniciar sesión en la cuenta demo' })
-    .click()
-  await expect(page).toHaveURL(/\/app\/dashboard$/)
-
   const overflow = await page.evaluate(
     () =>
       document.documentElement.scrollWidth >
@@ -168,5 +165,29 @@ test('el acceso público lleva al login demo y la experiencia real es responsive
   await page.getByRole('link', { name: 'Cuentas' }).click()
   await expect(
     page.getByRole('heading', { name: 'Cuentas', exact: true }),
+  ).toBeVisible()
+})
+
+test('la configuración de la demo protege identidad, correo y seguridad', async ({
+  page,
+}) => {
+  await enterDemo(page)
+  await page.goto('/app/settings')
+
+  await expect(
+    page.getByRole('heading', { name: 'Configuración', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText('Cuenta demo protegida')).toBeVisible()
+  await expect(page.getByText('Usuario Demo', { exact: true })).toBeVisible()
+  await expect(page.getByText('demo@fynar.app', { exact: true })).toBeVisible()
+
+  await expect(
+    page.getByRole('heading', { name: 'Cambiar contraseña' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Eliminar mi cuenta' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Salir del demo' }),
   ).toBeVisible()
 })
