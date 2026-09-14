@@ -5,6 +5,7 @@ import { investmentsApi } from './api'
 import type {
   CreateInvestmentPlanInput,
   InvestmentContributionInput,
+  InvestmentPlan,
   InvestmentValuationInput,
   InvestmentWithdrawalInput,
   UpdateInvestmentPlanInput,
@@ -42,9 +43,9 @@ export function useInvestmentPlan(
   })
 }
 
-function useInvestmentMutation<TInput>(
+function useInvestmentMutation<TInput, TResult>(
   workspaceId: string,
-  mutationFn: (input: TInput) => Promise<unknown>,
+  mutationFn: (input: TInput) => Promise<TResult>,
 ) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -66,14 +67,20 @@ function useInvestmentMutation<TInput>(
 }
 
 export function useCreateInvestmentPlan(workspaceId: string) {
-  return useInvestmentMutation<CreateInvestmentPlanInput>(workspaceId, (input) =>
-    investmentsApi.create(workspaceId, input),
+  return useInvestmentMutation<CreateInvestmentPlanInput, InvestmentPlan>(
+    workspaceId,
+    (input) =>
+      investmentsApi.create(workspaceId, input).then((response) => response.data),
   )
 }
 
 export function useUpdateInvestmentPlan(workspaceId: string, planId: string) {
-  return useInvestmentMutation<UpdateInvestmentPlanInput>(workspaceId, (input) =>
-    investmentsApi.update(workspaceId, planId, input),
+  return useInvestmentMutation<UpdateInvestmentPlanInput, InvestmentPlan>(
+    workspaceId,
+    (input) =>
+      investmentsApi
+        .update(workspaceId, planId, input)
+        .then((response) => response.data),
   )
 }
 
@@ -82,40 +89,61 @@ export function useInvestmentAction(
   planId: string,
   action: 'start' | 'pause' | 'resume' | 'complete' | 'archive',
 ) {
-  return useInvestmentMutation<{ startDate?: string } | undefined>(
-    workspaceId,
-    (input) => {
-      if (action === 'start')
-        return investmentsApi.start(workspaceId, planId, input?.startDate)
-      if (action === 'pause') return investmentsApi.pause(workspaceId, planId)
-      if (action === 'resume') return investmentsApi.resume(workspaceId, planId)
-      if (action === 'complete')
-        return investmentsApi.complete(workspaceId, planId)
-      return investmentsApi.archive(workspaceId, planId)
-    },
-  )
+  return useInvestmentMutation<
+    { startDate?: string } | undefined,
+    InvestmentPlan | { id: string; archived: boolean }
+  >(workspaceId, async (input) => {
+    if (action === 'start')
+      return investmentsApi
+        .start(workspaceId, planId, input?.startDate)
+        .then((response) => response.data)
+    if (action === 'pause')
+      return investmentsApi
+        .pause(workspaceId, planId)
+        .then((response) => response.data)
+    if (action === 'resume')
+      return investmentsApi
+        .resume(workspaceId, planId)
+        .then((response) => response.data)
+    if (action === 'complete')
+      return investmentsApi
+        .complete(workspaceId, planId)
+        .then((response) => response.data)
+    return investmentsApi
+      .archive(workspaceId, planId)
+      .then((response) => response.data)
+  })
 }
 
 export function useInvestmentContribution(
   workspaceId: string,
   planId: string,
 ) {
-  return useInvestmentMutation<InvestmentContributionInput>(
+  return useInvestmentMutation<InvestmentContributionInput, InvestmentPlan>(
     workspaceId,
-    (input) => investmentsApi.contribute(workspaceId, planId, input),
+    (input) =>
+      investmentsApi
+        .contribute(workspaceId, planId, input)
+        .then((response) => response.data),
   )
 }
 
 export function useInvestmentWithdrawal(workspaceId: string, planId: string) {
-  return useInvestmentMutation<InvestmentWithdrawalInput>(
+  return useInvestmentMutation<InvestmentWithdrawalInput, InvestmentPlan>(
     workspaceId,
-    (input) => investmentsApi.withdraw(workspaceId, planId, input),
+    (input) =>
+      investmentsApi
+        .withdraw(workspaceId, planId, input)
+        .then((response) => response.data),
   )
 }
 
 export function useInvestmentValuation(workspaceId: string, planId: string) {
-  return useInvestmentMutation<InvestmentValuationInput>(
+  return useInvestmentMutation<InvestmentValuationInput, InvestmentPlan>(
     workspaceId,
-    (input) => investmentsApi.valuation(workspaceId, planId, input),
+    (input) =>
+      investmentsApi
+        .valuation(workspaceId, planId, input)
+        .then((response) => response.data),
   )
 }
