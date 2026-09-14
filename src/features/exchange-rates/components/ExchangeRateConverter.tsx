@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { ArrowDownUp, Clock3, RefreshCw } from 'lucide-react'
 import { Button, MoneyInput, Select } from '@/components/ui'
 import {
@@ -46,32 +46,30 @@ export function ExchangeRateConverter({
     [currencies.data?.currencies],
   )
 
-  useEffect(() => {
-    const available = currencies.data?.currencies ?? []
-    if (!available.length) return
-    const codes = new Set(available.map((currency) => currency.code))
-    if (!codes.has(from))
-      setFrom(currencies.data?.defaultBase ?? available[0]!.code)
-    if (!codes.has(to) || to === from) {
-      const alternative = available.find((currency) => currency.code !== from)
-      if (alternative) setTo(alternative.code)
-    }
-  }, [currencies.data, from, to])
+  const available = currencies.data?.currencies ?? []
+  const effectiveFrom = currencyMap.has(from)
+    ? from
+    : (currencies.data?.defaultBase ?? available[0]?.code ?? defaultFrom)
+  const effectiveTo =
+    currencyMap.has(to) && to !== effectiveFrom
+      ? to
+      : (available.find((currency) => currency.code !== effectiveFrom)?.code ??
+        effectiveFrom)
 
   const swap = () => {
-    setFrom(to)
-    setTo(from)
+    setFrom(effectiveTo)
+    setTo(effectiveFrom)
     convert.reset()
   }
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!amount || Number(amount) < 0) return
-    convert.mutate({ from, to, amount })
+    convert.mutate({ from: effectiveFrom, to: effectiveTo, amount })
   }
 
   const result = convert.data
-  const targetCurrency = currencyMap.get(result?.to ?? to)
+  const targetCurrency = currencyMap.get(result?.to ?? effectiveTo)
   const inverseRate =
     result && Number(result.rate) > 0 ? 1 / Number(result.rate) : null
 
@@ -89,7 +87,7 @@ export function ExchangeRateConverter({
         <span>Monto</span>
         <MoneyInput
           value={amount}
-          currency={from}
+          currency={effectiveFrom}
           placeholder="1.000.000"
           aria-label="Monto a convertir"
           onValueChange={(value) => {
@@ -104,7 +102,7 @@ export function ExchangeRateConverter({
           <span>De</span>
           <Select
             aria-label="Moneda de origen"
-            value={from}
+            value={effectiveFrom}
             disabled={currencies.isPending}
             onChange={(event) => {
               setFrom(event.target.value)
@@ -133,7 +131,7 @@ export function ExchangeRateConverter({
           <span>A</span>
           <Select
             aria-label="Moneda de destino"
-            value={to}
+            value={effectiveTo}
             disabled={currencies.isPending}
             onChange={(event) => {
               setTo(event.target.value)
