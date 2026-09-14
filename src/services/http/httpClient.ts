@@ -70,6 +70,13 @@ async function request<TResponse, TBody = unknown>(
   options: HttpRequestOptions<TBody> = {},
 ): Promise<TResponse> {
   if (isDemoSession() && !path.startsWith('/exchange-rates')) {
+    const {
+      isDemoInvestmentPlanPath,
+      handleDemoInvestmentPlanRequest,
+    } = await import('@/features/demo/demo-investment-plans-backend')
+    if (isDemoInvestmentPlanPath(path))
+      return handleDemoInvestmentPlanRequest<TResponse, TBody>(path, options)
+
     const { isDemoInvestmentPath, handleDemoInvestmentRequest } = await import(
       '@/features/demo/demo-investment-backend'
     )
