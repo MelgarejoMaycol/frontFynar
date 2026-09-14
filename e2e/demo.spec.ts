@@ -181,7 +181,7 @@ test('la configuración de la demo protege identidad, correo y seguridad', async
   ).toBeVisible()
   await expect(page.getByText('Cuenta demo protegida')).toBeVisible()
   await expect(
-    page.getByText('Usuario Demo', { exact: true, selector: 'dd' }),
+    page.locator('dd').filter({ hasText: /^Usuario Demo$/ }),
   ).toBeVisible()
   await expect(page.getByText('demo@fynar.app', { exact: true })).toBeVisible()
 
