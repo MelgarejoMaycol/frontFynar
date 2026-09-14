@@ -1588,20 +1588,19 @@ export async function handleDemoRequest<TResponse, TBody = unknown>(
   if (
     pathname === '/auth/logout' ||
     pathname === '/auth/logout-all' ||
-    pathname === '/auth/change-password'
+    pathname === '/auth/change-password' ||
+    pathname.startsWith('/auth/email-change/')
   )
     return undefined as TResponse
 
   if (pathname === '/workspaces')
     return success([demoWorkspace]) as TResponse
 
-  if (pathname === '/users/me/preferences') {
-    if (method === 'PATCH') {
-      db.preferences = { ...db.preferences, ...body, updatedAt: nowIso() }
-      saveDb(db)
-    }
+  if (pathname === '/users/me/preferences')
     return success(db.preferences) as TResponse
-  }
+
+  if (pathname === '/users/me' || pathname === '/users/me/avatar')
+    return success(demoUser) as TResponse
 
   if (pathname.endsWith('/select') && pathname.includes('/workspaces/'))
     return success({
