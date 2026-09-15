@@ -308,7 +308,7 @@ export function InvestmentPlanDetailPage() {
 
         <div className={styles.detailSnapshot}>
           <div className={styles.snapshotPrimary}>
-            <span>Valor actual registrado</span>
+            <span>Valor de la inversión</span>
             <strong>{money(plan.progress.actual.currentValue, plan.currency)}</strong>
             <small>{plan.currency} · actualizado con tu actividad real</small>
           </div>
