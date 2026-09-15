@@ -210,6 +210,21 @@ describe('DashboardPage', () => {
     )
     expect(screen.getByText('Empieza a organizar tus finanzas')).toBeVisible()
   })
+  it('mantiene los datos visibles si falla una actualización en segundo plano', () => {
+    mocks.dashboard.mockReturnValue({
+      isPending: false,
+      isError: true,
+      error: new ApiError('demora', 0, 'REQUEST_TIMEOUT'),
+      data,
+      refetch: mocks.refetch,
+    })
+
+    view()
+
+    expect(screen.getByText('Tu situación hoy')).toBeVisible()
+    expect(screen.queryByText(/No pudimos actualizar el dashboard/i)).not.toBeInTheDocument()
+  })
+
   it('presenta situación accionable, salud, monedas, cuentas y movimientos', () => {
     view()
     expect(screen.getByText('Tu situación hoy')).toBeVisible()
@@ -244,7 +259,6 @@ describe('DashboardPage', () => {
       'Crear cuenta',
       'Invertir',
       'Convertir divisas',
-      'Ver análisis',
       'Ver créditos y deudas',
     ])
   })
@@ -255,15 +269,6 @@ describe('DashboardPage', () => {
     expect(screen.getByTestId('location')).toHaveTextContent(
       '/app/investments/simulator',
     )
-  })
-
-  it('abre el análisis financiero en una página independiente', () => {
-    view()
-    fireEvent.click(screen.getByRole('button', { name: 'Ver análisis' }))
-    expect(screen.getByTestId('location')).toHaveTextContent('/app/reports')
-    expect(
-      screen.queryByRole('dialog', { name: /gráficas financieras/i }),
-    ).not.toBeInTheDocument()
   })
 
   it('limita los movimientos recientes a cinco', () => {
