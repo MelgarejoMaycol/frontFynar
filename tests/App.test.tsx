@@ -105,6 +105,19 @@ describe('navegación y layouts', () => {
       '/demo',
     )
     expect(screen.getByText(/La demo usa la interfaz real de Fynar/)).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Más que un registro de gastos.' }),
+    ).toBeVisible()
+    expect(
+      screen.getByRole('heading', {
+        name: 'Conversor de monedas con tasa de referencia.',
+      }),
+    ).toBeVisible()
+    expect(
+      screen.getByRole('heading', {
+        name: 'Simula primero y registra aportes cuando sean reales.',
+      }),
+    ).toBeVisible()
   })
   it('navega entre rutas públicas', async () => {
     const user = userEvent.setup()
