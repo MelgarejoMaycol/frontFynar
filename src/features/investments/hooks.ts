@@ -8,7 +8,10 @@ import type {
   InvestmentPlan,
   InvestmentValuationInput,
   InvestmentWithdrawalInput,
+  UpdateInvestmentContributionInput,
   UpdateInvestmentPlanInput,
+  UpdateInvestmentValuationInput,
+  UpdateInvestmentWithdrawalInput,
 } from './types'
 
 export const investmentKeys = {
@@ -60,6 +63,15 @@ function useInvestmentMutation<TInput, TResult>(
         }),
         queryClient.invalidateQueries({
           queryKey: accountsKeys.all(workspaceId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['transactions', workspaceId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['forecasts', workspaceId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['reports', workspaceId],
         }),
       ])
     },
@@ -144,6 +156,88 @@ export function useInvestmentValuation(workspaceId: string, planId: string) {
     (input) =>
       investmentsApi
         .valuation(workspaceId, planId, input)
+        .then((response) => response.data),
+  )
+}
+
+
+export function useUpdateInvestmentContribution(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<
+    { contributionId: string; input: UpdateInvestmentContributionInput },
+    InvestmentPlan
+  >(workspaceId, ({ contributionId, input }) =>
+    investmentsApi
+      .updateContribution(workspaceId, planId, contributionId, input)
+      .then((response) => response.data),
+  )
+}
+
+export function useDeleteInvestmentContribution(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<string, InvestmentPlan>(
+    workspaceId,
+    (contributionId) =>
+      investmentsApi
+        .deleteContribution(workspaceId, planId, contributionId)
+        .then((response) => response.data),
+  )
+}
+
+export function useUpdateInvestmentWithdrawal(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<
+    { withdrawalId: string; input: UpdateInvestmentWithdrawalInput },
+    InvestmentPlan
+  >(workspaceId, ({ withdrawalId, input }) =>
+    investmentsApi
+      .updateWithdrawal(workspaceId, planId, withdrawalId, input)
+      .then((response) => response.data),
+  )
+}
+
+export function useDeleteInvestmentWithdrawal(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<string, InvestmentPlan>(
+    workspaceId,
+    (withdrawalId) =>
+      investmentsApi
+        .deleteWithdrawal(workspaceId, planId, withdrawalId)
+        .then((response) => response.data),
+  )
+}
+
+export function useUpdateInvestmentValuation(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<
+    { valuationId: string; input: UpdateInvestmentValuationInput },
+    InvestmentPlan
+  >(workspaceId, ({ valuationId, input }) =>
+    investmentsApi
+      .updateValuation(workspaceId, planId, valuationId, input)
+      .then((response) => response.data),
+  )
+}
+
+export function useDeleteInvestmentValuation(
+  workspaceId: string,
+  planId: string,
+) {
+  return useInvestmentMutation<string, InvestmentPlan>(
+    workspaceId,
+    (valuationId) =>
+      investmentsApi
+        .deleteValuation(workspaceId, planId, valuationId)
         .then((response) => response.data),
   )
 }
