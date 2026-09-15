@@ -7,11 +7,11 @@ import { useActiveWorkspace } from '../hooks/workspace.hooks'
 export function WorkspaceGate() {
   const workspaces = useActiveWorkspace()
   if (workspaces.isPending) return <PageLoader />
-  if (workspaces.isError) {
+  if (workspaces.isError && !workspaces.data) {
     return (
       <ErrorState
         title="No pudimos cargar tus espacios"
-        message="Comprueba tu conexión e inténtalo nuevamente."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => void workspaces.refetch()}
       />
     )
