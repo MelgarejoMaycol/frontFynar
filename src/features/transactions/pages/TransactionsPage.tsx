@@ -138,7 +138,7 @@ export function TransactionsPage() {
     <div className={styles.page}>
       <PageHeader
         title="Movimientos"
-        description="Registra y consulta ingresos, gastos, transferencias y cobros de préstamos del workspace."
+        description="Consulta ingresos, gastos, transferencias, inversiones y operaciones financieras del workspace."
         actions={
           canWrite ? (
             <Button
