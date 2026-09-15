@@ -283,9 +283,10 @@ test('el resumen principal mantiene cifras grandes legibles y acciones priorizad
   const actions = page.getByLabel('Acciones rápidas').getByRole('button')
   await expect(actions.nth(0)).toContainText('Nuevo movimiento')
   await expect(actions.nth(1)).toContainText('Crear cuenta')
-  await expect(actions.nth(2)).toContainText('Convertir divisas')
-  await expect(actions.nth(3)).toContainText('Ver análisis')
-  await expect(actions.nth(4)).toContainText('Ver créditos y deudas')
+  await expect(actions.nth(2)).toContainText('Invertir')
+  await expect(actions.nth(3)).toContainText('Convertir divisas')
+  await expect(actions.nth(4)).toContainText('Ver análisis')
+  await expect(actions.nth(5)).toContainText('Ver créditos y deudas')
 
   for (const label of [
     'Tienes en total',
@@ -455,7 +456,9 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
     name: 'Detalle del movimiento',
   })
   await expect(movementDetail).toBeVisible()
-  await expect(movementDetail.getByText('Aporte a inversión')).toBeVisible()
+  await expect(
+    movementDetail.getByText('Aporte a inversión', { exact: true }),
+  ).toBeVisible()
   await movementDetail
     .getByRole('button', { name: 'Editar o eliminar inversión' })
     .click()
