@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import {
   Button,
   ConfirmDeleteDialog,
@@ -34,6 +34,7 @@ import type {
 import styles from '../components/transactions.module.css'
 
 export function TransactionsPage() {
+  const navigate = useNavigate()
   const initialParams = new URLSearchParams(window.location.search)
   const initialAccountId = initialParams.get('accountId') ?? undefined
   const workspace = useActiveWorkspace().activeWorkspace!
@@ -119,6 +120,14 @@ export function TransactionsPage() {
     id === null
       ? 'Sin categoría'
       : (categories.data.find((x) => x.id === id)?.name ?? 'No disponible')
+  const isInvestmentMovement =
+    current?.type === 'INVESTMENT' &&
+    current.metadata?.investment === true &&
+    typeof current.metadata?.planId === 'string'
+  const investmentPlanId = isInvestmentMovement
+    ? String(current?.metadata?.planId)
+    : ''
+
   const lendingRoleLabel = (role: unknown) => {
     if (role === 'DISBURSEMENT') return 'Desembolso del préstamo'
     if (role === 'PRINCIPAL_COLLECTION') return 'Recuperación de capital'
@@ -219,14 +228,26 @@ export function TransactionsPage() {
           current.metadata?.obligationOccurrenceId == null &&
           current.metadata?.cardCashAdvance !== true &&
           current.metadata?.lending !== true ? (
-            <>
-              <Button variant="secondary" onClick={() => setEditing(true)}>
-                Editar
+            isInvestmentMovement ? (
+              <Button
+                onClick={() =>
+                  navigate(
+                    `/app/investments/${investmentPlanId}?activity=${current.id}`,
+                  )
+                }
+              >
+                Editar o eliminar inversión
               </Button>
-              <Button variant="danger" onClick={() => setCancelling(true)}>
-                Eliminar
-              </Button>
-            </>
+            ) : (
+              <>
+                <Button variant="secondary" onClick={() => setEditing(true)}>
+                  Editar
+                </Button>
+                <Button variant="danger" onClick={() => setCancelling(true)}>
+                  Eliminar
+                </Button>
+              </>
+            )
           ) : undefined
         }
       >
@@ -294,6 +315,21 @@ export function TransactionsPage() {
                   {current.metadata?.strategy != null && <div><dt>Estrategia</dt><dd>{current.metadata.strategy === 'REDUCE_PAYMENT' ? 'Reducir cuota' : 'Reducir plazo'}</dd></div>}
                   {current.metadata?.debtId != null && <div><dt>Navegación</dt><dd><Link to={`/app/debts/${String(current.metadata.debtId)}`}>Ver crédito</Link></dd></div>}
                 </>
+              )}
+              {isInvestmentMovement && (
+                <div>
+                  <dt>Inversión vinculada</dt>
+                  <dd>
+                    Este movimiento forma parte del seguimiento de una inversión.
+                    Al editar o eliminar el aporte o retiro, Fynar actualiza
+                    también la cuenta y el valor invertido.{' '}
+                    <Link
+                      to={`/app/investments/${investmentPlanId}?activity=${current.id}`}
+                    >
+                      Gestionar inversión
+                    </Link>
+                  </dd>
+                </div>
               )}
               {current.metadata?.lending === true && (
                 <>
