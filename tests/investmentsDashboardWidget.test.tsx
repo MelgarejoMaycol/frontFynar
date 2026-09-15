@@ -91,7 +91,7 @@ describe('InvestmentsDashboardWidget', () => {
 
     expect(screen.getByLabelText('Inversiones activas')).toBeVisible()
     expect(
-      screen.getByRole('heading', { name: 'Plan activo', exact: true }),
+      screen.getByRole('heading', { name: /^Plan activo$/ }),
     ).toBeVisible()
     expect(screen.queryByText('Plan pausado')).not.toBeInTheDocument()
 
