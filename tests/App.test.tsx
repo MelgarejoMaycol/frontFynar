@@ -100,10 +100,14 @@ describe('navegación y layouts', () => {
         name: 'Entiende tu dinero antes de tomar decisiones.',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Explorar demo' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Probar demo' })).toHaveAttribute(
       'href',
       '/demo',
     )
+    expect(
+      screen.getAllByRole('link', { name: 'Entrar a la demo' }).length,
+    ).toBeGreaterThan(0)
+    expect(screen.getByText('Demo interactiva disponible')).toBeVisible()
     expect(screen.getByText(/La demo usa la interfaz real de Fynar/)).toBeVisible()
     expect(
       screen.getByRole('heading', { name: 'Más que un registro de gastos.' }),
