@@ -180,7 +180,11 @@ describe('TransactionsPage', () => {
       fetchNextPage: vi.fn(),
       refetch: mocks.transactionRefetch,
     })
-    review()
+    rerender(
+      <MemoryRouter>
+        <TransactionsPage />
+      </MemoryRouter>,
+    )
     expect(screen.getByText('No hay movimientos')).toBeVisible()
   })
   it('retry recupera transactions, accounts y categories', () => {
