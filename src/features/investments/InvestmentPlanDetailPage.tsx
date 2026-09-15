@@ -306,6 +306,26 @@ export function InvestmentPlanDetailPage() {
           </div>
         </div>
 
+        <div className={styles.detailSnapshot}>
+          <div className={styles.snapshotPrimary}>
+            <span>Valor actual registrado</span>
+            <strong>{money(plan.progress.actual.currentValue, plan.currency)}</strong>
+            <small>{plan.currency} · actualizado con tu actividad real</small>
+          </div>
+          <div className={styles.snapshotMetric}>
+            <span>Aportado neto</span>
+            <strong>
+              {money(plan.progress.actual.netContributed, plan.currency)}
+            </strong>
+          </div>
+          <div className={styles.snapshotMetric}>
+            <span>Proyección al horizonte</span>
+            <strong>
+              {money(plan.progress.plan.projectedValueAtHorizon, plan.currency)}
+            </strong>
+          </div>
+        </div>
+
         <div className={styles.planMeta}>
           <span>
             <CalendarDays size={14} aria-hidden="true" />
