@@ -783,7 +783,7 @@ export function LendingPage() {
     return (
       <ErrorState
         title="No pudimos cargar Préstamos"
-        message="Comprueba la conexión e inténtalo de nuevo."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => {
           void summary.refetch()
           void loans.refetch()
