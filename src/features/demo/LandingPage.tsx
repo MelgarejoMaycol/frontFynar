@@ -97,6 +97,9 @@ export function LandingPage() {
           </a>
           <Link to="/login">Iniciar sesión</Link>
           <Link to="/register">Crear cuenta</Link>
+          <a className={styles.demoNavCta} href="/demo">
+            Probar demo
+          </a>
         </nav>
       </header>
 
@@ -121,9 +124,20 @@ export function LandingPage() {
               <span>Proyecciones</span>
             </div>
 
+            <div className={styles.demoLead}>
+              <Sparkles size={17} aria-hidden="true" />
+              <div>
+                <strong>Demo interactiva disponible</strong>
+                <span>Entra a la aplicación real con datos ficticios, sin registrarte.</span>
+              </div>
+            </div>
+
             <div className={styles.landingActions}>
-              <a className={styles.primaryCta} href="/demo">
-                Explorar demo
+              <a
+                className={`${styles.primaryCta} ${styles.demoPrimaryCta}`}
+                href="/demo"
+              >
+                Entrar a la demo
               </a>
               <a className={styles.secondaryCta} href="#funciones">
                 Ver todo lo que hace
@@ -142,10 +156,10 @@ export function LandingPage() {
           <article className={styles.previewCard} aria-label="Vista previa de Fynar">
             <div className={styles.previewTop}>
               <span>Vista previa del Inicio</span>
-              <span className={styles.demoBadge}>
+              <a className={styles.demoBadge} href="/demo">
                 <ShieldCheck size={14} aria-hidden="true" />
-                Demo
-              </span>
+                Abrir demo
+              </a>
             </div>
             <div className={styles.previewMoney}>
               <span>Disponible para usar</span>
