@@ -285,8 +285,7 @@ test('el resumen principal mantiene cifras grandes legibles y acciones priorizad
   await expect(actions.nth(1)).toContainText('Crear cuenta')
   await expect(actions.nth(2)).toContainText('Invertir')
   await expect(actions.nth(3)).toContainText('Convertir divisas')
-  await expect(actions.nth(4)).toContainText('Ver análisis')
-  await expect(actions.nth(5)).toContainText('Ver créditos y deudas')
+  await expect(actions.nth(4)).toContainText('Ver créditos y deudas')
 
   for (const label of [
     'Tienes en total',
