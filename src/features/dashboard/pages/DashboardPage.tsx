@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ArrowLeftRight,
-  BarChart3,
   CalendarClock,
   Landmark,
   PiggyBank,
@@ -251,14 +250,6 @@ export function DashboardPage() {
             <Button variant="info" onClick={() => setConvertingCurrency(true)}>
               <ArrowLeftRight size={18} aria-hidden="true" /> Convertir divisas
             </Button>
-            {dashboard.data?.summariesByCurrency.length ? (
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/app/reports')}
-              >
-                <BarChart3 size={18} aria-hidden="true" /> Ver análisis
-              </Button>
-            ) : null}
             {canReadDebts && (
               <Button
                 variant="secondary"
@@ -281,9 +272,9 @@ export function DashboardPage() {
 
       {dashboard.isPending && !validationError ? (
         <DashboardSkeleton />
-      ) : dashboard.isError ? (
+      ) : dashboard.isError && !dashboard.data ? (
         <ErrorState
-          title="No pudimos cargar el dashboard"
+          title="No pudimos actualizar el dashboard"
           message={getDashboardErrorMessage(dashboard.error)}
           onRetry={() => void dashboard.refetch()}
         />
