@@ -13,7 +13,8 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
-import { Button, Dialog, MoneyInput, Spinner } from '@/components/ui'
+import { Button, Dialog, MoneyInput } from '@/components/ui'
+import { PageLoader } from '@/components/feedback/PageLoader'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { useActiveWorkspace } from '@/features/workspace'
 import {
@@ -194,16 +195,7 @@ export function InvestmentPlanDetailPage() {
     }
   }
 
-  if (planQuery.isPending) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loading}>
-          <Spinner />
-          <p>Cargando inversión…</p>
-        </div>
-      </div>
-    )
-  }
+  if (planQuery.isPending) return <PageLoader />
 
   if (planQuery.isError || !plan) {
     return (
