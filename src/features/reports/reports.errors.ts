@@ -2,8 +2,8 @@ import { ApiError } from '@/services/http'
 export function getReportErrorMessage(error: unknown): string {
   if (!(error instanceof ApiError))
     return 'Ocurrió un error inesperado al cargar el reporte.'
-  if (error.code === 'NETWORK_ERROR')
-    return 'No fue posible conectar con el servidor.'
+  if (['NETWORK_ERROR', 'REQUEST_TIMEOUT'].includes(error.code))
+    return 'La solicitud está tardando más de lo esperado. El servidor puede estar iniciando o la red puede estar lenta; inténtalo nuevamente en unos segundos.'
   if (error.status === 400)
     return 'Revisa los filtros y el periodo seleccionado.'
   if (error.status === 401)
