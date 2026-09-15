@@ -4,6 +4,7 @@ import type {
   InvestmentPlan,
   InvestmentPlanStatus,
 } from '@/features/investments/types'
+import type { Transaction } from '@/features/transactions/types/transaction.types'
 
 const STORAGE_KEY = 'fynar-demo-investment-plans-v1'
 const DEMO_DB_KEY = 'fynar-demo-database-v3'
@@ -23,6 +24,7 @@ type DemoInvestmentStore = {
 
 type DemoAccount = {
   id: string
+  name?: string
   currency: string
   currentBalance: string
   reservedForGoals?: string
@@ -34,6 +36,8 @@ type DemoAccount = {
 
 type DemoMainDb = {
   accounts: DemoAccount[]
+  transactions: Transaction[]
+  [key: string]: unknown
 }
 
 const emptyStore = (): DemoInvestmentStore => ({ plans: [] })
@@ -55,19 +59,121 @@ const saveStore = (store: DemoInvestmentStore) => {
 }
 
 const readMainDb = (): DemoMainDb => {
-  if (typeof window === 'undefined') return { accounts: [] }
+  if (typeof window === 'undefined') return { accounts: [], transactions: [] }
   const raw = window.localStorage.getItem(DEMO_DB_KEY)
-  if (!raw) return { accounts: [] }
+  if (!raw) return { accounts: [], transactions: [] }
   try {
-    return JSON.parse(raw) as DemoMainDb
+    const parsed = JSON.parse(raw) as Partial<DemoMainDb>
+    return {
+      ...parsed,
+      accounts: parsed.accounts ?? [],
+      transactions: parsed.transactions ?? [],
+    }
   } catch {
-    return { accounts: [] }
+    return { accounts: [], transactions: [] }
   }
 }
 
 const saveMainDb = (db: DemoMainDb) => {
   if (typeof window !== 'undefined')
     window.localStorage.setItem(DEMO_DB_KEY, JSON.stringify(db))
+}
+
+const refreshAvailableBalance = (account: DemoAccount) => {
+  account.availableBalance = money(
+    Number(account.currentBalance) - Number(account.reservedForGoals ?? 0),
+  )
+}
+
+const createInvestmentTransaction = ({
+  transactionId,
+  plan,
+  role,
+  accountId,
+  amount,
+  occurredAt,
+  note,
+}: {
+  transactionId: string
+  plan: DemoPlan
+  role: 'CONTRIBUTION' | 'WITHDRAWAL'
+  accountId: string
+  amount: number
+  occurredAt: string
+  note: string | null
+}): Transaction => {
+  const stamp = nowIso()
+  return {
+    id: transactionId,
+    type: 'INVESTMENT',
+    status: 'CONFIRMED',
+    amount: money(amount),
+    currency: plan.currency,
+    accountId,
+    destinationAccountId: null,
+    categoryId: null,
+    occurredAt,
+    description:
+      role === 'CONTRIBUTION'
+        ? `Aporte a inversión · ${plan.name}`
+        : `Retiro de inversión · ${plan.name}`,
+    notes: note,
+    merchantName: null,
+    metadata: { investment: true, planId: plan.id, role },
+    version: 1,
+    createdAt: stamp,
+    updatedAt: stamp,
+  }
+}
+
+const updateDemoInvestmentTransaction = (
+  db: DemoMainDb,
+  transactionId: string,
+  values: {
+    accountId: string
+    amount: number
+    occurredAt: string
+    note: string | null
+    plan: DemoPlan
+    role: 'CONTRIBUTION' | 'WITHDRAWAL'
+  },
+) => {
+  const transaction = db.transactions.find((item) => item.id === transactionId)
+  if (!transaction) {
+    db.transactions.unshift(
+      createInvestmentTransaction({
+        transactionId,
+        plan: values.plan,
+        role: values.role,
+        accountId: values.accountId,
+        amount: values.amount,
+        occurredAt: values.occurredAt,
+        note: values.note,
+      }),
+    )
+    return
+  }
+  transaction.accountId = values.accountId
+  transaction.amount = money(values.amount)
+  transaction.occurredAt = values.occurredAt
+  transaction.notes = values.note
+  transaction.description =
+    values.role === 'CONTRIBUTION'
+      ? `Aporte a inversión · ${values.plan.name}`
+      : `Retiro de inversión · ${values.plan.name}`
+  transaction.updatedAt = nowIso()
+  transaction.version += 1
+}
+
+const cancelDemoInvestmentTransaction = (
+  db: DemoMainDb,
+  transactionId: string,
+) => {
+  const transaction = db.transactions.find((item) => item.id === transactionId)
+  if (!transaction) return
+  transaction.status = 'CANCELLED'
+  transaction.updatedAt = nowIso()
+  transaction.version += 1
 }
 
 const eventsPerYear = (frequency: DemoPlan['contributionFrequency']) => {
@@ -293,6 +399,7 @@ export async function handleDemoInvestmentPlanRequest<
   const investmentsIndex = parts.indexOf('investments')
   const planId = parts[investmentsIndex + 1]
   const action = parts[investmentsIndex + 2]
+  const recordId = parts[investmentsIndex + 3]
   const method = options.method ?? 'GET'
   const body = (options.body ?? {}) as Record<string, unknown>
   const store = readStore()
@@ -382,7 +489,7 @@ export async function handleDemoInvestmentPlanRequest<
     return success({ id: plan.id, archived: true }) as TResponse
   }
 
-  if (method === 'POST' && action === 'contributions') {
+  if (method === 'POST' && action === 'contributions' && !recordId) {
     if (!['ACTIVE', 'PAUSED'].includes(plan.status))
       throw new Error('Inicia el plan antes de registrar aportes')
 
@@ -398,30 +505,94 @@ export async function handleDemoInvestmentPlanRequest<
     )
       throw new Error('Cuenta de origen no disponible')
 
-    const available = Number(
-      account.availableBalance ??
-        Number(account.currentBalance) - Number(account.reservedForGoals ?? 0),
-    )
+    const available =
+      Number(account.currentBalance) - Number(account.reservedForGoals ?? 0)
     if (available < amount) throw new Error('Saldo disponible insuficiente')
 
     account.currentBalance = money(Number(account.currentBalance) - amount)
-    account.availableBalance = money(available - amount)
+    refreshAvailableBalance(account)
     const occurredAt = String(body.occurredAt ?? nowIso())
+    const note = body.note ? String(body.note) : null
+    const transactionId = id('demo-investment-transaction')
     plan.recentContributions.unshift({
       id: id('demo-investment-contribution'),
+      transactionId,
       amount: money(amount),
       occurredAt,
-      note: body.note ? String(body.note) : null,
+      note,
       sourceAccount: {
         id: account.id,
-        name:
-          (
-            account as DemoAccount & {
-              name?: string
-            }
-          ).name ?? 'Cuenta',
+        name: account.name ?? 'Cuenta',
         currency: account.currency,
       },
+    })
+    db.transactions.unshift(
+      createInvestmentTransaction({
+        transactionId,
+        plan,
+        role: 'CONTRIBUTION',
+        accountId: account.id,
+        amount,
+        occurredAt,
+        note,
+      }),
+    )
+    plan.updatedAt = nowIso()
+    saveMainDb(db)
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (action === 'contributions' && recordId && method === 'PATCH') {
+    const entry = plan.recentContributions.find((item) => item.id === recordId)
+    if (!entry) throw new Error('Aporte de inversión no encontrado')
+
+    const db = readMainDb()
+    const previousAccount = db.accounts.find(
+      (item) => item.id === entry.sourceAccount.id,
+    )
+    if (!previousAccount) throw new Error('Cuenta anterior no disponible')
+    previousAccount.currentBalance = money(
+      Number(previousAccount.currentBalance) + Number(entry.amount),
+    )
+    refreshAvailableBalance(previousAccount)
+
+    const nextAccountId = String(body.sourceAccountId ?? entry.sourceAccount.id)
+    const nextAccount = db.accounts.find((item) => item.id === nextAccountId)
+    if (
+      !nextAccount ||
+      !nextAccount.isActive ||
+      nextAccount.nature !== 'ASSET' ||
+      nextAccount.currency !== plan.currency
+    )
+      throw new Error('Cuenta de origen no disponible')
+
+    const nextAmount = Number(body.amount ?? entry.amount)
+    const available =
+      Number(nextAccount.currentBalance) -
+      Number(nextAccount.reservedForGoals ?? 0)
+    if (available < nextAmount) throw new Error('Saldo disponible insuficiente')
+
+    nextAccount.currentBalance = money(
+      Number(nextAccount.currentBalance) - nextAmount,
+    )
+    refreshAvailableBalance(nextAccount)
+    entry.sourceAccount = {
+      id: nextAccount.id,
+      name: nextAccount.name ?? 'Cuenta',
+      currency: nextAccount.currency,
+    }
+    entry.amount = money(nextAmount)
+    entry.occurredAt = String(body.occurredAt ?? entry.occurredAt)
+    entry.note =
+      body.note !== undefined ? (body.note ? String(body.note) : null) : entry.note
+    updateDemoInvestmentTransaction(db, entry.transactionId, {
+      accountId: nextAccount.id,
+      amount: nextAmount,
+      occurredAt: entry.occurredAt,
+      note: entry.note,
+      plan,
+      role: 'CONTRIBUTION',
     })
     plan.updatedAt = nowIso()
     saveMainDb(db)
@@ -429,7 +600,26 @@ export async function handleDemoInvestmentPlanRequest<
     return success(publicPlan(plan)) as TResponse
   }
 
-  if (method === 'POST' && action === 'withdrawals') {
+  if (action === 'contributions' && recordId && method === 'DELETE') {
+    const index = plan.recentContributions.findIndex((item) => item.id === recordId)
+    if (index < 0) throw new Error('Aporte de inversión no encontrado')
+    const entry = plan.recentContributions[index]!
+    const db = readMainDb()
+    const account = db.accounts.find((item) => item.id === entry.sourceAccount.id)
+    if (!account) throw new Error('Cuenta de origen no disponible')
+    account.currentBalance = money(
+      Number(account.currentBalance) + Number(entry.amount),
+    )
+    refreshAvailableBalance(account)
+    plan.recentContributions.splice(index, 1)
+    cancelDemoInvestmentTransaction(db, entry.transactionId)
+    plan.updatedAt = nowIso()
+    saveMainDb(db)
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (method === 'POST' && action === 'withdrawals' && !recordId) {
     const amount = Number(body.amount ?? 0)
     const tracked = currentValue(plan)
     if (tracked.value < amount)
@@ -447,25 +637,93 @@ export async function handleDemoInvestmentPlanRequest<
       throw new Error('Cuenta de destino no disponible')
 
     account.currentBalance = money(Number(account.currentBalance) + amount)
-    account.availableBalance = money(
-      Number(account.currentBalance) - Number(account.reservedForGoals ?? 0),
-    )
+    refreshAvailableBalance(account)
     const occurredAt = String(body.occurredAt ?? nowIso())
+    const note = body.note ? String(body.note) : null
+    const transactionId = id('demo-investment-transaction')
     plan.recentWithdrawals.unshift({
       id: id('demo-investment-withdrawal'),
+      transactionId,
       amount: money(amount),
       occurredAt,
-      note: body.note ? String(body.note) : null,
+      note,
       destinationAccount: {
         id: account.id,
-        name:
-          (
-            account as DemoAccount & {
-              name?: string
-            }
-          ).name ?? 'Cuenta',
+        name: account.name ?? 'Cuenta',
         currency: account.currency,
       },
+    })
+    db.transactions.unshift(
+      createInvestmentTransaction({
+        transactionId,
+        plan,
+        role: 'WITHDRAWAL',
+        accountId: account.id,
+        amount,
+        occurredAt,
+        note,
+      }),
+    )
+    plan.updatedAt = nowIso()
+    saveMainDb(db)
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (action === 'withdrawals' && recordId && method === 'PATCH') {
+    const entry = plan.recentWithdrawals.find((item) => item.id === recordId)
+    if (!entry) throw new Error('Retiro de inversión no encontrado')
+    const nextAmount = Number(body.amount ?? entry.amount)
+    const trackedBeforeThisWithdrawal = currentValue(plan).value + Number(entry.amount)
+    if (trackedBeforeThisWithdrawal < nextAmount)
+      throw new Error('El retiro supera el valor registrado de la inversión')
+
+    const db = readMainDb()
+    const previousAccount = db.accounts.find(
+      (item) => item.id === entry.destinationAccount.id,
+    )
+    if (!previousAccount) throw new Error('Cuenta anterior no disponible')
+    if (Number(previousAccount.currentBalance) < Number(entry.amount))
+      throw new Error(
+        'La cuenta que recibió el retiro no tiene saldo suficiente para revertirlo',
+      )
+    previousAccount.currentBalance = money(
+      Number(previousAccount.currentBalance) - Number(entry.amount),
+    )
+    refreshAvailableBalance(previousAccount)
+
+    const nextAccountId = String(
+      body.destinationAccountId ?? entry.destinationAccount.id,
+    )
+    const nextAccount = db.accounts.find((item) => item.id === nextAccountId)
+    if (
+      !nextAccount ||
+      !nextAccount.isActive ||
+      nextAccount.nature !== 'ASSET' ||
+      nextAccount.currency !== plan.currency
+    )
+      throw new Error('Cuenta de destino no disponible')
+
+    nextAccount.currentBalance = money(
+      Number(nextAccount.currentBalance) + nextAmount,
+    )
+    refreshAvailableBalance(nextAccount)
+    entry.destinationAccount = {
+      id: nextAccount.id,
+      name: nextAccount.name ?? 'Cuenta',
+      currency: nextAccount.currency,
+    }
+    entry.amount = money(nextAmount)
+    entry.occurredAt = String(body.occurredAt ?? entry.occurredAt)
+    entry.note =
+      body.note !== undefined ? (body.note ? String(body.note) : null) : entry.note
+    updateDemoInvestmentTransaction(db, entry.transactionId, {
+      accountId: nextAccount.id,
+      amount: nextAmount,
+      occurredAt: entry.occurredAt,
+      note: entry.note,
+      plan,
+      role: 'WITHDRAWAL',
     })
     plan.updatedAt = nowIso()
     saveMainDb(db)
@@ -473,13 +731,59 @@ export async function handleDemoInvestmentPlanRequest<
     return success(publicPlan(plan)) as TResponse
   }
 
-  if (method === 'POST' && action === 'valuations') {
+  if (action === 'withdrawals' && recordId && method === 'DELETE') {
+    const index = plan.recentWithdrawals.findIndex((item) => item.id === recordId)
+    if (index < 0) throw new Error('Retiro de inversión no encontrado')
+    const entry = plan.recentWithdrawals[index]!
+    const db = readMainDb()
+    const account = db.accounts.find(
+      (item) => item.id === entry.destinationAccount.id,
+    )
+    if (!account) throw new Error('Cuenta de destino no disponible')
+    if (Number(account.currentBalance) < Number(entry.amount))
+      throw new Error(
+        'La cuenta que recibió el retiro no tiene saldo suficiente para revertirlo',
+      )
+    account.currentBalance = money(
+      Number(account.currentBalance) - Number(entry.amount),
+    )
+    refreshAvailableBalance(account)
+    plan.recentWithdrawals.splice(index, 1)
+    cancelDemoInvestmentTransaction(db, entry.transactionId)
+    plan.updatedAt = nowIso()
+    saveMainDb(db)
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (method === 'POST' && action === 'valuations' && !recordId) {
     plan.recentValuations.unshift({
       id: id('demo-investment-valuation'),
       value: money(Number(body.value ?? 0)),
       capturedAt: String(body.capturedAt ?? nowIso()),
       note: body.note ? String(body.note) : null,
     })
+    plan.updatedAt = nowIso()
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (action === 'valuations' && recordId && method === 'PATCH') {
+    const entry = plan.recentValuations.find((item) => item.id === recordId)
+    if (!entry) throw new Error('Actualización de valor no encontrada')
+    entry.value = money(Number(body.value ?? entry.value))
+    entry.capturedAt = String(body.capturedAt ?? entry.capturedAt)
+    entry.note =
+      body.note !== undefined ? (body.note ? String(body.note) : null) : entry.note
+    plan.updatedAt = nowIso()
+    saveStore(store)
+    return success(publicPlan(plan)) as TResponse
+  }
+
+  if (action === 'valuations' && recordId && method === 'DELETE') {
+    const index = plan.recentValuations.findIndex((item) => item.id === recordId)
+    if (index < 0) throw new Error('Actualización de valor no encontrada')
+    plan.recentValuations.splice(index, 1)
     plan.updatedAt = nowIso()
     saveStore(store)
     return success(publicPlan(plan)) as TResponse
