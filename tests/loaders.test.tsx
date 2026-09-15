@@ -11,7 +11,7 @@ describe('estados de carga globales', () => {
     expect(
       screen.getByRole('status', { name: 'Cargando página' }),
     ).toBeVisible()
-    expect(screen.getByText('Cargando…')).toBeVisible()
+    expect(screen.queryByText('Cargando…')).not.toBeInTheDocument()
     view.rerender(<p>Contenido listo</p>)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.getByText('Contenido listo')).toBeVisible()
