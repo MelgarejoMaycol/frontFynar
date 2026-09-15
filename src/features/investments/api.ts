@@ -6,7 +6,10 @@ import type {
   InvestmentPlan,
   InvestmentValuationInput,
   InvestmentWithdrawalInput,
+  UpdateInvestmentContributionInput,
   UpdateInvestmentPlanInput,
+  UpdateInvestmentValuationInput,
+  UpdateInvestmentWithdrawalInput,
 } from './types'
 
 const base = (workspaceId: string) => `/workspaces/${workspaceId}/investments`
@@ -67,6 +70,24 @@ export const investmentsApi = {
       `${base(workspaceId)}/${planId}/contributions`,
       input,
     ),
+  updateContribution: (
+    workspaceId: string,
+    planId: string,
+    contributionId: string,
+    input: UpdateInvestmentContributionInput,
+  ) =>
+    httpClient.patch<ApiSuccess<InvestmentPlan>, UpdateInvestmentContributionInput>(
+      `${base(workspaceId)}/${planId}/contributions/${contributionId}`,
+      input,
+    ),
+  deleteContribution: (
+    workspaceId: string,
+    planId: string,
+    contributionId: string,
+  ) =>
+    httpClient.delete<ApiSuccess<InvestmentPlan>>(
+      `${base(workspaceId)}/${planId}/contributions/${contributionId}`,
+    ),
   withdraw: (
     workspaceId: string,
     planId: string,
@@ -76,6 +97,24 @@ export const investmentsApi = {
       `${base(workspaceId)}/${planId}/withdrawals`,
       input,
     ),
+  updateWithdrawal: (
+    workspaceId: string,
+    planId: string,
+    withdrawalId: string,
+    input: UpdateInvestmentWithdrawalInput,
+  ) =>
+    httpClient.patch<ApiSuccess<InvestmentPlan>, UpdateInvestmentWithdrawalInput>(
+      `${base(workspaceId)}/${planId}/withdrawals/${withdrawalId}`,
+      input,
+    ),
+  deleteWithdrawal: (
+    workspaceId: string,
+    planId: string,
+    withdrawalId: string,
+  ) =>
+    httpClient.delete<ApiSuccess<InvestmentPlan>>(
+      `${base(workspaceId)}/${planId}/withdrawals/${withdrawalId}`,
+    ),
   valuation: (
     workspaceId: string,
     planId: string,
@@ -84,5 +123,23 @@ export const investmentsApi = {
     httpClient.post<ApiSuccess<InvestmentPlan>, InvestmentValuationInput>(
       `${base(workspaceId)}/${planId}/valuations`,
       input,
+    ),
+  updateValuation: (
+    workspaceId: string,
+    planId: string,
+    valuationId: string,
+    input: UpdateInvestmentValuationInput,
+  ) =>
+    httpClient.patch<ApiSuccess<InvestmentPlan>, UpdateInvestmentValuationInput>(
+      `${base(workspaceId)}/${planId}/valuations/${valuationId}`,
+      input,
+    ),
+  deleteValuation: (
+    workspaceId: string,
+    planId: string,
+    valuationId: string,
+  ) =>
+    httpClient.delete<ApiSuccess<InvestmentPlan>>(
+      `${base(workspaceId)}/${planId}/valuations/${valuationId}`,
     ),
 }
