@@ -20,7 +20,7 @@ import { isDemoSession } from '@/features/demo/demo-mode'
 const client = axios.create({
   baseURL: env.apiBaseUrl,
   withCredentials: true,
-  timeout: 15_000,
+  timeout: 45_000,
   headers: { Accept: 'application/json' },
 })
 
