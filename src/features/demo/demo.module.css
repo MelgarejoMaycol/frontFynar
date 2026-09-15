@@ -1672,3 +1672,83 @@
     align-items: flex-start;
   }
 }
+
+
+/* Landing: la demo es la acción principal para visitantes nuevos. */
+.landingHeader nav .demoNavCta {
+  min-height: 2.7rem;
+  padding-inline: 1rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 .45rem 1rem rgb(13 84 73 / 16%);
+}
+
+.landingHeader nav .demoNavCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 .6rem 1.25rem rgb(13 84 73 / 22%);
+}
+
+.demoLead {
+  display: flex;
+  width: fit-content;
+  max-width: 38rem;
+  align-items: center;
+  gap: .7rem;
+  padding: .72rem .85rem;
+  border: 1px solid color-mix(in srgb, var(--color-success) 26%, var(--color-border));
+  border-radius: .9rem;
+  background: color-mix(in srgb, var(--color-success-soft) 55%, var(--color-surface));
+  color: var(--color-primary);
+}
+
+.demoLead > svg {
+  flex: none;
+}
+
+.demoLead > div {
+  display: grid;
+  gap: .08rem;
+}
+
+.demoLead strong {
+  font-size: .86rem;
+}
+
+.demoLead span {
+  color: var(--color-text-secondary);
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.demoPrimaryCta {
+  min-height: 3.45rem;
+  padding-inline: 1.35rem;
+  font-size: .96rem;
+  box-shadow: 0 .8rem 1.8rem rgb(13 84 73 / 18%);
+}
+
+.previewTop .demoBadge {
+  text-decoration: none;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease;
+}
+
+.previewTop .demoBadge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 .35rem .8rem rgb(13 84 73 / 12%);
+}
+
+@media (max-width: 35.99rem) {
+  .landingHeader nav .demoNavCta {
+    display: inline-flex;
+  }
+
+  .demoLead {
+    width: 100%;
+  }
+
+  .demoPrimaryCta {
+    min-height: 3.6rem;
+  }
+}
