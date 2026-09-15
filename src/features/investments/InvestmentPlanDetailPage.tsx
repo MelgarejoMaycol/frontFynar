@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   ArrowDownToLine,
@@ -12,10 +12,14 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { Button, Dialog, MoneyInput, Spinner } from '@/components/ui'
 import { useAccounts } from '@/features/accounts/hooks/accounts.hooks'
 import { useActiveWorkspace } from '@/features/workspace'
+import {
+  isoToWorkspaceDateTimeValue,
+  workspaceDateTimeToIso,
+} from '@/features/transactions/transactions.format'
 import {
   useInvestmentAction,
   useInvestmentContribution,
@@ -24,6 +28,7 @@ import {
   useInvestmentWithdrawal,
 } from './hooks'
 import type { InvestmentPlanStatus } from './types'
+import { InvestmentActivityList } from './InvestmentActivityList'
 import styles from './investments.module.css'
 
 type DialogMode = 'start' | 'contribute' | 'withdraw' | 'valuation' | null
@@ -63,8 +68,10 @@ const today = () => new Date().toISOString().slice(0, 10)
 export function InvestmentPlanDetailPage() {
   const navigate = useNavigate()
   const { planId = '' } = useParams()
-  const { activeWorkspaceId } = useActiveWorkspace()
-  const workspaceId = activeWorkspaceId ?? ''
+  const [searchParams] = useSearchParams()
+  const workspaceState = useActiveWorkspace()
+  const workspaceId = workspaceState.activeWorkspaceId ?? ''
+  const timezone = workspaceState.activeWorkspace?.timezone ?? 'America/Bogota'
   const planQuery = useInvestmentPlan(
     workspaceId,
     planId,
@@ -85,6 +92,10 @@ export function InvestmentPlanDetailPage() {
   const [accountId, setAccountId] = useState('')
   const [note, setNote] = useState('')
   const [startDate, setStartDate] = useState(today())
+  const [recordedAt, setRecordedAt] = useState(() =>
+    isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+  )
+  const quickActionHandled = useRef(false)
 
   const plan = planQuery.data
 
@@ -107,7 +118,31 @@ export function InvestmentPlanDetailPage() {
     setAmount('')
     setAccountId('')
     setNote('')
+    setRecordedAt(
+      isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+    )
   }
+
+  useEffect(() => {
+    if (
+      quickActionHandled.current ||
+      searchParams.get('action') !== 'contribute' ||
+      !plan ||
+      !['ACTIVE', 'PAUSED'].includes(plan.status)
+    )
+      return
+
+    quickActionHandled.current = true
+    setDialog('contribute')
+    setAmount(
+      plan.recurringContribution !== '0.00' ? plan.recurringContribution : '',
+    )
+    setAccountId(compatibleAccounts[0]?.id ?? '')
+    setNote('')
+    setRecordedAt(
+      isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+    )
+  }, [compatibleAccounts, plan, searchParams, timezone])
 
   const actionError =
     contribute.error ??
@@ -130,6 +165,7 @@ export function InvestmentPlanDetailPage() {
         await contribute.mutateAsync({
           sourceAccountId: accountId,
           amount,
+          occurredAt: workspaceDateTimeToIso(recordedAt, timezone),
           note: note || null,
         })
       } else if (dialog === 'withdraw') {
@@ -137,11 +173,16 @@ export function InvestmentPlanDetailPage() {
         await withdraw.mutateAsync({
           destinationAccountId: accountId,
           amount,
+          occurredAt: workspaceDateTimeToIso(recordedAt, timezone),
           note: note || null,
         })
       } else if (dialog === 'valuation') {
         if (!amount || Number(amount) < 0) return
-        await valuation.mutateAsync({ value: amount, note: note || null })
+        await valuation.mutateAsync({
+          value: amount,
+          capturedAt: workspaceDateTimeToIso(recordedAt, timezone),
+          note: note || null,
+        })
       }
       closeDialog()
     } catch {
@@ -194,6 +235,9 @@ export function InvestmentPlanDetailPage() {
     )
     setAccountId(compatibleAccounts[0]?.id ?? '')
     setNote('')
+    setRecordedAt(
+      isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+    )
   }
 
   return (
@@ -350,67 +394,13 @@ export function InvestmentPlanDetailPage() {
             </section>
           ) : null}
 
-          <section className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <h2>Actividad real</h2>
-                <p>
-                  Aportes y retiros registrados. Estos sí representan movimientos
-                  reales de dinero.
-                </p>
-              </div>
-            </div>
-
-            <div className={styles.history}>
-              {plan.recentContributions.length === 0 &&
-              plan.recentWithdrawals.length === 0 ? (
-                <p className={styles.helper}>
-                  Todavía no has registrado aportes ni retiros.
-                </p>
-              ) : (
-                [
-                  ...plan.recentContributions.map((entry) => ({
-                    id: entry.id,
-                    type: 'Aporte',
-                    amount: entry.amount,
-                    occurredAt: entry.occurredAt,
-                    account: entry.sourceAccount.name,
-                    positive: true,
-                  })),
-                  ...plan.recentWithdrawals.map((entry) => ({
-                    id: entry.id,
-                    type: 'Retiro',
-                    amount: entry.amount,
-                    occurredAt: entry.occurredAt,
-                    account: entry.destinationAccount.name,
-                    positive: false,
-                  })),
-                ]
-                  .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-                  .map((entry) => (
-                    <div key={entry.type + entry.id} className={styles.historyItem}>
-                      <div className={styles.historyTitle}>
-                        <strong>{entry.type}</strong>
-                        <span className={styles.historyMeta}>
-                          {new Date(entry.occurredAt).toLocaleDateString('es-CO')}{' '}
-                          · {entry.account}
-                        </span>
-                      </div>
-                      <strong
-                        className={
-                          styles.historyAmount +
-                          ' ' +
-                          (entry.positive ? styles.positive : styles.negative)
-                        }
-                      >
-                        {entry.positive ? '+' : '-'}
-                        {money(entry.amount, plan.currency)}
-                      </strong>
-                    </div>
-                  ))
-              )}
-            </div>
-          </section>
+          <InvestmentActivityList
+            workspaceId={workspaceId}
+            timezone={timezone}
+            plan={plan}
+            accounts={accounts.data ?? []}
+            focusTransactionId={searchParams.get('activity') ?? undefined}
+          />
         </main>
 
         <aside className={styles.stack}>
@@ -605,6 +595,16 @@ export function InvestmentPlanDetailPage() {
                         : 'Monto del aporte'
                   }
                   placeholder="0,00"
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span>Fecha y hora</span>
+                <input
+                  type="datetime-local"
+                  value={recordedAt}
+                  onChange={(event) => setRecordedAt(event.target.value)}
+                  required
                 />
               </label>
 
