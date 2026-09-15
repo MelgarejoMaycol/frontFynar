@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { CheckCircle2, Mail, TriangleAlert } from 'lucide-react'
 import { Button, Card, Input, PageHeader } from '@/components/ui'
+import { LoadingSpinner } from '@/components/feedback/LoadingSpinner'
 import { useResendVerification, useVerifyEmail } from '../hooks/auth.hooks'
 import { ApiError } from '@/services/http/httpErrors'
 import { authApi } from '../api/auth.api'
@@ -177,26 +178,30 @@ export function GoogleCallbackPage() {
   }, [callbackError, navigate])
   return (
     <section className={styles.statusPage}>
-      <PageHeader
-        title={error ? 'No pudimos continuar con Google' : 'Completando acceso'}
-        description={
-          error === 'LEGAL_ACCEPTANCE_REQUIRED'
-            ? 'Para crear una cuenta con Google debes aceptar los términos y la política de privacidad.'
-            : error
-              ? 'Vuelve a intentarlo desde la pantalla de acceso.'
-              : 'Estamos preparando tu sesión de Fynar.'
-        }
-      />
-      {error && (
-        <Button
-          onClick={() =>
-            navigate(
-              error === 'LEGAL_ACCEPTANCE_REQUIRED' ? '/register' : '/login',
-            )
-          }
-        >
-          Volver
-        </Button>
+      {error ? (
+        <>
+          <PageHeader
+            title="No pudimos continuar con Google"
+            description={
+              error === 'LEGAL_ACCEPTANCE_REQUIRED'
+                ? 'Para crear una cuenta con Google debes aceptar los términos y la política de privacidad.'
+                : 'Vuelve a intentarlo desde la pantalla de acceso.'
+            }
+          />
+          <Button
+            onClick={() =>
+              navigate(
+                error === 'LEGAL_ACCEPTANCE_REQUIRED' ? '/register' : '/login',
+              )
+            }
+          >
+            Volver
+          </Button>
+        </>
+      ) : (
+        <div className={styles.callbackLoader}>
+          <LoadingSpinner size="large" label="Preparando tu sesión" />
+        </div>
       )}
     </section>
   )
