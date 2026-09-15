@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter } from 'react-router'
 import { TransactionsPage } from '@/features/transactions/pages/TransactionsPage'
 
 const mocks = vi.hoisted(() => ({
@@ -90,6 +91,13 @@ vi.mock('@/features/transactions/components/TransactionForm', () => ({
   ),
 }))
 
+const view = () =>
+  render(
+    <MemoryRouter>
+      <TransactionsPage />
+    </MemoryRouter>,
+  )
+
 describe('TransactionsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -134,7 +142,7 @@ describe('TransactionsPage', () => {
   })
   it('restringe acceso y desactiva las tres queries sin transactions.read', () => {
     mocks.permissions.read = false
-    render(<TransactionsPage />)
+    view()
     expect(screen.getByText('Acceso restringido')).toBeVisible()
     expect(mocks.transactions).toHaveBeenCalledWith(
       'w',
@@ -146,7 +154,7 @@ describe('TransactionsPage', () => {
   })
   it('permite lectura sin mostrar acciones de escritura', () => {
     mocks.permissions.write = false
-    render(<TransactionsPage />)
+    view()
     expect(screen.getAllByText('Nómina').length).toBeGreaterThan(0)
     expect(
       screen.queryByRole('button', { name: 'Registrar movimiento' }),
@@ -161,7 +169,7 @@ describe('TransactionsPage', () => {
   })
   it('muestra loading y empty state', () => {
     mocks.transactions.mockReturnValueOnce({ isPending: true })
-    const { rerender } = render(<TransactionsPage />)
+    const { rerender } = view()
     expect(screen.getByRole('status')).toBeInTheDocument()
     mocks.transactions.mockReturnValue({
       isPending: false,
@@ -172,7 +180,7 @@ describe('TransactionsPage', () => {
       fetchNextPage: vi.fn(),
       refetch: mocks.transactionRefetch,
     })
-    rerender(<TransactionsPage />)
+    review()
     expect(screen.getByText('No hay movimientos')).toBeVisible()
   })
   it('retry recupera transactions, accounts y categories', () => {
@@ -183,14 +191,14 @@ describe('TransactionsPage', () => {
       data: [],
       refetch: mocks.accountRefetch,
     })
-    render(<TransactionsPage />)
+    view()
     fireEvent.click(screen.getByRole('button', { name: /reintentar/i }))
     expect(mocks.transactionRefetch).toHaveBeenCalled()
     expect(mocks.accountRefetch).toHaveBeenCalled()
     expect(mocks.categoryRefetch).toHaveBeenCalled()
   })
   it('crea, edita y cancela usando la versión del detalle', () => {
-    render(<TransactionsPage />)
+    view()
     fireEvent.click(
       screen.getByRole('button', { name: 'Registrar movimiento' }),
     )
