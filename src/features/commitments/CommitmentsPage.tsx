@@ -338,7 +338,7 @@ export function CommitmentsPage() {
     return (
       <ErrorState
         title="No pudimos cargar tus créditos y deudas"
-        message="Los módulos financieros no respondieron. Comprueba la conexión e inténtalo de nuevo."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => queries.forEach((query) => void query.refetch())}
       />
     )
