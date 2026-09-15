@@ -7,11 +7,11 @@ import { resolveStartScreen } from '../start-screen'
 export function InitialPrivateRedirect() {
   const preferences = usePreferences()
   if (preferences.isPending) return <PageLoader />
-  if (preferences.isError)
+  if (preferences.isError && !preferences.data)
     return (
       <ErrorState
         title="No pudimos cargar tus preferencias"
-        message="Comprueba tu conexión e inténtalo nuevamente."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => void preferences.refetch()}
       />
     )
