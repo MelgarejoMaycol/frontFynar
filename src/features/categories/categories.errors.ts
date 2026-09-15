@@ -3,8 +3,8 @@ import { ApiError } from '@/services/http'
 export function getCategoryErrorMessage(error: unknown): string {
   if (!(error instanceof ApiError))
     return 'Ocurrió un error inesperado. Inténtalo nuevamente.'
-  if (error.code === 'NETWORK_ERROR')
-    return 'No fue posible conectar con el servidor. Revisa tu conexión.'
+  if (['NETWORK_ERROR', 'REQUEST_TIMEOUT'].includes(error.code))
+    return 'La solicitud está tardando más de lo esperado. El servidor puede estar iniciando o la red puede estar lenta; inténtalo nuevamente en unos segundos.'
   switch (error.status) {
     case 400:
       return 'Revisa los datos de la categoría.'
