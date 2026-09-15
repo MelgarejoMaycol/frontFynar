@@ -450,6 +450,66 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
   })
   expect(Number(balanceAfterContribution)).toBe(Number(balanceBefore) - 500000)
 
+  await page.getByRole('link', { name: 'Ver movimiento' }).first().click()
+  const movementDetail = page.getByRole('dialog', {
+    name: 'Detalle del movimiento',
+  })
+  await expect(movementDetail).toBeVisible()
+  await expect(movementDetail.getByText('Aporte a inversión')).toBeVisible()
+  await movementDetail
+    .getByRole('button', { name: 'Editar o eliminar inversión' })
+    .click()
+
+  const editContribution = page.getByRole('dialog', { name: 'Editar aporte' })
+  await expect(editContribution).toBeVisible()
+  await editContribution.getByText('Monto').locator('..').locator('input').fill('45000000')
+  await editContribution
+    .getByText('Fecha y hora')
+    .locator('..')
+    .locator('input')
+    .fill('2026-09-14T10:15')
+  await editContribution.getByRole('button', { name: 'Guardar cambios' }).click()
+  await expect(editContribution).not.toBeVisible()
+  await expect(page.getByText('+$ 450.000,00')).toBeVisible()
+
+  const balanceAfterEdit = await page.evaluate(() => {
+    const raw = localStorage.getItem('fynar-demo-database-v3')
+    const db = raw ? JSON.parse(raw) : null
+    return db?.accounts?.find(
+      (account: { id: string }) => account.id === 'demo-account-bancolombia',
+    )?.currentBalance
+  })
+  expect(Number(balanceAfterEdit)).toBe(Number(balanceBefore) - 450000)
+
+  await page.getByRole('button', { name: 'Registrar aporte' }).click()
+  const temporaryContribution = page.getByRole('dialog', {
+    name: 'Registrar aporte',
+  })
+  await temporaryContribution
+    .getByLabel('Cuenta de origen del aporte')
+    .selectOption('demo-account-bancolombia')
+  await temporaryContribution.getByLabel('Monto del aporte').fill('5000000')
+  await temporaryContribution
+    .getByRole('button', { name: 'Registrar aporte' })
+    .click()
+  await expect(page.getByText('+$ 50.000,00')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Eliminar aporte' }).first().click()
+  const deleteContribution = page.getByRole('dialog', { name: 'Eliminar aporte' })
+  await expect(deleteContribution).toBeVisible()
+  await deleteContribution.getByRole('button', { name: 'Eliminar' }).click()
+  await expect(deleteContribution).not.toBeVisible()
+  await expect(page.getByText('+$ 50.000,00')).toHaveCount(0)
+
+  const balanceAfterDelete = await page.evaluate(() => {
+    const raw = localStorage.getItem('fynar-demo-database-v3')
+    const db = raw ? JSON.parse(raw) : null
+    return db?.accounts?.find(
+      (account: { id: string }) => account.id === 'demo-account-bancolombia',
+    )?.currentBalance
+  })
+  expect(Number(balanceAfterDelete)).toBe(Number(balanceBefore) - 450000)
+
   await page.getByRole('button', { name: 'Retirar' }).click()
   const withdrawal = page.getByRole('dialog', { name: 'Retirar de inversión' })
   await withdrawal
@@ -467,7 +527,7 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
       (account: { id: string }) => account.id === 'demo-account-bancolombia',
     )?.currentBalance
   })
-  expect(Number(balanceAfterWithdrawal)).toBe(Number(balanceBefore) - 300000)
+  expect(Number(balanceAfterWithdrawal)).toBe(Number(balanceBefore) - 250000)
 
   await page.getByRole('button', { name: 'Actualizar valor' }).click()
   const valuation = page.getByRole('dialog', {
