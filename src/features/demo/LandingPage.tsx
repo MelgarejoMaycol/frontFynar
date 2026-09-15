@@ -115,6 +115,21 @@ export function LandingPage() {
               comprometido y cómo podrían impactar tus próximas decisiones.
             </p>
 
+            <div className={styles.heroDemoCta}>
+              <div className={styles.heroDemoCopy}>
+                <span className={styles.heroDemoIcon}>
+                  <Sparkles size={18} aria-hidden="true" />
+                </span>
+                <div>
+                  <strong>Prueba Fynar sin registrarte</strong>
+                  <span>Entra a la aplicación real con datos ficticios y explora todos los módulos.</span>
+                </div>
+              </div>
+              <a className={styles.heroDemoButton} href="/demo">
+                Abrir demo
+              </a>
+            </div>
+
             <div className={styles.heroTopics} aria-label="Áreas principales de Fynar">
               <span>Cuentas</span>
               <span>Presupuestos</span>
@@ -124,32 +139,17 @@ export function LandingPage() {
               <span>Proyecciones</span>
             </div>
 
-            <div className={styles.demoLead}>
-              <Sparkles size={17} aria-hidden="true" />
-              <div>
-                <strong>Demo interactiva disponible</strong>
-                <span>Entra a la aplicación real con datos ficticios, sin registrarte.</span>
-              </div>
-            </div>
-
-            <div className={styles.landingActions}>
-              <a
-                className={`${styles.primaryCta} ${styles.demoPrimaryCta}`}
-                href="/demo"
-              >
-                Entrar a la demo
-              </a>
-              <a className={styles.secondaryCta} href="#funciones">
-                Ver todo lo que hace
-              </a>
-              <Link className={styles.secondaryCta} to="/register">
-                Crear cuenta
-              </Link>
+            <div className={styles.heroMeta}>
+              <Link to="/register">Crear cuenta</Link>
+              <span aria-hidden="true">·</span>
+              <Link to="/login">Ya tengo una cuenta</Link>
+              <span aria-hidden="true">·</span>
+              <a href="#funciones">Ver funciones</a>
             </div>
 
             <span className={styles.localNote}>
               <ShieldCheck size={16} aria-hidden="true" />
-              La demo usa la interfaz real de Fynar, funciona localmente y no necesita datos personales.
+              La demo funciona localmente y no necesita datos personales.
             </span>
           </div>
 
