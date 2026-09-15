@@ -10,7 +10,8 @@ import {
   WalletCards,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button, PageHeader, Spinner } from '@/components/ui'
+import { Button, PageHeader } from '@/components/ui'
+import { PageLoader } from '@/components/feedback/PageLoader'
 import { useActiveWorkspace } from '@/features/workspace'
 import { useInvestmentPlans } from './hooks'
 import type {
@@ -189,10 +190,7 @@ export function InvestmentsPage() {
       </section>
 
       {plans.isPending ? (
-        <div className={styles.loading}>
-          <Spinner />
-          <p>Cargando tus planes de inversión…</p>
-        </div>
+        <PageLoader />
       ) : plans.isError ? (
         <div className={styles.error} role="alert">
           <TrendingUp size={28} aria-hidden="true" />
