@@ -37,10 +37,17 @@ export function toApiError(error: unknown): ApiError {
     return new ApiError('Ocurrió un error inesperado', 0, 'UNEXPECTED_ERROR')
   }
   if (!error.response) {
+    const timedOut =
+      error.code === 'ECONNABORTED' ||
+      error.code === 'ETIMEDOUT' ||
+      /timeout/i.test(error.message)
+
     return new ApiError(
-      'No fue posible conectar con el servidor',
+      timedOut
+        ? 'El servidor está tardando más de lo esperado en responder'
+        : 'No pudimos completar la solicitud en este momento',
       0,
-      'NETWORK_ERROR',
+      timedOut ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
     )
   }
 
