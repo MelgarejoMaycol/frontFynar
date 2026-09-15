@@ -58,6 +58,7 @@ export function TransactionFilters({
           <option value="INCOME">Ingresos</option>
           <option value="EXPENSE">Gastos</option>
           <option value="TRANSFER">Transferencias</option>
+          <option value="INVESTMENT">Inversiones</option>
         </Select>
       </label>
       <label>
@@ -78,24 +79,28 @@ export function TransactionFilters({
             ))}
         </Select>
       </label>
-      <label>
-        Categoría
-        <Select
-          value={value.categoryId ?? ''}
-          onChange={(event) =>
-            patch({ categoryId: event.target.value || undefined })
-          }
-        >
-          <option value="">Todas</option>
-          {categories
-            .filter((x) => x.isActive && (!value.type || x.type === value.type))
-            .map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.name}
-              </option>
-            ))}
-        </Select>
-      </label>
+      {value.type !== 'INVESTMENT' && (
+        <label>
+          Categoría
+          <Select
+            value={value.categoryId ?? ''}
+            onChange={(event) =>
+              patch({ categoryId: event.target.value || undefined })
+            }
+          >
+            <option value="">Todas</option>
+            {categories
+              .filter(
+                (x) => x.isActive && (!value.type || x.type === value.type),
+              )
+              .map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                </option>
+              ))}
+          </Select>
+        </label>
+      )}
       <label>
         Desde
         <Input
