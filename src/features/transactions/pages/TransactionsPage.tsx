@@ -302,10 +302,18 @@ export function TransactionsPage() {
                   <dd>{accountName(current.destinationAccountId)}</dd>
                 </div>
               )}
-              <div>
-                <dt>Categoría</dt>
-                <dd>{current.metadata?.lending === true ? 'Operación de préstamo' : current.type === 'DEBT_PAYMENT' ? 'Operación financiera especializada' : categoryName(current.categoryId)}</dd>
-              </div>
+              {current.type !== 'INVESTMENT' && (
+                <div>
+                  <dt>Categoría</dt>
+                  <dd>
+                    {current.metadata?.lending === true
+                      ? 'Operación de préstamo'
+                      : current.type === 'DEBT_PAYMENT'
+                        ? 'Operación financiera especializada'
+                        : categoryName(current.categoryId)}
+                  </dd>
+                </div>
+              )}
               {current.type === 'DEBT_PAYMENT' && (
                 <>
                   <div><dt>Crédito</dt><dd>{String(current.metadata?.debtName ?? 'No disponible')}</dd></div>
