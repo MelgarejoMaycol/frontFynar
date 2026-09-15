@@ -64,6 +64,7 @@ export interface InvestmentPlan {
   progress: InvestmentPlanProgress
   recentContributions: Array<{
     id: string
+    transactionId: string
     amount: string
     occurredAt: string
     note: string | null
@@ -71,6 +72,7 @@ export interface InvestmentPlan {
   }>
   recentWithdrawals: Array<{
     id: string
+    transactionId: string
     amount: string
     occurredAt: string
     note: string | null
@@ -120,3 +122,8 @@ export interface InvestmentValuationInput {
   capturedAt?: string
   note?: string | null
 }
+
+
+export type UpdateInvestmentContributionInput = Partial<InvestmentContributionInput>
+export type UpdateInvestmentWithdrawalInput = Partial<InvestmentWithdrawalInput>
+export type UpdateInvestmentValuationInput = Partial<InvestmentValuationInput>
