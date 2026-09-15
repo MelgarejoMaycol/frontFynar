@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authApi } from '@/features/auth/api/auth.api'
 import { getAuthErrorMessage } from '@/features/auth/auth.errors'
 import { LoginForm } from '@/features/auth/components/LoginForm'
+import { GoogleCallbackPage } from '@/features/auth/pages/VerificationPages'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
 import {
   ProtectedRoute,
@@ -69,6 +70,26 @@ describe('autenticación', () => {
       }).success,
     ).toBe(true)
   })
+  it('muestra solo el logo animado mientras Google completa el acceso', () => {
+    vi.spyOn(authApi, 'refresh').mockImplementation(
+      () => new Promise(() => undefined),
+    )
+
+    render(
+      provider(
+        <MemoryRouter initialEntries={['/auth/google/callback?status=success']}>
+          <GoogleCallbackPage />
+        </MemoryRouter>,
+      ),
+    )
+
+    expect(
+      screen.getByRole('status', { name: 'Preparando tu sesión' }),
+    ).toBeVisible()
+    expect(screen.queryByText('Completando acceso')).not.toBeInTheDocument()
+    expect(screen.queryByText('Cargando…')).not.toBeInTheDocument()
+  })
+
   it('muestra errores accesibles en el formulario de login', async () => {
     const user = userEvent.setup()
     render(
