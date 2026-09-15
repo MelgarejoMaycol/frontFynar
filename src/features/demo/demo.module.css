@@ -1979,3 +1979,180 @@
     gap: .35rem;
   }
 }
+
+
+/* Demo principal + captura real de la aplicación */
+.heroDemoCta {
+  max-width: 42rem;
+  gap: 1rem;
+  padding: 1rem;
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--color-border));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary-soft) 88%, var(--color-surface)),
+      color-mix(in srgb, var(--color-surface) 94%, var(--color-primary-soft))
+    );
+  box-shadow: 0 .75rem 1.8rem rgb(13 84 73 / 11%);
+}
+
+.heroDemoIcon {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: .9rem;
+}
+
+.heroDemoCopy strong {
+  font-size: 1rem;
+  letter-spacing: -.01em;
+}
+
+.heroDemoCopy div > span {
+  max-width: 29rem;
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.heroDemoButton {
+  min-width: 12.75rem;
+  min-height: 3.65rem;
+  gap: .55rem;
+  padding-inline: 1.35rem;
+  border-radius: .95rem;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: -.01em;
+  box-shadow: 0 .8rem 1.7rem rgb(13 84 73 / 22%);
+}
+
+.heroDemoButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1rem 2rem rgb(13 84 73 / 27%);
+}
+
+.realPreview {
+  position: relative;
+  display: block;
+  width: min(100%, 38rem);
+  justify-self: end;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+  box-shadow: 0 1.4rem 3.2rem rgb(13 43 40 / 13%);
+  text-decoration: none;
+  transform: translateZ(0);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    border-color .2s ease;
+}
+
+.realPreview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.realPreview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgb(8 43 39 / 18%),
+    transparent 38%
+  );
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.realPreviewHint {
+  position: absolute;
+  z-index: 1;
+  right: .85rem;
+  bottom: .85rem;
+  display: grid;
+  gap: .1rem;
+  min-width: 9.7rem;
+  padding: .62rem .75rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: .8rem;
+  background: rgb(10 70 62 / 92%);
+  color: #fff;
+  box-shadow: 0 .65rem 1.5rem rgb(0 0 0 / 18%);
+  opacity: 0;
+  transform: translateY(.45rem);
+  transition:
+    opacity .2s ease,
+    transform .2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.realPreviewHint > span {
+  color: rgb(255 255 255 / 72%);
+  font-size: .67rem;
+}
+
+.realPreviewHint strong {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  color: #fff;
+  font-size: .8rem;
+}
+
+.realPreview:hover,
+.realPreview:focus-visible {
+  border-color: color-mix(in srgb, var(--color-primary) 38%, var(--color-border));
+  box-shadow: 0 1.65rem 3.6rem rgb(13 43 40 / 18%);
+  transform: translateY(-3px);
+}
+
+.realPreview:hover::after,
+.realPreview:focus-visible::after,
+.realPreview:hover .realPreviewHint,
+.realPreview:focus-visible .realPreviewHint {
+  opacity: 1;
+}
+
+.realPreview:hover .realPreviewHint,
+.realPreview:focus-visible .realPreviewHint {
+  transform: translateY(0);
+}
+
+@media (min-width: 64rem) {
+  .landingHero {
+    grid-template-columns: minmax(0, .96fr) minmax(30rem, 1.04fr);
+  }
+}
+
+@media (max-width: 63.99rem) {
+  .realPreview {
+    width: 100%;
+    max-width: 40rem;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 35.99rem) {
+  .heroDemoCta {
+    padding: .9rem;
+  }
+
+  .heroDemoButton {
+    width: 100%;
+    min-width: 0;
+    min-height: 3.7rem;
+  }
+
+  .realPreview {
+    border-radius: 1rem;
+  }
+
+  .realPreviewHint {
+    display: none;
+  }
+}
