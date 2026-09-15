@@ -1343,3 +1343,332 @@
     flex-direction: column;
   }
 }
+
+
+/* Public landing page: product explanation */
+.landingNavLink {
+  color: var(--color-text-secondary) !important;
+  font-weight: 650 !important;
+}
+
+.heroTopics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.heroTopics span {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding: 0 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary-soft) 58%, var(--color-surface));
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.previewSignals {
+  display: grid;
+  gap: 0.42rem;
+  padding-top: 0.15rem;
+}
+
+.previewSignals span {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text-secondary);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.previewSignals svg {
+  flex: none;
+  color: var(--color-primary);
+}
+
+.storySection,
+.capabilitySection,
+.marketSection,
+.flowSection {
+  display: grid;
+  gap: 1.6rem;
+  scroll-margin-top: 5.5rem;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 0.55rem;
+  max-width: 49rem;
+}
+
+.sectionIntro h2,
+.sectionIntro p {
+  margin: 0;
+}
+
+.sectionIntro h2 {
+  color: var(--color-dark);
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1.06;
+}
+
+.sectionIntro p {
+  color: var(--color-text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.storyGrid,
+.showcaseGrid,
+.flowGrid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.storyCard {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: clamp(1.1rem, 3vw, 1.45rem);
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  background: var(--color-surface);
+  box-shadow: 0 0.35rem 1.25rem rgb(13 43 40 / 4%);
+}
+
+.storyIcon,
+.featureIcon,
+.showcaseIcon {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.storyCard > span {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.storyCard h3,
+.storyCard p,
+.showcaseCard h3,
+.showcaseCard p,
+.flowStep h3,
+.flowStep p {
+  margin: 0;
+}
+
+.storyCard h3 {
+  color: var(--color-dark);
+  font-size: 1.15rem;
+}
+
+.storyCard p {
+  color: var(--color-text-secondary);
+  font-size: 0.87rem;
+  line-height: 1.6;
+}
+
+.capabilitySection .featureGrid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.capabilitySection .featureCard {
+  gap: 0.65rem;
+  min-height: 12.25rem;
+  padding: 1.15rem;
+}
+
+.capabilitySection .featureCard > svg {
+  display: none;
+}
+
+.capabilitySection .featureCard h3 {
+  color: var(--color-dark);
+  font-size: 1rem;
+}
+
+.capabilitySection .featureCard p {
+  line-height: 1.6;
+}
+
+.marketSection {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at 95% 5%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 23rem),
+    linear-gradient(155deg, color-mix(in srgb, var(--color-primary-soft) 28%, var(--color-surface)), var(--color-surface));
+}
+
+.showcaseCard {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-width: 0;
+  padding: clamp(1.1rem, 3vw, 1.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  box-shadow: 0 0.45rem 1.4rem rgb(13 43 40 / 5%);
+}
+
+.showcaseHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.showcaseHeader > div:last-child {
+  min-width: 0;
+}
+
+.showcaseHeader span {
+  display: block;
+  margin-bottom: 0.22rem;
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.showcaseHeader h3 {
+  color: var(--color-dark);
+  font-size: 1.16rem;
+  line-height: 1.25;
+}
+
+.showcaseCard > p {
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.showcaseList {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.showcaseList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.showcaseList svg {
+  flex: none;
+  margin-top: 0.08rem;
+  color: var(--color-success);
+}
+
+.flowSection {
+  padding-block: 0.25rem;
+}
+
+.flowStep {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 1.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+}
+
+.flowStep > svg {
+  color: var(--color-primary);
+}
+
+.stepNumber {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.95rem;
+  color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.flowStep h3 {
+  color: var(--color-dark);
+  font-size: 1.05rem;
+}
+
+.flowStep p {
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+@media (min-width: 48rem) {
+  .storyGrid,
+  .flowGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .showcaseGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .landingNavLink {
+    display: none !important;
+  }
+
+  .landingHeader nav {
+    gap: 0.35rem;
+  }
+
+  .marketSection {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 35.99rem) {
+  .landingHeader nav a:first-child {
+    display: inline-flex;
+  }
+
+  .landingHeader nav a:not(:last-child) {
+    display: none;
+  }
+
+  .landingCopy h1 {
+    font-size: clamp(2.3rem, 12vw, 3.45rem);
+  }
+
+  .landingActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .landingActions > a {
+    width: 100%;
+  }
+
+  .showcaseHeader {
+    align-items: flex-start;
+  }
+}
