@@ -72,11 +72,11 @@ export function AccountsPage() {
   }
 
   if (accounts.isPending && !accounts.data) return <PageLoader />
-  if (accounts.isError)
+  if (accounts.isError && !accounts.data)
     return (
       <ErrorState
         title="No pudimos cargar tus cuentas"
-        message="Comprueba tu conexión e inténtalo nuevamente."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => void accounts.refetch()}
       />
     )
