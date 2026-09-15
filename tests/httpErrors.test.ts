@@ -37,6 +37,15 @@ describe('errores HTTP', () => {
   it('transforma fallos de red sin exponer detalles técnicos', () => {
     const error = toApiError(new AxiosError('socket details'))
     expect(error).toMatchObject({ status: 0, code: 'NETWORK_ERROR' })
-    expect(error.message).toBe('No fue posible conectar con el servidor')
+    expect(error.message).toBe('No pudimos completar la solicitud en este momento')
+  })
+
+  it('distingue una respuesta lenta de una caída de red', () => {
+    const error = toApiError(
+      new AxiosError('timeout of 45000ms exceeded', 'ECONNABORTED'),
+    )
+    expect(error).toMatchObject({ status: 0, code: 'REQUEST_TIMEOUT' })
+    expect(error.message).toContain('tardando')
+    expect(error.message).not.toContain('conexión')
   })
 })
