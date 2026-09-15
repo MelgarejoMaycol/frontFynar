@@ -92,11 +92,11 @@ export function CategoriesPage() {
       />
     )
   if (query.isPending && !query.data) return <PageLoader />
-  if (query.isError)
+  if (query.isError && !query.data)
     return (
       <ErrorState
         title="No pudimos cargar las categorías"
-        message="Comprueba tu conexión."
+        message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos."
         onRetry={() => void query.refetch()}
       />
     )
