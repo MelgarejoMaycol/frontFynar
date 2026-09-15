@@ -242,6 +242,12 @@ export function DashboardPage() {
                 <Landmark size={18} aria-hidden="true" /> Crear cuenta
               </Button>
             )}
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/app/investments/simulator')}
+            >
+              <TrendingUp size={18} aria-hidden="true" /> Invertir
+            </Button>
             <Button variant="info" onClick={() => setConvertingCurrency(true)}>
               <ArrowLeftRight size={18} aria-hidden="true" /> Convertir divisas
             </Button>
