@@ -279,7 +279,7 @@ export function PersonalBalancesPage() {
   const activeAccounts = (accounts.data ?? []).filter((account) => account.nature === 'ASSET')
 
   if (list.isPending && !list.data) return <PageLoader />
-  if (list.isError) return <ErrorState title="No pudimos cargar Deudas y cobros" message="Comprueba tu conexión e inténtalo nuevamente." onRetry={() => void list.refetch()} />
+  if (list.isError) return <ErrorState title="No pudimos cargar Deudas y cobros" message="La información todavía no respondió. El servidor puede estar iniciando o la red puede estar lenta. Inténtalo nuevamente en unos segundos." onRetry={() => void list.refetch()} />
 
   const openEntry = (item: PersonalBalance, type: 'INCREASE' | 'PAYMENT') => { setEntryTarget(item); setEntryType(type); addEntry.reset() }
 
