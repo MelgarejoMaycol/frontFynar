@@ -105,13 +105,23 @@ describe('navegación y layouts', () => {
       '/demo',
     )
     expect(
-      screen.getAllByRole('link', { name: 'Abrir demo' }).length,
-    ).toBeGreaterThanOrEqual(2)
+      screen.getByRole('link', { name: 'Entrar a la demo' }),
+    ).toHaveAttribute('href', '/demo')
     expect(screen.getByText('Prueba Fynar sin registrarte')).toBeVisible()
     expect(
-      screen.getByText(/Entra a la aplicación real con datos ficticios/),
+      screen.getByText(/Explora la aplicación completa/),
     ).toBeVisible()
-    expect(screen.getByText(/La demo usa la interfaz real de Fynar/)).toBeVisible()
+    expect(
+      screen.getByRole('img', {
+        name: 'Vista real del inicio de Fynar en modo demo',
+      }),
+    ).toHaveAttribute('src', '/fynar-demo-dashboard-preview.webp')
+    expect(
+      screen.getByRole('link', {
+        name: 'Abrir la demo de Fynar desde la vista real de la aplicación',
+      }),
+    ).toHaveAttribute('href', '/demo')
+    expect(screen.getByText(/La demo funciona localmente/)).toBeVisible()
     expect(
       screen.getByRole('heading', { name: 'Más que un registro de gastos.' }),
     ).toBeVisible()
