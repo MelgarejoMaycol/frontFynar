@@ -2,8 +2,8 @@ import { ApiError } from '@/services/http'
 
 export function getGoalErrorMessage(error: unknown) {
   if (!(error instanceof ApiError)) return 'Ocurrió un error inesperado.'
-  if (error.code === 'NETWORK_ERROR')
-    return 'No fue posible conectar con el servidor.'
+  if (['NETWORK_ERROR', 'REQUEST_TIMEOUT'].includes(error.code))
+    return 'La solicitud está tardando más de lo esperado. El servidor puede estar iniciando o la red puede estar lenta; inténtalo nuevamente en unos segundos.'
   if (error.code === 'ACCOUNT_NOT_FOUND')
     return 'La cuenta asociada no está disponible para esta meta.'
   if (error.code === 'TRANSACTION_NOT_FOUND')
