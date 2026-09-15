@@ -96,6 +96,13 @@ describe('InvestmentsDashboardWidget', () => {
     expect(screen.queryByText('Plan pausado')).not.toBeInTheDocument()
 
     fireEvent.click(
+      screen.getByRole('button', { name: 'Registrar aporte en Plan activo' }),
+    )
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/app/investments/plan-1',
+    )
+
+    fireEvent.click(
       screen.getByRole('button', { name: 'Abrir inversión Plan activo' }),
     )
 
