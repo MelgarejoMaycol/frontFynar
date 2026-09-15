@@ -6,8 +6,8 @@ export function getAuthErrorMessage(
 ) {
   if (!(error instanceof ApiError))
     return 'Ocurrió un error inesperado. Inténtalo nuevamente.'
-  if (error.code === 'NETWORK_ERROR')
-    return 'No fue posible conectar con el servidor.'
+  if (['NETWORK_ERROR', 'REQUEST_TIMEOUT'].includes(error.code))
+    return 'La solicitud está tardando más de lo esperado. El servidor puede estar iniciando o la red puede estar lenta; inténtalo nuevamente en unos segundos.'
   if (error.code === 'VALIDATION_ERROR') return 'Revisa los datos ingresados.'
   if (error.code === 'EMAIL_NOT_VERIFIED')
     return 'Tu correo todavía no ha sido verificado.'
