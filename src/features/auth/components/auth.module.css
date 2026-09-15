@@ -116,6 +116,11 @@
 .statusPage > svg {
   color: var(--color-primary);
 }
+.callbackLoader {
+  display: grid;
+  min-height: 16rem;
+  place-items: center;
+}
 .statusActions {
   display: flex;
   align-items: center;
