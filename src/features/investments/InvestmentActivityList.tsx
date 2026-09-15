@@ -140,9 +140,18 @@ export function InvestmentActivityList({
       (item) => item.transactionId === focusTransactionId,
     )
     if (!target) return
-    openedFromQuery.current = true
-    openEdit(target)
-  }, [activity, focusTransactionId])
+
+    const timer = window.setTimeout(() => {
+      openedFromQuery.current = true
+      setEditing(target)
+      setAmount(target.amount)
+      setOccurredAt(isoToWorkspaceDateTimeValue(target.occurredAt, timezone))
+      setAccountId(target.accountId ?? '')
+      setNote(target.note ?? '')
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [activity, focusTransactionId, timezone])
 
   const closeEdit = () => {
     setEditing(null)
