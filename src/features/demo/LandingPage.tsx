@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  ArrowRight,
   BarChart3,
   CalendarClock,
   CheckCircle2,
@@ -18,15 +19,7 @@ import {
 import { Navigate, Link } from 'react-router'
 import { BrandLogo } from '@/components/ui'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import { demoSummary } from './demo.data'
 import styles from './demo.module.css'
-
-const money = (value: number) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value)
 
 const capabilities = [
   {
@@ -122,11 +115,12 @@ export function LandingPage() {
                 </span>
                 <div>
                   <strong>Prueba Fynar sin registrarte</strong>
-                  <span>Entra a la aplicación real con datos ficticios y explora todos los módulos.</span>
+                  <span>Explora la aplicación completa y conoce cómo funciona antes de crear tu cuenta.</span>
                 </div>
               </div>
               <a className={styles.heroDemoButton} href="/demo">
-                Abrir demo
+                <span>Entrar a la demo</span>
+                <ArrowRight size={20} aria-hidden="true" />
               </a>
             </div>
 
@@ -153,39 +147,23 @@ export function LandingPage() {
             </span>
           </div>
 
-          <article className={styles.previewCard} aria-label="Vista previa de Fynar">
-            <div className={styles.previewTop}>
-              <span>Vista previa del Inicio</span>
-              <a className={styles.demoBadge} href="/demo">
-                <ShieldCheck size={14} aria-hidden="true" />
-                Abrir demo
-              </a>
-            </div>
-            <div className={styles.previewMoney}>
-              <span>Disponible para usar</span>
-              <strong>{money(demoSummary.availableMoney)}</strong>
-              <small>Datos ficticios de septiembre de 2026</small>
-            </div>
-            <div className={styles.previewMiniGrid}>
-              <div>
-                <span>Ingresos</span>
-                <strong>{money(demoSummary.totalIncome)}</strong>
-              </div>
-              <div>
-                <span>Egresos</span>
-                <strong>{money(demoSummary.totalExpenses)}</strong>
-              </div>
-              <div>
-                <span>Salud financiera</span>
-                <strong>{demoSummary.healthScore}/100</strong>
-              </div>
-            </div>
-            <div className={styles.previewSignals}>
-              <span><LineChart size={15} aria-hidden="true" /> Proyección del periodo</span>
-              <span><ArrowLeftRight size={15} aria-hidden="true" /> Conversor de divisas</span>
-              <span><TrendingUp size={15} aria-hidden="true" /> Seguimiento de inversiones</span>
-            </div>
-          </article>
+          <a
+            className={styles.realPreview}
+            href="/demo"
+            aria-label="Abrir la demo de Fynar desde la vista real de la aplicación"
+          >
+            <img
+              src="/fynar-demo-dashboard-preview.webp"
+              alt="Vista real del inicio de Fynar en modo demo"
+              loading="eager"
+            />
+            <span className={styles.realPreviewHint}>
+              <span>Ver Fynar por dentro</span>
+              <strong>
+                Abrir demo <ArrowRight size={17} aria-hidden="true" />
+              </strong>
+            </span>
+          </a>
         </section>
 
         <section
