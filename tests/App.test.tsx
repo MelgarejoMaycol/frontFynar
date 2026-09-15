@@ -105,9 +105,12 @@ describe('navegación y layouts', () => {
       '/demo',
     )
     expect(
-      screen.getAllByRole('link', { name: 'Entrar a la demo' }).length,
-    ).toBeGreaterThan(0)
-    expect(screen.getByText('Demo interactiva disponible')).toBeVisible()
+      screen.getAllByRole('link', { name: 'Abrir demo' }).length,
+    ).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('Prueba Fynar sin registrarte')).toBeVisible()
+    expect(
+      screen.getByText(/Entra a la aplicación real con datos ficticios/),
+    ).toBeVisible()
     expect(screen.getByText(/La demo usa la interfaz real de Fynar/)).toBeVisible()
     expect(
       screen.getByRole('heading', { name: 'Más que un registro de gastos.' }),
