@@ -413,6 +413,8 @@ test('guarda, inicia, aporta y retira de un plan de inversión sin crear obligac
     startDialog.getByText(/no mueve dinero/i),
   ).toBeVisible()
   await startDialog.getByRole('button', { name: 'Empezar' }).click()
+  await expect(startDialog).not.toBeVisible()
+  await expect(page.getByText('En seguimiento', { exact: true })).toBeVisible()
 
   await page.goto('/app/dashboard')
   const activeInvestments = page.getByLabel('Inversiones activas')
