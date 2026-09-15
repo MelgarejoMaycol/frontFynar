@@ -260,7 +260,9 @@ export function InvestmentActivityList({
                 <div className={styles.historyTitle}>
                   <strong>{item.label}</strong>
                   <span className={styles.historyMeta}>
-                    {new Date(item.occurredAt).toLocaleString('es-CO')} 
+                    {new Date(item.occurredAt).toLocaleString('es-CO', {
+                      timeZone: timezone,
+                    })}
                     {item.accountName ? ` · ${item.accountName}` : ''}
                   </span>
                   {item.transactionId ? (
@@ -371,9 +373,10 @@ export function InvestmentActivityList({
               {editing?.kind === 'valuation' ? 'Valor registrado' : 'Monto'}
             </span>
             <MoneyInput
+              minorUnits
               value={amount}
               currency={plan.currency}
-              onChange={(event) => setAmount(event.target.value)}
+              onValueChange={setAmount}
             />
           </label>
 
