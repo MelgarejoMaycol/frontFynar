@@ -59,7 +59,10 @@ export function TransactionList({
                   : item.type === 'TRANSFER'
                   ? `${accountName(item.accountId)} → ${accountName(item.destinationAccountId)}`
                   : accountName(item.accountId)}{' '}
-                {item.type !== 'DEBT_PAYMENT' && <>· {categoryName(item.categoryId)}</>}
+                {item.type !== 'DEBT_PAYMENT' &&
+                  item.type !== 'INVESTMENT' && (
+                    <>· {categoryName(item.categoryId)}</>
+                  )}
               </p>
               <small>{formatTransactionDate(item.occurredAt, timezone)}</small>
             </div>
