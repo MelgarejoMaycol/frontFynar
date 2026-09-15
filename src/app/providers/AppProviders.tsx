@@ -17,9 +17,15 @@ const createQueryClient = () =>
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
         placeholderData: (previousData: unknown) => previousData,
-        retry: (failureCount, error) =>
-          failureCount < 1 &&
-          (!(error instanceof ApiError) || ![401, 403].includes(error.status)),
+        retry: (failureCount, error) => {
+          if (!(error instanceof ApiError)) return failureCount < 1
+          if ([401, 403].includes(error.status)) return false
+          if (['NETWORK_ERROR', 'REQUEST_TIMEOUT'].includes(error.code))
+            return failureCount < 2
+          if (error.status >= 500) return failureCount < 1
+          return false
+        },
+        retryDelay: (attempt) => Math.min(1_200 * 2 ** attempt, 5_000),
       },
       mutations: { retry: false },
     },
