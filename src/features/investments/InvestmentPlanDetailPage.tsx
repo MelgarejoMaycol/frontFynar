@@ -132,16 +132,20 @@ export function InvestmentPlanDetailPage() {
     )
       return
 
-    quickActionHandled.current = true
-    setDialog('contribute')
-    setAmount(
-      plan.recurringContribution !== '0.00' ? plan.recurringContribution : '',
-    )
-    setAccountId(compatibleAccounts[0]?.id ?? '')
-    setNote('')
-    setRecordedAt(
-      isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
-    )
+    const timer = window.setTimeout(() => {
+      quickActionHandled.current = true
+      setDialog('contribute')
+      setAmount(
+        plan.recurringContribution !== '0.00' ? plan.recurringContribution : '',
+      )
+      setAccountId(compatibleAccounts[0]?.id ?? '')
+      setNote('')
+      setRecordedAt(
+        isoToWorkspaceDateTimeValue(new Date().toISOString(), timezone),
+      )
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [compatibleAccounts, plan, searchParams, timezone])
 
   const actionError =
