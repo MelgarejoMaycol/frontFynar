@@ -72,7 +72,7 @@ describe('autenticación', () => {
   })
   it('muestra solo el logo animado mientras Google completa el acceso', () => {
     vi.spyOn(authApi, 'refresh').mockImplementation(
-      () => new Promise(() => undefined),
+      () => new Promise<never>(() => undefined),
     )
 
     render(
