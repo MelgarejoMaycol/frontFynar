@@ -1676,16 +1676,23 @@
 
 /* Landing: la demo es la acción principal para visitantes nuevos. */
 .landingHeader nav .demoNavCta {
-  min-height: 2.7rem;
-  padding-inline: 1rem;
+  min-height: 2.65rem;
+  align-self: center;
+  margin-left: .15rem;
+  padding-inline: 1.05rem;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  box-shadow: 0 .45rem 1rem rgb(13 84 73 / 16%);
+  box-shadow: 0 .28rem .85rem rgb(13 84 73 / 16%);
+  transform: translateY(-2px);
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    background-color .16s ease;
 }
 
 .landingHeader nav .demoNavCta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 .6rem 1.25rem rgb(13 84 73 / 22%);
+  transform: translateY(-3px);
+  box-shadow: 0 .42rem 1rem rgb(13 84 73 / 22%);
 }
 
 .demoLead {
