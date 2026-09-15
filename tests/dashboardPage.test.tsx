@@ -242,10 +242,19 @@ describe('DashboardPage', () => {
     expect(actionButtons).toEqual([
       'Nuevo movimiento',
       'Crear cuenta',
+      'Invertir',
       'Convertir divisas',
       'Ver análisis',
       'Ver créditos y deudas',
     ])
+  })
+
+  it('abre el simulador de inversiones desde Inicio', () => {
+    view()
+    fireEvent.click(screen.getByRole('button', { name: 'Invertir' }))
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/app/investments/simulator',
+    )
   })
 
   it('abre el análisis financiero en una página independiente', () => {
