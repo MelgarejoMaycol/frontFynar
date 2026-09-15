@@ -1759,3 +1759,223 @@
     min-height: 3.6rem;
   }
 }
+
+
+/* Hero público compacto: la demo debe verse completa en el primer viewport. */
+.landingHeader {
+  min-height: 4.25rem;
+}
+
+.landingMain {
+  padding-block: 1.55rem 4rem;
+}
+
+.landingHero {
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.4rem);
+}
+
+.landingCopy {
+  gap: .78rem;
+}
+
+.landingCopy h1 {
+  max-width: 12.5ch;
+  font-size: clamp(2.75rem, 5vw, 4rem);
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.landingCopy > p {
+  max-width: 39rem;
+  font-size: .96rem;
+  line-height: 1.55;
+}
+
+.heroDemoCta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .9rem;
+  max-width: 39rem;
+  padding: .85rem .9rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 26%, var(--color-border));
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary-soft) 76%, var(--color-surface)),
+      var(--color-surface)
+    );
+  box-shadow: 0 .5rem 1.4rem rgb(13 84 73 / 9%);
+}
+
+.heroDemoCopy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .7rem;
+}
+
+.heroDemoIcon {
+  display: grid;
+  flex: none;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border-radius: .8rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.heroDemoCopy > div {
+  display: grid;
+  min-width: 0;
+  gap: .12rem;
+}
+
+.heroDemoCopy strong {
+  color: var(--color-dark);
+  font-size: .9rem;
+}
+
+.heroDemoCopy div > span {
+  color: var(--color-text-secondary);
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.heroDemoButton {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  border-radius: .78rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  text-decoration: none;
+  font-size: .84rem;
+  font-weight: 850;
+  white-space: nowrap;
+  box-shadow: 0 .45rem 1rem rgb(13 84 73 / 16%);
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease;
+}
+
+.heroDemoButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 .65rem 1.3rem rgb(13 84 73 / 21%);
+}
+
+.heroTopics {
+  gap: .38rem;
+}
+
+.heroTopics span {
+  min-height: 1.82rem;
+  padding-inline: .62rem;
+  font-size: .71rem;
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .42rem;
+  max-width: 39rem;
+  color: var(--color-text-muted);
+  font-size: .76rem;
+}
+
+.heroMeta a {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.heroMeta a:hover {
+  text-decoration: underline;
+}
+
+.localNote {
+  font-size: .72rem;
+}
+
+.previewCard {
+  max-width: 34rem;
+  justify-self: end;
+  padding: .9rem;
+}
+
+.previewMoney {
+  padding: .9rem;
+}
+
+.previewMoney strong {
+  font-size: 1.55rem;
+}
+
+.previewMiniGrid div {
+  padding: .62rem;
+}
+
+.previewSignals {
+  gap: .32rem;
+}
+
+.previewSignals span {
+  font-size: .72rem;
+}
+
+@media (min-width: 48rem) {
+  .landingHero {
+    grid-template-columns: minmax(0, 1.02fr) minmax(24rem, .86fr);
+  }
+}
+
+@media (max-width: 63.99rem) and (min-width: 48rem) {
+  .landingCopy h1 {
+    font-size: clamp(2.65rem, 5.3vw, 3.55rem);
+  }
+
+  .heroDemoCta {
+    grid-template-columns: 1fr;
+  }
+
+  .heroDemoButton {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .landingMain {
+    padding-top: 1rem;
+  }
+
+  .previewCard {
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 35.99rem) {
+  .landingCopy h1 {
+    font-size: clamp(2.25rem, 11vw, 3.15rem);
+  }
+
+  .heroDemoCta {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .heroDemoButton {
+    width: 100%;
+  }
+
+  .heroMeta {
+    gap: .35rem;
+  }
+}
