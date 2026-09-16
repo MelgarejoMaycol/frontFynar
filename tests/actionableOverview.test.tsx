@@ -163,6 +163,50 @@ describe('ActionableOverview', () => {
     expect(screen.getAllByText(/400\.000/)).toHaveLength(2)
   })
 
+  it('mantiene centavos exactos al calcular lo que queda después de compromisos', () => {
+    mocks.upcoming.mockReturnValue({
+      isError: false,
+      data: [
+        {
+          type: 'OBLIGATION',
+          id: 'payment-decimals',
+          resourceId: 'obligation-decimals',
+          name: 'Compromiso con centavos',
+          date: '2026-09-17',
+          amount: '99461.59',
+          currency: 'COP',
+          status: 'PENDING',
+          daysRemaining: 14,
+          source: 'SCHEDULED',
+          amountLabel: 'Pago esperado',
+        },
+      ],
+    })
+    mocks.budgets.mockReturnValue({ isError: false, data: { items: [] } })
+
+    render(
+      <MemoryRouter>
+        <ActionableOverview
+          summaries={[
+            {
+              ...summaries[0],
+              totalMoney: '1426445.24',
+              reservedForGoals: '50000.30',
+              availableMoney: '1376444.94',
+            },
+          ]}
+          accounts={accounts}
+          comparisons={comparisons}
+          workspaceId="workspace-1"
+          timezone="America/Bogota"
+        />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('$ 1.276.983,35')).toBeVisible()
+    expect(screen.queryByText('Monto no disponible')).not.toBeInTheDocument()
+  })
+
   it('prioriza vencimientos cercanos, presupuestos en riesgo y comparación', () => {
     renderOverview()
     expect(screen.getByText('Internet vence en 3 días')).toBeVisible()
