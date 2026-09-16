@@ -38,6 +38,25 @@ type AttentionItem = {
 
 const numberValue = (value: string | null | undefined) => Number(value ?? 0)
 
+const moneyToCents = (value: string | null | undefined): bigint => {
+  const match = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(value?.trim() ?? '')
+  if (!match) return 0n
+  const [, sign, integer, fraction = ''] = match
+  const cents =
+    BigInt(integer) * 100n + BigInt(fraction.padEnd(2, '0'))
+  return sign === '-' ? -cents : cents
+}
+
+const centsToMoneyString = (value: bigint): string => {
+  const negative = value < 0n
+  const absolute = negative ? -value : value
+  const integer = absolute / 100n
+  const fraction = String(absolute % 100n).padStart(2, '0')
+  return `${negative ? '-' : ''}${integer}.${fraction}`
+}
+
+const absoluteCents = (value: bigint) => (value < 0n ? -value : value)
+
 const dateOnlyInTimezone = (timezone: string) =>
   new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
@@ -79,26 +98,26 @@ const buildCommitmentAttention = ({
   upcoming: Upcoming[]
 }): AttentionItem[] =>
   summaries.flatMap<AttentionItem>((summary) => {
-    const available = numberValue(summary.availableMoney)
-    const commitments = upcoming
+    const availableCents = moneyToCents(summary.availableMoney)
+    const commitmentsCents = upcoming
       .filter(
         (item) =>
           item.currency === summary.currency &&
           item.daysRemaining >= 0 &&
           item.daysRemaining <= 30,
       )
-      .reduce((total, item) => total + numberValue(item.amount), 0)
+      .reduce((total, item) => total + moneyToCents(item.amount), 0n)
 
-    if (commitments <= 0) return []
+    if (commitmentsCents <= 0n) return []
 
-    const afterCommitments = available - commitments
-    if (afterCommitments < 0) {
+    const afterCommitmentsCents = availableCents - commitmentsCents
+    if (afterCommitmentsCents < 0n) {
       return [
         {
           key: `commitments-gap-${summary.currency}`,
           priority: 0,
           title: 'Tus compromisos superan lo disponible',
-          description: `Con los pagos conocidos de los próximos 30 días te faltarían ${formatMoney(String(Math.abs(afterCommitments)), summary.currency)}. Revisa qué vence primero y cómo cubrirlo.`,
+          description: `Con los pagos conocidos de los próximos 30 días te faltarían ${formatMoney(centsToMoneyString(absoluteCents(afterCommitmentsCents)), summary.currency)}. Revisa qué vence primero y cómo cubrirlo.`,
           to: '/app/liabilities',
           tone: 'danger',
           icon: AlertTriangle,
@@ -106,7 +125,10 @@ const buildCommitmentAttention = ({
       ]
     }
 
-    const coverage = available > 0 ? (commitments / available) * 100 : 0
+    const coverage =
+      availableCents > 0n
+        ? (Number(commitmentsCents) / Number(availableCents)) * 100
+        : 0
     if (coverage < 70) return []
 
     return [
@@ -340,18 +362,21 @@ export function ActionableOverview({
                   0,
                 ),
               )
-            const upcoming30 = pendingUpcoming
+            const upcoming30Cents = pendingUpcoming
               .filter(
                 (item) =>
                   item.currency === summary.currency &&
                   item.daysRemaining >= 0 &&
                   item.daysRemaining <= 30,
               )
-              .reduce((total, item) => total + numberValue(item.amount), 0)
-            const afterCommitments = numberValue(summary.availableMoney) - upcoming30
+              .reduce((total, item) => total + moneyToCents(item.amount), 0n)
+            const availableCents = moneyToCents(summary.availableMoney)
+            const afterCommitmentsCents = availableCents - upcoming30Cents
             const commitmentShare =
-              numberValue(summary.availableMoney) > 0 && upcoming30 > 0
-                ? Math.round((upcoming30 / numberValue(summary.availableMoney)) * 100)
+              availableCents > 0n && upcoming30Cents > 0n
+                ? Math.round(
+                    (Number(upcoming30Cents) / Number(availableCents)) * 100,
+                  )
                 : 0
             return (
               <Card className={styles.moneyCard} key={summary.currency}>
@@ -377,20 +402,23 @@ export function ActionableOverview({
                   <div>
                     <CalendarClock size={17} aria-hidden="true" />
                     <span>Compromisos · 30 días</span>
-                    <b>{formatMoney(String(upcoming30), summary.currency)}</b>
+                    <b>{formatMoney(centsToMoneyString(upcoming30Cents), summary.currency)}</b>
                   </div>
                 </div>
 
                 <div
-                  className={`${styles.afterCommitments} ${afterCommitments < 0 ? styles.afterCommitmentsDanger : ''}`}
+                  className={`${styles.afterCommitments} ${afterCommitmentsCents < 0n ? styles.afterCommitmentsDanger : ''}`}
                 >
                   <span>
-                    {afterCommitments >= 0
+                    {afterCommitmentsCents >= 0n
                       ? 'Después de compromisos quedarían'
                       : 'Te faltarían para cubrir compromisos'}
                   </span>
                   <strong>
-                    {formatMoney(String(Math.abs(afterCommitments)), summary.currency)}
+                    {formatMoney(
+                      centsToMoneyString(absoluteCents(afterCommitmentsCents)),
+                      summary.currency,
+                    )}
                   </strong>
                 </div>
                 {commitmentShare > 0 && (
