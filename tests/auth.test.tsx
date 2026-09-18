@@ -102,6 +102,72 @@ describe('autenticación', () => {
     await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
     expect(await screen.findAllByRole('alert')).toHaveLength(2)
   })
+  it('completa el segundo factor antes de crear la sesión', async () => {
+    const authUser = {
+      id: 'user-mfa',
+      email: 'mfa@example.com',
+      firstName: 'Mfa',
+      lastName: 'User',
+      phone: null,
+      avatarUrl: null,
+      isEmailVerified: true,
+      isActive: true,
+      createdAt: '2026-09-18T00:00:00.000Z',
+      updatedAt: '2026-09-18T00:00:00.000Z',
+    }
+    vi.spyOn(authApi, 'login').mockResolvedValue({
+      success: true,
+      data: {
+        requiresMfa: true,
+        challengeToken: 'challenge-token-with-at-least-32-characters',
+        methods: ['TOTP', 'RECOVERY_CODE'],
+      },
+    })
+    const verify = vi.spyOn(authApi, 'verifyMfa').mockResolvedValue({
+      success: true,
+      data: {
+        user: authUser,
+        tokens: {
+          accessToken: 'access-after-mfa',
+          accessTokenExpiresInSeconds: 900,
+        },
+      },
+    })
+    const user = userEvent.setup()
+
+    render(
+      provider(
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/app" element={<p>Sesión protegida</p>} />
+          </Routes>
+        </MemoryRouter>,
+      ),
+    )
+
+    await user.type(screen.getByLabelText(/Correo electrónico/), authUser.email)
+    await user.type(screen.getByLabelText(/^Contraseña$/), '1234567890')
+    await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Verificación en dos pasos' }),
+    ).toBeVisible()
+    expect(useAuthStore.getState().status).toBe('unauthenticated')
+
+    await user.type(screen.getByLabelText('Código de seguridad'), '123456')
+    await user.click(
+      screen.getByRole('button', { name: 'Verificar e iniciar sesión' }),
+    )
+
+    expect(await screen.findByText('Sesión protegida')).toBeVisible()
+    expect(verify).toHaveBeenCalledWith({
+      challengeToken: 'challenge-token-with-at-least-32-characters',
+      code: '123456',
+    })
+    expect(useAuthStore.getState().accessToken).toBe('access-after-mfa')
+  })
+
   it('muestra el error de confirmación del registro', async () => {
     const user = userEvent.setup()
     render(
