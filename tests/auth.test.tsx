@@ -155,7 +155,7 @@ describe('autenticación', () => {
     ).toBeVisible()
     expect(useAuthStore.getState().status).toBe('unauthenticated')
 
-    await user.type(screen.getByLabelText('Código de seguridad'), '123456')
+    await user.type(screen.getByLabelText(/Código de seguridad/), '123456')
     await user.click(
       screen.getByRole('button', { name: 'Verificar e iniciar sesión' }),
     )
