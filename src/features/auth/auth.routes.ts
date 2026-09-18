@@ -12,6 +12,7 @@ export const AUTH_ROUTES = Object.freeze({
   resendVerification: '/auth/resend-verification',
   google: '/auth/google',
   googleComplete: '/auth/google/complete',
+  mfaVerify: '/auth/mfa/verify',
 })
 
 const REFRESH_EXCLUDED_ROUTES = new Set<string>([
@@ -23,6 +24,7 @@ const REFRESH_EXCLUDED_ROUTES = new Set<string>([
   AUTH_ROUTES.verifyEmail,
   AUTH_ROUTES.resendVerification,
   AUTH_ROUTES.googleComplete,
+  AUTH_ROUTES.mfaVerify,
 ])
 
 export const isRefreshExcludedRoute = (url: string): boolean =>
