@@ -396,3 +396,139 @@
     width: 100%;
   }
 }
+
+.securityCenter {
+  display: grid;
+  gap: var(--space-4);
+}
+.securityTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.securityTitleRow h3,
+.securityTitleRow p {
+  margin: 0;
+}
+.securityBadgeOn,
+.securityBadgeOff {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+.securityBadgeOn {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+}
+.securityBadgeOff {
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.securityInline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.securityInline input {
+  min-width: min(20rem, 100%);
+  flex: 1 1 16rem;
+}
+.mfaSetup {
+  display: grid;
+  gap: var(--space-3);
+}
+.mfaSetup p {
+  margin: 0;
+}
+.mfaAuthenticatorLink {
+  width: fit-content;
+  font-weight: var(--font-weight-medium);
+}
+.mfaSecret {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+.mfaSecret span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.mfaSecret code {
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-md);
+}
+.recoveryCodes {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 45%, var(--color-border));
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+}
+.recoveryCodes p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+.recoveryCodes > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.recoveryCodes code {
+  padding: var(--space-2);
+  text-align: center;
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+.sessionList {
+  display: grid;
+  gap: var(--space-2);
+}
+.sessionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+.sessionItem > div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.sessionItem span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+@media (max-width: 35.99rem) {
+  .securityTitleRow,
+  .sessionItem {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .securityInline {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .securityInline button,
+  .sessionItem button {
+    width: 100%;
+  }
+  .recoveryCodes > div {
+    grid-template-columns: 1fr;
+  }
+}
