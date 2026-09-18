@@ -147,7 +147,7 @@ describe('autenticación', () => {
     )
 
     await user.type(screen.getByLabelText(/Correo electrónico/), authUser.email)
-    await user.type(screen.getByLabelText(/^Contraseña$/), '1234567890')
+    await user.type(screen.getByLabelText(/^Contraseña/), '1234567890')
     await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
 
     expect(
