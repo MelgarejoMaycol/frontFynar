@@ -5,6 +5,9 @@ import { useWorkspaceStore } from '@/features/workspace/store/workspace.store'
 import type { AuthUser } from '@/features/auth/types/auth.types'
 import { settingsApi, type UpdateProfileInput } from '../api/settings.api'
 
+export const mfaStatusKey = ['settings', 'security', 'mfa'] as const
+export const sessionsKey = ['settings', 'security', 'sessions'] as const
+
 export function useProfile() {
   const authenticated = useAuthStore(
     (state) => state.status === 'authenticated',
@@ -52,5 +55,56 @@ export function useDeleteAccount() {
       await queryClient.cancelQueries()
       queryClient.removeQueries()
     },
+  })
+}
+
+export function useMfaStatus() {
+  return useQuery({
+    queryKey: mfaStatusKey,
+    queryFn: async ({ signal }) => (await settingsApi.getMfaStatus(signal)).data,
+  })
+}
+export function useSetupMfa() {
+  return useMutation({ mutationFn: () => settingsApi.setupMfa() })
+}
+export function useConfirmMfa() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => settingsApi.confirmMfa(code),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: mfaStatusKey }),
+  })
+}
+export function useDisableMfa() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => settingsApi.disableMfa(code),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: mfaStatusKey }),
+  })
+}
+export function useRegenerateRecoveryCodes() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => settingsApi.regenerateRecoveryCodes(code),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: mfaStatusKey }),
+  })
+}
+export function useSecuritySessions() {
+  return useQuery({
+    queryKey: sessionsKey,
+    queryFn: async ({ signal }) => (await settingsApi.getSessions(signal)).data,
+  })
+}
+export function useRevokeSecuritySession() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (sessionId: string) => settingsApi.revokeSession(sessionId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionsKey }),
+  })
+}
+export function useRevokeOtherSecuritySessions() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => settingsApi.revokeOtherSessions(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionsKey }),
   })
 }
