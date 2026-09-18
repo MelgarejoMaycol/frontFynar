@@ -52,6 +52,13 @@ export interface AuthResult {
   user: AuthUser
   tokens: AuthTokens
 }
+export interface MfaChallengeResult {
+  requiresMfa: true
+  challengeToken: string
+  methods: readonly ['TOTP', 'RECOVERY_CODE']
+}
+export type LoginResult = AuthResult | MfaChallengeResult
+
 export interface ForgotPasswordResult {
   message: string
 }
