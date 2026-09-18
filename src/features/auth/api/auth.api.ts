@@ -3,6 +3,7 @@ import type { ApiSuccess } from '@/services/http/httpTypes'
 import type {
   AuthResult,
   AuthTokens,
+  LoginResult,
   AuthUser,
   ForgotPasswordRequest,
   ForgotPasswordResult,
@@ -25,7 +26,7 @@ export const authApi = {
       signal,
     ),
   login: (body: LoginRequest, signal?: AbortSignal) =>
-    httpClient.post<ApiSuccess<AuthResult>, LoginRequest>(
+    httpClient.post<ApiSuccess<LoginResult>, LoginRequest>(
       AUTH_ROUTES.login,
       body,
       signal,
@@ -72,6 +73,12 @@ export const authApi = {
   resendVerification: (body: ResendVerificationRequest, signal?: AbortSignal) =>
     httpClient.post<ApiSuccess<{ message: string }>, ResendVerificationRequest>(
       AUTH_ROUTES.resendVerification,
+      body,
+      signal,
+    ),
+  verifyMfa: (body: { challengeToken: string; code: string }, signal?: AbortSignal) =>
+    httpClient.post<ApiSuccess<AuthResult>, typeof body>(
+      AUTH_ROUTES.mfaVerify,
       body,
       signal,
     ),
