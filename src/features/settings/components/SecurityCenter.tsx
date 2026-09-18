@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Input } from '@/components/ui'
+import { Button, Input, PasswordInput } from '@/components/ui'
 import {
   useConfirmMfa,
   useDisableMfa,
@@ -46,13 +46,16 @@ export function SecurityCenter() {
   const revoke = useRevokeSecuritySession()
   const revokeOthers = useRevokeOtherSecuritySessions()
   const [setupCode, setSetupCode] = useState('')
+  const [setupPassword, setSetupPassword] = useState('')
   const [securityCode, setSecurityCode] = useState('')
   const [setupData, setSetupData] = useState<{ secret: string; otpauthUri: string } | null>(null)
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
 
   const startSetup = async () => {
-    const { data } = await setup.mutateAsync()
+    if (!setupPassword) return
+    const { data } = await setup.mutateAsync(setupPassword)
     setSetupData(data)
+    setSetupPassword('')
     setSetupCode('')
     setRecoveryCodes([])
   }
@@ -152,9 +155,22 @@ export function SecurityCenter() {
             </div>
           </div>
         ) : (
-          <Button loading={setup.isPending} onClick={() => void startSetup()}>
-            Activar autenticación en dos pasos
-          </Button>
+          <div className={styles.securityInline}>
+            <PasswordInput
+              aria-label="Contraseña actual para activar 2FA"
+              placeholder="Confirma tu contraseña actual"
+              autoComplete="current-password"
+              value={setupPassword}
+              onChange={(event) => setSetupPassword(event.target.value)}
+            />
+            <Button
+              loading={setup.isPending}
+              disabled={!setupPassword}
+              onClick={() => void startSetup()}
+            >
+              Activar autenticación en dos pasos
+            </Button>
+          </div>
         )}
 
         {recoveryCodes.length > 0 && (
