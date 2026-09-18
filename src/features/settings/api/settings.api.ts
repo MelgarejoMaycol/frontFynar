@@ -43,11 +43,11 @@ export const settingsApi = {
   changePassword: authApi.changePassword,
   getMfaStatus: (signal?: AbortSignal) =>
     httpClient.get<ApiSuccess<MfaStatus>>('/auth/mfa/status', signal),
-  setupMfa: () =>
-    httpClient.post<ApiSuccess<MfaSetup>, undefined>(
-      '/auth/mfa/totp/setup',
-      undefined,
-    ),
+  setupMfa: (currentPassword: string) =>
+    httpClient.post<
+      ApiSuccess<MfaSetup>,
+      { currentPassword: string }
+    >('/auth/mfa/totp/setup', { currentPassword }),
   confirmMfa: (code: string) =>
     httpClient.post<ApiSuccess<{ recoveryCodes: string[] }>, { code: string }>(
       '/auth/mfa/totp/confirm',
