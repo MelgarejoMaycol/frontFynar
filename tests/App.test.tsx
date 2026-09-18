@@ -104,9 +104,9 @@ describe('navegación y layouts', () => {
       'href',
       '/demo',
     )
-    expect(
-      screen.getByRole('link', { name: 'Entrar a la demo' }),
-    ).toHaveAttribute('href', '/demo')
+    for (const link of screen.getAllByRole('link', { name: 'Entrar a la demo' })) {
+      expect(link).toHaveAttribute('href', '/demo')
+    }
     expect(screen.getByText('Prueba Fynar sin registrarte')).toBeVisible()
     expect(
       screen.getByText(/Explora la aplicación completa/),
