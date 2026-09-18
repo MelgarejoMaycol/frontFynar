@@ -23,6 +23,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (input: LoginRequest) => authApi.login(input),
     onSuccess: ({ data }) => {
+      if ('requiresMfa' in data && data.requiresMfa) return
       useAuthStore.getState().setAccessToken(data.tokens.accessToken)
       queryClient.setQueryData(authMeKey, data.user)
     },
