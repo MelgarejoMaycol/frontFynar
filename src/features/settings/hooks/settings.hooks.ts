@@ -65,7 +65,9 @@ export function useMfaStatus() {
   })
 }
 export function useSetupMfa() {
-  return useMutation({ mutationFn: () => settingsApi.setupMfa() })
+  return useMutation({
+    mutationFn: (currentPassword: string) => settingsApi.setupMfa(currentPassword),
+  })
 }
 export function useConfirmMfa() {
   const queryClient = useQueryClient()
