@@ -14,6 +14,7 @@ import { ChangePasswordForm } from '@/features/settings/components/ChangePasswor
 import { AvatarUploader } from '@/features/settings/components/AvatarUploader'
 import { ProfileForm } from '@/features/settings/components/ProfileForm'
 import { PreferencesForm } from '@/features/settings/components/PreferencesForm'
+import { SecurityCenter } from '@/features/settings/components/SecurityCenter'
 import {
   useProfile,
   useChangePassword,
@@ -242,7 +243,7 @@ export function SettingsPage() {
       <Card className={styles.section}>
         <SectionHeader
           title="Seguridad"
-          description="Controla las sesiones activas de tu cuenta."
+          description="Protege tu acceso, administra el segundo factor y revisa tus dispositivos."
         />
         <div className={styles.securityBlock}>
           <h3>Cambiar contraseña</h3>
@@ -270,6 +271,7 @@ export function SettingsPage() {
             }
           />
         </div>
+        <SecurityCenter />
         {logoutAll.error && (
           <p className={styles.error} role="alert">
             {getAuthErrorMessage(logoutAll.error)}
